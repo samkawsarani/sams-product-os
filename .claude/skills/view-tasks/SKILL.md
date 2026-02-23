@@ -32,20 +32,22 @@ Show all tasks that are due today or overdue, prioritized by urgency.
    - Today's tasks second
    - Within each group, sort by priority (P0 → P1 → P2 → P3)
 
-4. **Format output**:
+4. **Format output** (always use markdown tables):
 ```
-Due Today & Overdue Tasks
+## Due Today & Overdue Tasks
 
-OVERDUE
-  [s] Task name (P0, Category) - 3 days overdue
-      tasks/filename.md
+### OVERDUE
 
-  [n] Task name (P1, Category) - 1 day overdue
-      tasks/filename.md
+| Status | Task | Priority | Category | Overdue |
+|--------|------|----------|----------|---------|
+| `[s]` | Task name | P0 | category | 3 days |
+| `[n]` | Task name | P1 | category | 1 day |
 
-DUE TODAY
-  [s] Task name (P0, Category)
-      tasks/filename.md
+### DUE TODAY
+
+| Status | Task | Priority | Category |
+|--------|------|----------|----------|
+| `[s]` | Task name | P0 | category |
 
 ---
 Total: X overdue, Y due today
@@ -77,23 +79,22 @@ Show all tasks due in the next 7 days (or custom timeframe if specified).
 
 4. **Group by date**: Organize tasks by their due date in chronological order
 
-5. **Format output**:
+5. **Format output** (always use markdown tables, grouped by date):
 ```
-Upcoming Tasks (Next 7 Days)
+## Upcoming Tasks (Next 7 Days)
 
-Tomorrow (YYYY-MM-DD)
-  [n] Task name (P0, Category)
-      tasks/filename.md
+### Tomorrow (YYYY-MM-DD)
 
-Wednesday (YYYY-MM-DD)
-  [s] Task name (P1, Category)
-      tasks/filename.md
-  [n] Task name (P2, Category)
-      tasks/filename.md
+| Status | Task | Priority | Category | File |
+|--------|------|----------|----------|------|
+| `[n]` | Task name | P0 | category | `tasks/filename.md` |
 
-Friday (YYYY-MM-DD)
-  [n] Task name (P1, Category)
-      tasks/filename.md
+### Wednesday (YYYY-MM-DD)
+
+| Status | Task | Priority | Category | File |
+|--------|------|----------|----------|------|
+| `[s]` | Task name | P1 | category | `tasks/filename.md` |
+| `[n]` | Task name | P2 | category | `tasks/filename.md` |
 
 ---
 Total: X tasks across Y days
@@ -123,17 +124,23 @@ Display all tasks with their details in a clear, organized format.
    - Status: n (not started), s (started), b (blocked), d (done)
    - Category
 
-4. **Format output**: Display tasks grouped by priority (P0 → P1 → P2 → P3):
+4. **Format output** (always use markdown tables, grouped by priority):
 ```
-Task Summary: X total tasks (P0: X/3, P1: X/7, P2: X/15, P3: X)
+## All Open Tasks
 
-P0 (Critical) - Max 3
-  [s] Task name (Category) - Due: YYYY-MM-DD
-      tasks/filename.md
+**Task Summary:** X total tasks (P0: X/3, P1: X/7, P2: X/15, P3: X)
 
-P1 (High) - Max 7
-  [n] Task name (Category)
-      tasks/filename.md
+### P0 (Critical) — Max 3
+
+| Status | Task | Category | Due | File |
+|--------|------|----------|-----|------|
+| `[s]` | Task name | category | YYYY-MM-DD | `tasks/filename.md` |
+
+### P1 (High) — Max 7
+
+| Status | Task | Category | Due | File |
+|--------|------|----------|-----|------|
+| `[n]` | Task name | category | — | `tasks/filename.md` |
 
 ...
 ```

@@ -601,7 +601,7 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent]:
         priority = arguments["priority"]
         priority_caps = config["priority_caps"]
         current_tasks = get_all_tasks()
-        current_count = len([t for t in current_tasks if t["priority"] == priority])
+        current_count = len([t for t in current_tasks if t["priority"] == priority and t["status"] != "d"])
 
         if current_count >= priority_caps.get(priority, 999):
             return [
@@ -695,7 +695,7 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent]:
             [
                 t
                 for t in current_tasks
-                if t["priority"] == new_priority and t["file"] != filename
+                if t["priority"] == new_priority and t["file"] != filename and t["status"] != "d"
             ]
         )
 
@@ -1204,7 +1204,7 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent]:
 
         # Clear backlog
         with open(backlog_file, "w") as f:
-            f.write("")
+            f.write("# Backlog\n")
 
         if archive:
             return [TextContent(
