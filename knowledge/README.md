@@ -19,7 +19,7 @@ knowledge/
 **Note:** Active work artifacts live outside knowledge/:
 - `meetings/` — Meeting transcripts organized by type
 - `initiatives/` — Strategic initiatives with context, research, outputs
-- `tasks/_archived/` — Archived backlog snapshots
+- `tasks/_archived/` — Archived backlog snapshots and completed tasks (`_archived/completed/`)
 
 ## What to Put Where
 

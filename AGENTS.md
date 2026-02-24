@@ -26,7 +26,7 @@ IMPORTANT — these override default behavior:
 | `knowledge/` | Persistent context: strategy, frameworks, company info, references, voice samples |
 | `meetings/` | Meeting transcripts and notes from 1:1s, syncs, stakeholder meetings, etc.|
 | `initiatives/` | Strategic initiatives and groomed requests (`initiatives/groomed-requests/`) |
-| `tasks/` | Active tasks and archived backlogs (`tasks/_archived/`) |
+| `tasks/` | Active tasks, archived backlogs (`tasks/_archived/`), and completed tasks (`tasks/_archived/completed/`) |
 | `GOALS.md` | Ownership areas and quarterly goals |
 | `BACKLOG.md` | Daily brain dump inbox of future work|
 | `_temp/` | Drop zone for files in transit or scratch work |

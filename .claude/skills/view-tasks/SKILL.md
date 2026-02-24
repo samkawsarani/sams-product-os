@@ -8,6 +8,7 @@ argument-hint: "[view] — views: today, upcoming, all. Optional filters: priori
 ## Context
 
 Tasks are stored in markdown files in the `tasks/` directory with YAML frontmatter containing priority, status, due_date, category.
+Done tasks are auto-archived to `tasks/_archived/completed/` when marked as done.
 Today's date: $TODAY
 Arguments: $ARGUMENTS
 
@@ -121,8 +122,9 @@ Display all tasks with their details in a clear, organized format.
 
 3. **Apply filters**: If $ARGUMENTS provided, filter by:
    - Priority: P0, P1, P2, P3
-   - Status: n (not started), s (started), b (blocked), d (done)
+   - Status: n (not started), s (started), b (blocked)
    - Category
+   - Note: Done tasks are auto-archived and won't appear in active views. Use `list_tasks(status="d")` to query archived done tasks.
 
 4. **Format output** (always use markdown tables, grouped by priority):
 ```

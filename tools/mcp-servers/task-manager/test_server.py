@@ -14,6 +14,12 @@ Run with: python3 -m pytest test_server.py -v
 """
 
 import pytest
+import tempfile
+import shutil
+from pathlib import Path
+from unittest.mock import patch
+from datetime import datetime, timedelta
+
 from server import (
     is_ambiguous,
     generate_clarification_questions,
@@ -21,6 +27,11 @@ from server import (
     calculate_similarity,
     auto_categorize,
     load_config,
+    archive_task,
+    write_task_file,
+    parse_yaml_frontmatter,
+    get_all_tasks,
+    TASKS_DIR,
 )
 
 
@@ -416,6 +427,125 @@ class TestEdgeCases:
         config = {"category_keywords": {}}
         category = auto_categorize("Fix bug", "In the API", config)
         assert category == ""
+
+
+class TestArchiveTask:
+    """Test archive_task() helper function"""
+
+    def setup_method(self):
+        """Create a temporary tasks directory for testing"""
+        self.temp_dir = tempfile.mkdtemp()
+        self.temp_tasks = Path(self.temp_dir) / "tasks"
+        self.temp_tasks.mkdir()
+
+    def teardown_method(self):
+        """Clean up temporary directory"""
+        shutil.rmtree(self.temp_dir)
+
+    def test_archive_moves_file(self):
+        """archive_task() moves file to _archived/completed/ with date prefix"""
+        # Create a task file
+        task_file = self.temp_tasks / "test-task.md"
+        task_file.write_text("---\ntitle: Test Task\nstatus: d\n---\n\nBody\n")
+
+        with patch("server.TASKS_DIR", self.temp_tasks):
+            archived_path = archive_task(task_file)
+
+        # Original file should be gone
+        assert not task_file.exists()
+
+        # Archived file should exist with date prefix
+        assert archived_path.exists()
+        today = datetime.now().strftime("%Y-%m-%d")
+        assert archived_path.name == f"{today}-test-task.md"
+        assert archived_path.parent.name == "completed"
+        assert archived_path.parent.parent.name == "_archived"
+
+    def test_archive_creates_directory(self):
+        """archive_task() creates _archived/completed/ if it doesn't exist"""
+        task_file = self.temp_tasks / "test-task.md"
+        task_file.write_text("---\ntitle: Test\n---\n\nBody\n")
+
+        archive_dir = self.temp_tasks / "_archived" / "completed"
+        assert not archive_dir.exists()
+
+        with patch("server.TASKS_DIR", self.temp_tasks):
+            archive_task(task_file)
+
+        assert archive_dir.exists()
+
+    def test_archive_preserves_content(self):
+        """Archived file retains its original content"""
+        content = "---\ntitle: Test Task\nstatus: d\npriority: P1\n---\n\nTask body here\n"
+        task_file = self.temp_tasks / "my-task.md"
+        task_file.write_text(content)
+
+        with patch("server.TASKS_DIR", self.temp_tasks):
+            archived_path = archive_task(task_file)
+
+        assert archived_path.read_text() == content
+
+
+class TestGetAllTasksWithArchived:
+    """Test get_all_tasks() with include_archived parameter"""
+
+    def setup_method(self):
+        self.temp_dir = tempfile.mkdtemp()
+        self.temp_tasks = Path(self.temp_dir) / "tasks"
+        self.temp_tasks.mkdir()
+
+        # Create an active task
+        active_file = self.temp_tasks / "active-task.md"
+        write_task_file(active_file, {
+            "title": "Active Task",
+            "priority": "P1",
+            "status": "s",
+            "category": "technical",
+            "keywords": [],
+            "created_date": datetime.now().isoformat(),
+            "updated_date": datetime.now().isoformat(),
+        }, "Active body")
+
+        # Create an archived task
+        archive_dir = self.temp_tasks / "_archived" / "completed"
+        archive_dir.mkdir(parents=True)
+        archived_file = archive_dir / "2026-02-20-done-task.md"
+        write_task_file(archived_file, {
+            "title": "Done Task",
+            "priority": "P2",
+            "status": "d",
+            "category": "admin",
+            "keywords": [],
+            "created_date": datetime.now().isoformat(),
+            "updated_date": datetime.now().isoformat(),
+        }, "Done body")
+
+    def teardown_method(self):
+        shutil.rmtree(self.temp_dir)
+
+    def test_default_excludes_archived(self):
+        """get_all_tasks() without include_archived returns only active tasks"""
+        with patch("server.TASKS_DIR", self.temp_tasks):
+            tasks = get_all_tasks()
+        assert len(tasks) == 1
+        assert tasks[0]["title"] == "Active Task"
+
+    def test_include_archived_returns_all(self):
+        """get_all_tasks(include_archived=True) returns active + archived tasks"""
+        with patch("server.TASKS_DIR", self.temp_tasks):
+            tasks = get_all_tasks(include_archived=True)
+        assert len(tasks) == 2
+        titles = {t["title"] for t in tasks}
+        assert "Active Task" in titles
+        assert "Done Task" in titles
+
+    def test_archived_tasks_have_archived_flag(self):
+        """Archived tasks have 'archived': True"""
+        with patch("server.TASKS_DIR", self.temp_tasks):
+            tasks = get_all_tasks(include_archived=True)
+        archived = [t for t in tasks if t.get("archived")]
+        assert len(archived) == 1
+        assert archived[0]["title"] == "Done Task"
 
 
 if __name__ == "__main__":

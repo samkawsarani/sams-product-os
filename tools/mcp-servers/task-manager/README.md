@@ -112,7 +112,7 @@ Create a new task with smart category templates.
 ```
 
 #### update_task_status
-Change task status.
+Change task status. When status is set to `d` (done), the task is automatically archived to `tasks/_archived/completed/YYYY-MM-DD-filename.md`.
 
 **Parameters:**
 - `filename` (required): Task filename
@@ -121,6 +121,8 @@ Change task status.
 **Example:**
 ```
 → update_task_status(filename="fix-auth-bug.md", status="s")
+→ update_task_status(filename="fix-auth-bug.md", status="d")
+  # Auto-archives to tasks/_archived/completed/2026-02-23-fix-auth-bug.md
 ```
 
 #### update_task_priority
@@ -174,7 +176,7 @@ Find tasks past their due date.
 ```
 
 #### prune_completed_tasks
-Delete old completed tasks.
+Delete archived completed tasks older than the configured threshold. Scans `tasks/_archived/completed/` and parses the date prefix from filenames (falls back to `updated_date` frontmatter).
 
 **Parameters:**
 - `dry_run` (optional): Preview without deleting (default: false)
@@ -394,6 +396,8 @@ Tests validate:
 - ✓ Duplicate detection
 - ✓ Backlog parsing
 - ✓ Task creation with templates
+- ✓ Task archiving on completion
+- ✓ Archived task retrieval (include_archived flag)
 
 ### Writing Tests
 

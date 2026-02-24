@@ -78,7 +78,18 @@ def write_task_file(file_path: Path, frontmatter: dict, body: str):
         f.write(content)
 
 
-def get_all_tasks() -> list[dict]:
+def archive_task(task_file: Path) -> Path:
+    """Move a completed task to _archived/completed/ with YYYY-MM-DD date prefix."""
+    archive_dir = TASKS_DIR / "_archived" / "completed"
+    archive_dir.mkdir(parents=True, exist_ok=True)
+    today = datetime.now().strftime("%Y-%m-%d")
+    archived_name = f"{today}-{task_file.name}"
+    archived_path = archive_dir / archived_name
+    task_file.rename(archived_path)
+    return archived_path
+
+
+def get_all_tasks(include_archived: bool = False) -> list[dict]:
     """Get all tasks with metadata"""
     tasks = []
 
@@ -104,6 +115,27 @@ def get_all_tasks() -> list[dict]:
             "body": body,
         }
         tasks.append(task)
+
+    if include_archived:
+        archive_dir = TASKS_DIR / "_archived" / "completed"
+        if archive_dir.exists():
+            for task_file in archive_dir.glob("*.md"):
+                frontmatter, body = parse_yaml_frontmatter(task_file)
+                task = {
+                    "file": task_file.name,
+                    "path": str(task_file),
+                    "title": frontmatter.get("title", ""),
+                    "priority": frontmatter.get("priority", "P3"),
+                    "status": frontmatter.get("status", "n"),
+                    "category": frontmatter.get("category", ""),
+                    "keywords": frontmatter.get("keywords", []),
+                    "due_date": frontmatter.get("due_date"),
+                    "created_date": frontmatter.get("created_date"),
+                    "updated_date": frontmatter.get("updated_date"),
+                    "body": body,
+                    "archived": True,
+                }
+                tasks.append(task)
 
     return tasks
 
@@ -547,7 +579,8 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent]:
     config = load_config()
 
     if name == "list_tasks":
-        tasks = get_all_tasks()
+        include_archived = arguments.get("status") == "d"
+        tasks = get_all_tasks(include_archived=include_archived)
 
         # Apply filters
         if "priority" in arguments:
@@ -668,6 +701,15 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent]:
         frontmatter["updated_date"] = datetime.now().isoformat()
 
         write_task_file(task_file, frontmatter, body)
+
+        if arguments["status"] == "d":
+            archived_path = archive_task(task_file)
+            return [
+                TextContent(
+                    type="text",
+                    text=f"Updated {filename} status to: d\nArchived to: _archived/completed/{archived_path.name}",
+                )
+            ]
 
         return [
             TextContent(
@@ -814,37 +856,56 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent]:
         return [TextContent(type="text", text=result)]
 
     elif name == "prune_completed_tasks":
-        tasks = get_all_tasks()
         prune_after = config["task_aging"]["prune_completed_after"]
         cutoff = datetime.now() - timedelta(days=prune_after)
         dry_run = arguments.get("dry_run", False)
 
-        completed_tasks = [
-            t
-            for t in tasks
-            if t["status"] == "d"
-            and t.get("updated_date")
-            and datetime.fromisoformat(t["updated_date"]) < cutoff
-        ]
+        archive_dir = TASKS_DIR / "_archived" / "completed"
+        completed_tasks = []
+
+        if archive_dir.exists():
+            for task_file in archive_dir.glob("*.md"):
+                # Try to parse date prefix from filename (YYYY-MM-DD-rest.md)
+                date_match = re.match(r"^(\d{4}-\d{2}-\d{2})-", task_file.name)
+                if date_match:
+                    try:
+                        completed_date = datetime.strptime(date_match.group(1), "%Y-%m-%d")
+                    except ValueError:
+                        completed_date = None
+                else:
+                    completed_date = None
+
+                # Fall back to updated_date from frontmatter
+                if completed_date is None:
+                    frontmatter, _ = parse_yaml_frontmatter(task_file)
+                    updated = frontmatter.get("updated_date")
+                    if updated:
+                        completed_date = datetime.fromisoformat(updated)
+
+                if completed_date and completed_date < cutoff:
+                    frontmatter, _ = parse_yaml_frontmatter(task_file)
+                    days_old = (datetime.now() - completed_date).days
+                    completed_tasks.append({
+                        "file": task_file.name,
+                        "path": str(task_file),
+                        "title": frontmatter.get("title", task_file.stem),
+                        "days_old": days_old,
+                    })
 
         if not completed_tasks:
             return [
                 TextContent(
                     type="text",
-                    text=f"No completed tasks older than {prune_after} days found",
+                    text=f"No archived completed tasks older than {prune_after} days found",
                 )
             ]
 
-        result = f"{'Would delete' if dry_run else 'Deleting'} {len(completed_tasks)} completed tasks older than {prune_after} days:\n\n"
+        result = f"{'Would delete' if dry_run else 'Deleting'} {len(completed_tasks)} archived completed tasks older than {prune_after} days:\n\n"
         for task in completed_tasks:
-            days_old = (
-                datetime.now() - datetime.fromisoformat(task["updated_date"])
-            ).days
-            result += f"- {task['title']} ({task['file']}) - completed {days_old} days ago\n"
+            result += f"- {task['title']} ({task['file']}) - completed {task['days_old']} days ago\n"
 
             if not dry_run:
-                task_file = TASKS_DIR / task["file"]
-                task_file.unlink()
+                Path(task["path"]).unlink()
 
         if dry_run:
             result += f"\n(Dry run - no files deleted. Run without dry_run to delete)"
