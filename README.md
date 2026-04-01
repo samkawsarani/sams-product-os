@@ -34,7 +34,8 @@ cd sams-product-os
 ### 2. Prerequisites
 
 - **macOS**: Install [Homebrew](https://brew.sh) — the setup script handles the rest
-- **Other platforms**: Install [uv](https://docs.astral.sh/uv/) and [bun](https://bun.sh) manually
+- **Node.js / npm**: Required for [QMD](https://github.com/tobi/qmd) search — install via [nvm](https://github.com/nvm-sh/nvm) or [nodejs.org](https://nodejs.org)
+- **Other platforms**: Install [uv](https://docs.astral.sh/uv/) and [Node.js](https://nodejs.org) manually
 
 ### 3. Run Setup
 
@@ -42,7 +43,7 @@ cd sams-product-os
 ./setup.sh
 ```
 
-The interactive setup will install dependencies, create your workspace, configure MCP, and verify everything works. It will also walk you through optional Cursor setup and plugin installation.
+The interactive setup will install dependencies (including [QMD](https://github.com/tobi/qmd) for fast knowledge base search), create your workspace, configure MCP, and verify everything works. It will also walk you through optional Cursor setup and plugin installation.
 
 ### 4. Start Using It
 

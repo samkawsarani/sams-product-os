@@ -134,12 +134,27 @@ step_prerequisites() {
       print_success "uv installed"
     fi
 
+    # npm / Node.js
+    if command -v npm &>/dev/null; then
+      print_skip "npm"
+    else
+      echo -e "  ${DIM}Installing Node.js (includes npm)...${RESET}"
+      brew install node
+      print_success "Node.js / npm installed"
+    fi
+
   else
     # Non-macOS: just check what's available
     if command -v uv &>/dev/null; then
       print_success "uv"
     else
       print_warning "uv not found — install from https://docs.astral.sh/uv/"
+    fi
+
+    if command -v npm &>/dev/null; then
+      print_success "npm"
+    else
+      print_warning "npm not found — install Node.js from https://nodejs.org"
     fi
   fi
 }
@@ -171,11 +186,74 @@ step_python_deps() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Step 4: Knowledge Base Directories
+# Step 4: QMD Search Engine
+# ─────────────────────────────────────────────────────────────────────────────
+
+step_qmd() {
+  print_header "Step 4: QMD Search Engine"
+
+  if ! command -v npm &>/dev/null; then
+    print_warning "npm not available — skipping QMD installation"
+    print_info "Install Node.js first, then re-run setup"
+    return
+  fi
+
+  # Install qmd
+  if command -v qmd &>/dev/null; then
+    print_skip "qmd"
+  else
+    echo -e "  ${DIM}Installing QMD...${RESET}"
+    npm install -g @tobilu/qmd 2>&1 | while IFS= read -r line; do echo -e "  ${DIM}${line}${RESET}"; done
+    if command -v qmd &>/dev/null; then
+      print_success "QMD installed"
+    else
+      print_warning "Could not install QMD — try manually: ${GREEN}npm install -g @tobilu/qmd${RESET}"
+      return
+    fi
+  fi
+
+  # Install QMD skill for Claude
+  echo -e "  ${DIM}Installing QMD skill for Claude...${RESET}"
+  if qmd skill install --global --yes 2>&1 | while IFS= read -r line; do echo -e "  ${DIM}${line}${RESET}"; done; then
+    print_success "QMD skill installed (global + Claude symlink)"
+  else
+    print_warning "Could not install QMD skill — try manually: ${GREEN}qmd skill install --global --yes${RESET}"
+  fi
+
+  # Set up collection for this project
+  if qmd collection list 2>/dev/null | grep -q "product-os"; then
+    print_skip "QMD collection 'product-os'"
+  else
+    echo -e "  ${DIM}Adding QMD collection for this project...${RESET}"
+    if qmd collection add "$REPO_DIR" --name product-os 2>&1 | while IFS= read -r line; do echo -e "  ${DIM}${line}${RESET}"; done; then
+      print_success "QMD collection 'product-os' added"
+      qmd context add qmd://product-os "Personal PM operating system — tasks, initiatives, knowledge base, meetings, and references" 2>/dev/null
+      print_success "QMD collection context added"
+    else
+      print_warning "Could not add QMD collection — try manually:"
+      echo -e "     ${GREEN}qmd collection add . --name product-os${RESET}"
+    fi
+  fi
+
+  # Offer to run embeddings
+  echo ""
+  echo -e "  QMD can generate vector embeddings for semantic search."
+  echo -e "  ${DIM}This may take a few minutes depending on your knowledge base size.${RESET}"
+  if ask_yn "Run qmd embed now?" "n"; then
+    echo -e "  ${DIM}Generating embeddings...${RESET}"
+    qmd embed 2>&1 | while IFS= read -r line; do echo -e "  ${DIM}${line}${RESET}"; done
+    print_success "QMD embeddings generated"
+  else
+    print_info "Skipped — run 'qmd embed' anytime to enable semantic search"
+  fi
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Step 5: Knowledge Base Directories
 # ─────────────────────────────────────────────────────────────────────────────
 
 step_knowledge_dirs() {
-  print_header "Step 4: Knowledge Base Directories"
+  print_header "Step 5: Knowledge Base Directories"
 
   local dirs=(
     about-me
@@ -201,7 +279,7 @@ step_knowledge_dirs() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Step 5: Template Files
+# Step 6: Template Files
 # ─────────────────────────────────────────────────────────────────────────────
 
 copy_template() {
@@ -221,7 +299,7 @@ copy_template() {
 }
 
 step_template_files() {
-  print_header "Step 5: Template Files"
+  print_header "Step 6: Template Files"
 
   copy_template \
     "templates/about-me-template.md" \
@@ -254,7 +332,7 @@ BACKLOG_EOF
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Step 6: MCP Configuration
+# Step 7: MCP Configuration
 # ─────────────────────────────────────────────────────────────────────────────
 
 PM_TASKS_JSON='{
@@ -274,7 +352,7 @@ PM_TASKS_MCP_FULL='{
 }'
 
 step_mcp_config() {
-  print_header "Step 6: MCP Configuration"
+  print_header "Step 7: MCP Configuration"
 
   local mcp_file="$REPO_DIR/.mcp.json"
 
@@ -296,11 +374,11 @@ step_mcp_config() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Step 7: Cursor Setup (Optional)
+# Step 8: Cursor Setup (Optional)
 # ─────────────────────────────────────────────────────────────────────────────
 
 step_cursor_setup() {
-  print_header "Step 7: Cursor Setup (Optional)"
+  print_header "Step 8: Cursor Setup (Optional)"
 
   if ! ask_yn "Do you use Cursor?" "n"; then
     print_info "Skipping Cursor setup"
@@ -341,11 +419,11 @@ step_cursor_setup() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Step 8: Plugin Marketplace (Optional)
+# Step 9: Plugin Marketplace (Optional)
 # ─────────────────────────────────────────────────────────────────────────────
 
 step_plugins() {
-  print_header "Step 8: Plugin Marketplace (Optional)"
+  print_header "Step 9: Plugin Marketplace (Optional)"
 
   if ! command -v claude &>/dev/null; then
     print_warning "Claude Code CLI not found — skipping plugin setup"
@@ -413,11 +491,11 @@ step_plugins() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Step 9: Verification
+# Step 10: Verification
 # ─────────────────────────────────────────────────────────────────────────────
 
 step_verification() {
-  print_header "Step 9: Verification"
+  print_header "Step 10: Verification"
 
   local pass=0
   local fail=0
@@ -445,6 +523,22 @@ step_verification() {
     ((pass++))
   else
     print_error "Python dependencies — run: uv sync"
+    ((fail++))
+  fi
+
+  if command -v npm &>/dev/null; then
+    print_success "npm"
+    ((pass++))
+  else
+    print_error "npm not found — install Node.js"
+    ((fail++))
+  fi
+
+  if command -v qmd &>/dev/null; then
+    print_success "qmd"
+    ((pass++))
+  else
+    print_error "qmd not found — run: npm install -g @tobilu/qmd"
     ((fail++))
   fi
 
@@ -542,6 +636,7 @@ main() {
   step_platform_check
   step_prerequisites
   step_python_deps
+  step_qmd
   step_knowledge_dirs
   step_template_files
   step_mcp_config
