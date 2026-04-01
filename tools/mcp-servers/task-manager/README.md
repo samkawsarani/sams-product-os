@@ -112,7 +112,7 @@ Create a new task with smart category templates.
 ```
 
 #### update_task_status
-Change task status. When status is set to `d` (done), the task is automatically archived to `tasks/_archived/completed/YYYY-MM-DD-filename.md`.
+Change task status. When status is set to `d` (done), the task is automatically archived to `tasks/_archived/YYYY-MM-DD-filename.md`.
 
 **Parameters:**
 - `filename` (required): Task filename
@@ -122,7 +122,7 @@ Change task status. When status is set to `d` (done), the task is automatically 
 ```
 → update_task_status(filename="fix-auth-bug.md", status="s")
 → update_task_status(filename="fix-auth-bug.md", status="d")
-  # Auto-archives to tasks/_archived/completed/2026-02-23-fix-auth-bug.md
+  # Auto-archives to tasks/_archived/2026-02-23-fix-auth-bug.md
 ```
 
 #### update_task_priority
@@ -176,7 +176,7 @@ Find tasks past their due date.
 ```
 
 #### prune_completed_tasks
-Delete archived completed tasks older than the configured threshold. Scans `tasks/_archived/completed/` and parses the date prefix from filenames (falls back to `updated_date` frontmatter).
+Delete archived completed tasks older than the configured threshold. Scans `tasks/_archived/` and parses the date prefix from filenames (falls back to `updated_date` frontmatter).
 
 **Parameters:**
 - `dry_run` (optional): Preview without deleting (default: false)
@@ -237,7 +237,7 @@ Automated BACKLOG.md processing with intelligence.
 1. process_backlog(auto_create=false)  # Preview
 2. Review ambiguous items with user
 3. process_backlog(auto_create=true)   # Create
-4. clear_backlog()                      # Archive
+4. clear_backlog()                      # Reset
 ```
 
 **Example:**
@@ -246,19 +246,13 @@ Automated BACKLOG.md processing with intelligence.
 ```
 
 #### clear_backlog
-Archive and clear BACKLOG.md.
+Reset BACKLOG.md to empty state.
 
-**Parameters:**
-- `archive` (optional): Archive to tasks/_archived/ (default: true)
-
-**Features:**
-- Archives to `tasks/_archived/YYYY-MM-DD-backlog.md`
-- Appends if file exists
-- Adds timestamp
+**Parameters:** None
 
 **Example:**
 ```
-→ clear_backlog(archive=true)
+→ clear_backlog()
 ```
 
 ## Smart Task Templates

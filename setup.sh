@@ -1,0 +1,554 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Sams Product OS — Interactive Setup
+# ─────────────────────────────────────────────────────────────────────────────
+
+REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+BOLD='\033[1m'
+DIM='\033[2m'
+RESET='\033[0m'
+
+# Plugin marketplace
+MARKETPLACE_REPO="samkawsarani/sams-product-plugins"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Utilities
+# ─────────────────────────────────────────────────────────────────────────────
+
+print_banner() {
+  echo ""
+  echo -e "${BOLD}╔══════════════════════════════════════╗${RESET}"
+  echo -e "${BOLD}║       SAMS PRODUCT OS — Setup        ║${RESET}"
+  echo -e "${BOLD}╚══════════════════════════════════════╝${RESET}"
+  echo ""
+}
+
+print_header() {
+  echo ""
+  echo -e "${BLUE}${BOLD}── $1 ──${RESET}"
+  echo ""
+}
+
+print_success() {
+  echo -e "  ${GREEN}✔${RESET} $1"
+}
+
+print_skip() {
+  echo -e "  ${DIM}–${RESET} $1 ${DIM}(already exists)${RESET}"
+}
+
+print_warning() {
+  echo -e "  ${YELLOW}!${RESET} $1"
+}
+
+print_error() {
+  echo -e "  ${RED}✘${RESET} $1"
+}
+
+print_info() {
+  echo -e "  ${DIM}$1${RESET}"
+}
+
+ask_yn() {
+  local prompt="$1"
+  local default="${2:-n}"
+  local hint
+  if [[ "$default" == "y" ]]; then
+    hint="[Y/n]"
+  else
+    hint="[y/N]"
+  fi
+  while true; do
+    echo -en "  ${BOLD}?${RESET} ${prompt} ${DIM}${hint}${RESET} "
+    read -r answer
+    answer="${answer:-$default}"
+    case "$(printf '%s' "$answer" | tr '[:upper:]' '[:lower:]')" in
+      y|yes) return 0 ;;
+      n|no)  return 1 ;;
+      *)     echo -e "  ${DIM}Please answer y or n${RESET}" ;;
+    esac
+  done
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Step 1: Platform Check
+# ─────────────────────────────────────────────────────────────────────────────
+
+step_platform_check() {
+  print_header "Step 1: Platform Check"
+
+  local os
+  os="$(uname -s)"
+
+  if [[ "$os" == "Darwin" ]]; then
+    IS_MACOS=true
+    print_success "macOS detected — full automated setup available"
+  else
+    IS_MACOS=false
+    print_warning "Non-macOS detected ($os) — some steps require manual installation"
+    echo ""
+    echo -e "  Install these tools manually before continuing:"
+    echo -e "    ${BOLD}uv${RESET}   — https://docs.astral.sh/uv/"
+    echo ""
+    echo -e "  ${DIM}Press Enter to continue with the rest of setup...${RESET}"
+    read -r
+  fi
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Step 2: Prerequisites
+# ─────────────────────────────────────────────────────────────────────────────
+
+step_prerequisites() {
+  print_header "Step 2: Prerequisites"
+
+  # Claude Code CLI
+  if command -v claude &>/dev/null; then
+    print_success "claude"
+  else
+    print_warning "claude not found — install Claude Code CLI to use this product OS or install plugins from the marketplace"
+  fi
+
+  if [[ "$IS_MACOS" == true ]]; then
+    # Check Homebrew
+    if ! command -v brew &>/dev/null; then
+      print_error "Homebrew not found — install from https://brew.sh then re-run setup"
+      exit 1
+    fi
+    print_success "Homebrew"
+
+    # uv
+    if command -v uv &>/dev/null; then
+      print_skip "uv"
+    else
+      echo -e "  ${DIM}Installing uv...${RESET}"
+      brew install uv
+      print_success "uv installed"
+    fi
+
+  else
+    # Non-macOS: just check what's available
+    if command -v uv &>/dev/null; then
+      print_success "uv"
+    else
+      print_warning "uv not found — install from https://docs.astral.sh/uv/"
+    fi
+  fi
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Step 3: Python Dependencies
+# ─────────────────────────────────────────────────────────────────────────────
+
+step_python_deps() {
+  print_header "Step 3: Python Dependencies"
+
+  if ! command -v uv &>/dev/null; then
+    print_warning "uv not available — skipping Python dependency install"
+    print_info "Run 'uv sync' manually after installing uv"
+    return
+  fi
+
+  cd "$REPO_DIR"
+  echo -e "  ${DIM}Running uv sync...${RESET}"
+  uv sync 2>&1 | while IFS= read -r line; do echo -e "  ${DIM}${line}${RESET}"; done
+  print_success "Python dependencies installed"
+
+  # Verify
+  if uv run python -c "import mcp; import yaml" &>/dev/null; then
+    print_success "Verified: mcp and pyyaml importable"
+  else
+    print_warning "Could not verify Python imports — check uv sync output"
+  fi
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Step 4: Knowledge Base Directories
+# ─────────────────────────────────────────────────────────────────────────────
+
+step_knowledge_dirs() {
+  print_header "Step 4: Knowledge Base Directories"
+
+  local dirs=(
+    about-me
+    company-context
+    product-strategy
+    frameworks
+    processes
+    product-analytics
+    references
+    voice-samples
+  )
+
+  for dir in "${dirs[@]}"; do
+    local path="$REPO_DIR/knowledge/$dir"
+    if [[ -d "$path" ]]; then
+      print_skip "knowledge/$dir/"
+    else
+      mkdir -p "$path"
+      touch "$path/.gitkeep"
+      print_success "Created knowledge/$dir/"
+    fi
+  done
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Step 5: Template Files
+# ─────────────────────────────────────────────────────────────────────────────
+
+copy_template() {
+  local source="$1"
+  local target="$2"
+  local label="$3"
+
+  if [[ -f "$REPO_DIR/$target" ]]; then
+    print_skip "$label"
+  else
+    local target_dir
+    target_dir="$(dirname "$REPO_DIR/$target")"
+    mkdir -p "$target_dir"
+    cp "$REPO_DIR/$source" "$REPO_DIR/$target"
+    print_success "Created $label"
+  fi
+}
+
+step_template_files() {
+  print_header "Step 5: Template Files"
+
+  copy_template \
+    "templates/about-me-template.md" \
+    "knowledge/about-me/about-me.md" \
+    "knowledge/about-me/about-me.md"
+
+  copy_template \
+    "templates/company-overview-template.md" \
+    "knowledge/company-context/company-overview.md" \
+    "knowledge/company-context/company-overview.md"
+
+  copy_template \
+    "templates/goals-template.md" \
+    "GOALS.md" \
+    "GOALS.md"
+
+  # BACKLOG.md — small enough to create inline
+  if [[ -f "$REPO_DIR/BACKLOG.md" ]]; then
+    print_skip "BACKLOG.md"
+  else
+    cat > "$REPO_DIR/BACKLOG.md" << 'BACKLOG_EOF'
+# Backlog
+
+Your daily inbox for all notes, ideas, tasks, and thoughts. Capture everything here throughout the day.
+
+Say `process my backlog` when you're ready to categorize and organize items into tasks, initiatives, or references.
+BACKLOG_EOF
+    print_success "Created BACKLOG.md"
+  fi
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Step 6: MCP Configuration
+# ─────────────────────────────────────────────────────────────────────────────
+
+PM_TASKS_JSON='{
+    "pm-tasks": {
+      "command": "uv",
+      "args": ["run", "python", "tools/mcp-servers/task-manager/server.py"]
+    }
+  }'
+
+PM_TASKS_MCP_FULL='{
+  "mcpServers": {
+    "pm-tasks": {
+      "command": "uv",
+      "args": ["run", "python", "tools/mcp-servers/task-manager/server.py"]
+    }
+  }
+}'
+
+step_mcp_config() {
+  print_header "Step 6: MCP Configuration"
+
+  local mcp_file="$REPO_DIR/.mcp.json"
+
+  if [[ -f "$mcp_file" ]]; then
+    if grep -q '"pm-tasks"' "$mcp_file" 2>/dev/null; then
+      print_skip ".mcp.json (pm-tasks already configured)"
+    else
+      print_warning ".mcp.json exists but missing pm-tasks server"
+      echo ""
+      echo -e "  Add this to your .mcp.json under ${BOLD}mcpServers${RESET}:"
+      echo ""
+      echo -e "${DIM}$PM_TASKS_JSON${RESET}"
+      echo ""
+    fi
+  else
+    echo "$PM_TASKS_MCP_FULL" > "$mcp_file"
+    print_success "Created .mcp.json with pm-tasks server"
+  fi
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Step 7: Cursor Setup (Optional)
+# ─────────────────────────────────────────────────────────────────────────────
+
+step_cursor_setup() {
+  print_header "Step 7: Cursor Setup (Optional)"
+
+  if ! ask_yn "Do you use Cursor?" "n"; then
+    print_info "Skipping Cursor setup"
+    return
+  fi
+
+  # Skills symlink — only needed if NOT using Claude Code,
+  # since Cursor can read .claude/skills/ and plugins directly.
+  local cursor_dir="$REPO_DIR/.cursor"
+  mkdir -p "$cursor_dir"
+
+  if command -v claude &>/dev/null; then
+    print_info "Claude Code detected — skipping .cursor/skills symlink (Cursor reads .claude/skills/ directly)"
+  elif [[ -L "$cursor_dir/skills" ]] || [[ -d "$cursor_dir/skills" ]]; then
+    print_skip ".cursor/skills"
+  else
+    ln -s "../.claude/skills" "$cursor_dir/skills"
+    print_success "Created .cursor/skills symlink"
+  fi
+
+  # Cursor MCP config
+  local cursor_mcp="$cursor_dir/mcp.json"
+  if [[ -f "$cursor_mcp" ]]; then
+    if grep -q '"pm-tasks"' "$cursor_mcp" 2>/dev/null; then
+      print_skip ".cursor/mcp.json (pm-tasks already configured)"
+    else
+      print_warning ".cursor/mcp.json exists but missing pm-tasks server"
+      echo ""
+      echo -e "  Add this to your .cursor/mcp.json under ${BOLD}mcpServers${RESET}:"
+      echo ""
+      echo -e "${DIM}$PM_TASKS_JSON${RESET}"
+      echo ""
+    fi
+  else
+    echo "$PM_TASKS_MCP_FULL" > "$cursor_mcp"
+    print_success "Created .cursor/mcp.json with pm-tasks server"
+  fi
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Step 8: Plugin Marketplace (Optional)
+# ─────────────────────────────────────────────────────────────────────────────
+
+step_plugins() {
+  print_header "Step 8: Plugin Marketplace (Optional)"
+
+  if ! command -v claude &>/dev/null; then
+    print_warning "Claude Code CLI not found — skipping plugin setup"
+    print_info "Install Claude Code first, then run this setup again to install plugins"
+    return
+  fi
+
+  echo -e "  The ${BOLD}Sams Product Plugins${RESET} marketplace adds skills like"
+  echo -e "  analytics, grooming, research, writing, prototyping, and more."
+  echo -e "  ${DIM}https://github.com/${MARKETPLACE_REPO}${RESET}"
+  echo ""
+
+  if ask_yn "Add the plugin marketplace?" "y"; then
+    echo -e "  ${DIM}Adding marketplace...${RESET}"
+    if claude plugin marketplace add "$MARKETPLACE_REPO" 2>&1 | while IFS= read -r line; do echo -e "  ${DIM}${line}${RESET}"; done; then
+      print_success "Plugin marketplace added"
+    else
+      print_warning "Could not add marketplace — you can add it later with:"
+      echo -e "     ${GREEN}claude plugin marketplace add ${MARKETPLACE_REPO}${RESET}"
+    fi
+  else
+    print_info "Skipped — add it anytime with:"
+    echo -e "     ${GREEN}claude plugin marketplace add ${MARKETPLACE_REPO}${RESET}"
+  fi
+
+  # Check which official plugins are already installed
+  local installed_plugins
+  installed_plugins="$(claude plugin list 2>/dev/null || true)"
+
+  echo ""
+  echo -e "  Claude also offers two official plugins that pair well with Product OS:"
+  echo ""
+  echo -e "  ${BOLD}skill-creator${RESET}"
+  echo -e "  ${DIM}Create, modify, and test custom skills. Includes eval/benchmarking.${RESET}"
+  echo ""
+  echo -e "  ${BOLD}claude-md-management${RESET}"
+  echo -e "  ${DIM}Audit, improve, and maintain CLAUDE.md files across your repos.${RESET}"
+  echo ""
+
+  if echo "$installed_plugins" | grep -q "skill-creator" 2>/dev/null; then
+    print_skip "skill-creator (already installed)"
+  elif ask_yn "Install skill-creator from Claude official plugins?" "y"; then
+    echo -e "  ${DIM}Installing skill-creator...${RESET}"
+    if claude plugin install skill-creator 2>&1 | while IFS= read -r line; do echo -e "  ${DIM}${line}${RESET}"; done; then
+      print_success "skill-creator installed"
+    else
+      print_warning "Could not install — try manually: ${GREEN}claude plugin install skill-creator${RESET}"
+    fi
+  else
+    print_info "Skipped"
+  fi
+
+  if echo "$installed_plugins" | grep -q "claude-md-management" 2>/dev/null; then
+    print_skip "claude-md-management (already installed)"
+  elif ask_yn "Install claude-md-management from Claude official plugins?" "y"; then
+    echo -e "  ${DIM}Installing claude-md-management...${RESET}"
+    if claude plugin install claude-md-management 2>&1 | while IFS= read -r line; do echo -e "  ${DIM}${line}${RESET}"; done; then
+      print_success "claude-md-management installed"
+    else
+      print_warning "Could not install — try manually: ${GREEN}claude plugin install claude-md-management${RESET}"
+    fi
+  else
+    print_info "Skipped"
+  fi
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Step 9: Verification
+# ─────────────────────────────────────────────────────────────────────────────
+
+step_verification() {
+  print_header "Step 9: Verification"
+
+  local pass=0
+  local fail=0
+
+  # Prerequisites
+  echo -e "  ${BOLD}Prerequisites${RESET}"
+  if command -v claude &>/dev/null; then
+    print_success "claude CLI"
+    ((pass++))
+  else
+    print_error "claude CLI not found"
+    ((fail++))
+  fi
+
+  if command -v uv &>/dev/null; then
+    print_success "uv installed"
+    ((pass++))
+  else
+    print_error "uv not found"
+    ((fail++))
+  fi
+
+  if command -v uv &>/dev/null && uv run python -c "import mcp; import yaml" &>/dev/null; then
+    print_success "Python dependencies (mcp, pyyaml)"
+    ((pass++))
+  else
+    print_error "Python dependencies — run: uv sync"
+    ((fail++))
+  fi
+
+  # Knowledge base
+  echo ""
+  echo -e "  ${BOLD}Knowledge Base${RESET}"
+  local dir_count
+  dir_count=$(find "$REPO_DIR/knowledge" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')
+  if [[ "$dir_count" -ge 8 ]]; then
+    print_success "knowledge/ subdirectories ($dir_count dirs)"
+    ((pass++))
+  else
+    print_error "knowledge/ subdirectories (found $dir_count, expected 8)"
+    ((fail++))
+  fi
+
+  # Template files
+  echo ""
+  echo -e "  ${BOLD}Template Files${RESET}"
+  local templates=(
+    "knowledge/about-me/about-me.md"
+    "knowledge/company-context/company-overview.md"
+    "GOALS.md"
+    "BACKLOG.md"
+  )
+  for tmpl in "${templates[@]}"; do
+    if [[ -f "$REPO_DIR/$tmpl" ]]; then
+      print_success "$tmpl"
+      ((pass++))
+    else
+      print_error "$tmpl — missing"
+      ((fail++))
+    fi
+  done
+
+  # AI config
+  echo ""
+  echo -e "  ${BOLD}AI Configuration${RESET}"
+  if [[ -d "$REPO_DIR/.claude/skills" ]]; then
+    print_success ".claude/skills/ directory"
+    ((pass++))
+  else
+    print_error ".claude/skills/ directory missing"
+    ((fail++))
+  fi
+
+  if [[ -f "$REPO_DIR/.mcp.json" ]] && grep -q '"pm-tasks"' "$REPO_DIR/.mcp.json" 2>/dev/null; then
+    print_success ".mcp.json with pm-tasks"
+    ((pass++))
+  else
+    print_error ".mcp.json missing or pm-tasks not configured"
+    ((fail++))
+  fi
+
+  # Summary
+  echo ""
+  echo -e "  ──────────────────────────────"
+  echo -e "  ${GREEN}${pass} passed${RESET}  ${fail:+${RED}${fail} failed${RESET}}"
+  if [[ "$fail" -gt 0 ]]; then
+    echo -e "  ${DIM}Fix the items above, then re-run ./setup.sh to verify${RESET}"
+  fi
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Next Steps
+# ─────────────────────────────────────────────────────────────────────────────
+
+print_next_steps() {
+  print_header "Setup Complete — Next Steps"
+
+  echo -e "  ${BOLD}1.${RESET} Fill in your context files ${DIM}(15-20 min)${RESET}"
+  echo -e "     - knowledge/about-me/about-me.md"
+  echo -e "     - knowledge/company-context/company-overview.md"
+  echo ""
+  echo -e "  ${BOLD}2.${RESET} Define your quarterly goals in GOALS.md"
+  echo ""
+  echo -e "  ${BOLD}3.${RESET} Start brain-dumping to BACKLOG.md"
+  echo ""
+  echo -e "  ${BOLD}4.${RESET} Say ${GREEN}/process-backlog${RESET} when you're ready to organize"
+  echo ""
+  echo -e "  ${BOLD}5.${RESET} Browse & install plugins as needed ${DIM}(optional)${RESET}"
+  echo -e "     ${DIM}https://github.com/${MARKETPLACE_REPO}${RESET}"
+  echo -e "     ${GREEN}claude plugin install ${DIM}<plugin-name>${RESET}${GREEN}@sams-product-plugins${RESET}"
+  echo ""
+  echo -e "  ${DIM}See README.md for full usage guide${RESET}"
+  echo ""
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Main
+# ─────────────────────────────────────────────────────────────────────────────
+
+main() {
+  print_banner
+  step_platform_check
+  step_prerequisites
+  step_python_deps
+  step_knowledge_dirs
+  step_template_files
+  step_mcp_config
+  step_cursor_setup
+  step_plugins
+  step_verification
+  print_next_steps
+}
+
+main "$@"

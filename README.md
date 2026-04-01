@@ -3,7 +3,7 @@
 > Turn your AI assistant into a product management partner. Process ideas, generate specs, prioritize strategically.
 
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-orange.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
-[![Star this repo](https://img.shields.io/github/stars/skawsarani/sams-product-os?style=social)](https://github.com/skawsarani/sams-product-os)
+[![Star this repo](https://img.shields.io/github/stars/samkawsarani/sams-product-os?style=social)](https://github.com/samkawsarani/sams-product-os)
 
 
 *Quick links:* [Quick Start](#quick-start) · [Directory Structure](#directory-structure) · [Core Workflow](#core-workflow) · [Common Commands](#common-commands) · [Best Practices](#best-practices)
@@ -12,7 +12,7 @@
 
 ## What is This?
 
-Sams Product OS is a simple system that turns AI assistants (Cursor, Claude Code) into PM tools:
+Sams Product OS is an AI-powered personal operating system to organize my PM workspace
 
 - **Priority-Focused Workflow** - Max 3 P0 tasks keeps you focused
 - **Backlog Processing** - Brain dump → Organized tasks/initiatives
@@ -27,26 +27,22 @@ Sams Product OS is a simple system that turns AI assistants (Cursor, Claude Code
 ### 1. Clone the Repo
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/samkawsarani/sams-product-os.git
 cd sams-product-os
 ```
 
 ### 2. Prerequisites
 
-- **macOS**: Install [Homebrew](https://brew.sh) — the setup skill handles the rest
-- **Other platforms**: Install [uv](https://docs.astral.sh/uv/), [bun](https://bun.sh), and [qmd](https://github.com/tobi/qmd) manually
+- **macOS**: Install [Homebrew](https://brew.sh) — the setup script handles the rest
+- **Other platforms**: Install [uv](https://docs.astral.sh/uv/) and [bun](https://bun.sh) manually
 
 ### 3. Run Setup
 
-Open in your AI assistant and say:
-
-```
-Set up my product OS
+```bash
+./setup.sh
 ```
 
-The AI will install dependencies, create your workspace, configure MCP, and verify everything works.
-
-> Setup configures for Claude Code by default. Say "set up for Cursor too" if you use Cursor.
+The interactive setup will install dependencies, create your workspace, configure MCP, and verify everything works. It will also walk you through optional Cursor setup and plugin installation.
 
 ### 4. Start Using It
 
@@ -71,13 +67,6 @@ AI categorizes into:
 - **Initiatives** → `initiatives/` (strategic ideas to explore)
 - **References** → `knowledge/references/` (useful context)
 
-**Generate docs when ready:**
-```
-/write-doc prd mobile-performance
-/write-doc spec mobile-performance
-/write-doc user-stories mobile-performance
-```
-
 ---
 
 ## Directory Structure
@@ -93,18 +82,18 @@ sams-product-os/
 │           └── README.md   # MCP tool documentation
 │
 ├── evals/                  # AI agent tests & evaluation
-├── tasks/                  # Your personal tasks with archived backlog
+├── tasks/                  # Your personal tasks
 ├── knowledge/              # Persistent context & references for your AI agent
 ├── meetings/               # Meeting notes & transcripts
 ├── initiatives/            # Strategic initiatives & groomed requests
 ├── prototypes/             # Your vibe coded apps & prototypes
 ├── _temp/                  # Drop zone for files in transit or scratch work
 ├── templates/              # Document templates
+├── setup.sh                # Interactive setup script
 ├── BACKLOG.md              # Daily brain dump inbox of future work
 ├── GOALS.md                # Ownership areas & quarterly goals
 ├── AGENTS.md               # Your AI agent instructions
 ├── CLAUDE.md               # Points to AGENTS.md (agent instructions for Claude Code)
-├── TOOLS.md                # MCP tool & CLI integration reference for AI agent
 ├── VOICE-GUIDE.md          # Your writing style (optional)
 └── config.yaml             # Customizable configuration for your AI agent
 
@@ -121,7 +110,6 @@ sams-product-os/
 - `evals/` folder (automated tests)
 - `.claude/skills/` folder (AI agent capabilities)
 - `AGENTS.md`
-- `TOOLS.md`
 
 **Gitignored (your data):**
 - `BACKLOG.md`
@@ -192,76 +180,9 @@ When `/process-backlog` would exceed caps, AI asks you to deprioritize.
 
 ## Skills
 
-Skills are specialized tools AI agents uses automatically:
+This is the base project with core skills built in. Install additional skills from the plugin marketplace to extend your capabilities.
 
-**Write Doc (`write-doc` skill):**
-- `/write-doc prd [name]`, `/write-doc spec [name]`, `/write-doc brief [name]`
-- `/write-doc user-stories [name]`, `/write-doc decision [topic]`
-- Auto-generate mode for immediate drafts, co-authoring mode for iterative writing
-
-**Analyze Metrics (`analyze-metrics` skill):**
-- Analyze product metrics (usage, retention, conversion, funnels)
-- Apply PM frameworks (AARRR, cohort analysis, PMF, North Star)
-- Calculate metrics, identify patterns, and provide actionable recommendations
-- Works with CSV, JSON, SQL results, or dashboard descriptions
-
-**Write UX Copy (`write-ux-copy` skill):**
-- Create UI copy, error messages, microcopy, notifications
-- English interface text and UX writing
-
-**Translate i18n (`translate-i18n` skill):**
-- French translation (Canadian/European)
-- UI localization and cultural adaptation
-
-**Analyze Research (`analyze-research` skill):**
-- Analyze interviews and transcripts
-- Synthesize research, create personas
-
-**Analyze Competitor (`analyze-competitor` skill):**
-- Analyze single competitor or multiple competitors in parallel
-- Features, pricing, strengths, gaps, comparison matrix
-
-**Analyze Calendar (`analyze-calendar` skill):**
-- Analyze Google Calendar events, identify focus blocks, meeting prep
-- Meeting classification, schedule intelligence, back-to-back warnings
-- Task-to-time-block alignment with PM task system
-
-**Build Prototype (`build-prototype` skill):**
-- Build working prototypes from specs
-- React, TypeScript, Shadcn/ui
-
-**Write Dev Docs (`write-dev-docs` skill):**
-- `/write-dev-docs api-reference [resource]`, `/write-dev-docs guide [name]`
-- `/write-dev-docs recipe [use-case]`, `/write-dev-docs postman [api-name]`
-- Stripe-quality API references, integration guides, code recipes, Postman collections
-- Supports OpenAPI specs, code, natural language, and PRD inputs
-
-**Write Comms (`write-comms` skill):**
-- 3P updates, stakeholder reports, newsletters, FAQs, incident reports
-- Structured workflows with voice guide integration and quality checks
-
-**Build MCP (`build-mcp` skill):**
-- Create MCP servers for external integrations
-- Python (FastMCP) or Node/TypeScript
-
-**Create Skill (`create-skill` skill):**
-- Create new skills to extend AI capabilities
-
-**Setup Product OS (`setup-product-os` skill):**
-- Guided workspace setup: prerequisites, directories, templates, MCP, search
-- Platform-aware (automated on macOS, manual guide on other platforms)
-
-**Daily Pulse (`daily-pulse` skill):**
-- Morning briefing with calendar intelligence, tasks, and goal alignment
-- Variations: tomorrow, week, time-constrained, focus mode, context recovery
-
-**Weekly Review (`weekly-review` skill):**
-- Reflect on the week, check goal progress, plan next week
-- Quick mode for condensed output
-
-**Weekly Recap (`weekly-recap` skill):**
-- Exec-ready weekly update structured around initiatives
-- Quick and Slack formatting modes
+### Built-in Skills
 
 **View Tasks (`view-tasks` skill):**
 - `/view-tasks today`: due today and overdue tasks
@@ -272,18 +193,19 @@ Skills are specialized tools AI agents uses automatically:
 - Process BACKLOG.md into tasks, initiatives, references
 - Deduplication and priority cap enforcement
 
-**Process Meetings (`process-meetings` skill):**
-- Extract action items from meeting transcripts
-- Parallel processing for 3+ transcripts
+### Plugin Marketplace
 
-**Commit (`commit` skill):**
-- Conventional commits with emoji prefixes and smart splitting
+Browse and install additional skills (analytics, grooming, research, writing, and more) from the [Sams Product Plugins](https://github.com/samkawsarani/sams-product-plugins) marketplace.
 
-**Push (`push` skill):**
-- Push to remote with upstream tracking and force-push safety
+**Add the marketplace:**
+```
+/plugin marketplace add samkawsarani/sams-product-plugins
+```
 
-**Create PR (`create-pr` skill):**
-- Create pull requests with comprehensive summary and test plan
+**Install a plugin:**
+```
+/plugin install {PLUGIN-NAME}@sams-product-plugins
+```
 
 ---
 
@@ -306,26 +228,6 @@ Configure your AI assistant to use `tools/mcp-servers/task-manager/server.py` (s
 - Auto-categorization and priority enforcement
 - Find stale/overdue tasks, prune completed ones
 
-See TOOLS.md for full MCP tool reference.
-
----
-
-## Integrations (Optional)
-
-Read-only API clients for pulling context from external services:
-
-| Service | Capabilities |
-|---------|--------------|
-| **Slack** | Messages, channels, threads, users, search, channel summaries, find unanswered |
-| **Notion** | Pages, databases, blocks, search |
-| **Linear** | Issues, projects, initiatives, cycles, labels, customers, customer needs |
-| **Google Calendar** | Events, calendars |
-| **Google Drive** | Files, folders, permissions, search |
-| **HubSpot** | Contacts, companies, deals, tickets, products, orders, invoices |
-| **Common** | URL parser for Slack, Linear, Google, Notion URLs |
-
-See `tools/integrations/README.md` for full API reference.
-
 ---
 
 ## Common Commands
@@ -334,13 +236,9 @@ See `tools/integrations/README.md` for full API reference.
 - "What should I work on today?" - Review P0/P1 tasks
 - `/process-backlog` - Process ideas into tasks/initiatives
 - `/view-tasks today` - Quick view of due/overdue tasks
-- `/daily-pulse` - Morning briefing with calendar intelligence, tasks, and goals
 
 **Weekly:**
 - `/view-tasks upcoming` - Tasks due in next 7 days
-- `/weekly-review` - Review the week, plan next week
-- `/weekly-recap` - Generate exec-ready initiative recap for manager/execs
-- `/process-meetings` - Extract action items from recent meeting transcripts
 
 **Tasks:**
 - `/view-tasks all` - View all tasks with filters
@@ -348,34 +246,7 @@ See `tools/integrations/README.md` for full API reference.
 - "Find stale tasks"
 - "Prune completed tasks" - Delete tasks older than 90 days
 
-**Documents:**
-- `/write-doc prd [name]` - Generate PRD
-- `/write-doc spec [name]` - Generate spec
-- `/write-doc brief [name]` - Generate brief
-- `/write-doc user-stories [name]` - Generate user stories
-- `/write-doc decision [topic]` - Generate decision doc
-
-**Developer Docs:**
-- `/write-dev-docs api-reference [resource]` - Generate API reference
-- `/write-dev-docs guide [name]` - Generate integration guide
-- `/write-dev-docs recipe [use-case]` - Generate code recipe
-- `/write-dev-docs postman [api-name]` - Generate Postman collection
-
-**Research:**
-- `/analyze-competitor [names]` - Research competitors, generate comparison matrix
-
-**Git:**
-- `/commit` - Commit with conventional format and emoji
-- `/create-pr` - Create pull request
-- `/push` - Push to remote
-
-**Building:**
-- `/create-skill` - Create a new skill
-- `/build-mcp` - Create a new MCP server
-
 **Natural language works too:**
-- "Create a spec for the mobile performance initiative"
-- "Analyze the user interviews in meetings/"
 - "What are my P0 tasks?"
 
 ---
@@ -500,19 +371,18 @@ What patterns have changed? What's new?
 ## Best Practices
 
 **Daily:**
-- Morning: `/daily-pulse` for calendar + task briefing
-- Throughout day: Brain dump to BACKLOG.md
-- Weekly: `/process-backlog` to process
+- Brain dump to BACKLOG.md throughout the day
+- `/process-backlog` weekly to organize
 
 **Context:**
 - Start small - add context as you go
-- Process backlog weekly, not daily
 - Update voice samples quarterly
 
 **Tips:**
 - Use @ mentions: `@knowledge/product-strategy/`
 - Process 3-5 backlog items at a time, not 50
 - Let priority caps guide you - max 3 P0 tasks
+- Install additional skills from the plugin marketplace
 
 **Troubleshooting:**
 - Generic responses? Add more to `knowledge/`

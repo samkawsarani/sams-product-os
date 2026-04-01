@@ -18,6 +18,7 @@ IMPORTANT — these override default behavior:
 - **Match voice.** Use `VOICE-GUIDE.md` (if present) or `knowledge/voice-samples/` for tone.
 - **Check templates first.** Look in `templates/` before creating new doc types.
 - **Never delete or rewrite user notes** outside the defined flow.
+- **Anticipate next actions.** After completing a task, suggest 3 options: one creative idea the user wouldn't think to ask, and two natural follow-ups. Keep it short if the user is moving fast; suggest bigger ideas if they're exploring. Skip when mid-flow or rapid-fire.
 
 ## Context Sources
 
@@ -26,7 +27,7 @@ IMPORTANT — these override default behavior:
 | `knowledge/` | Persistent context: strategy, frameworks, company info, references, voice samples |
 | `meetings/` | Meeting transcripts and notes from 1:1s, syncs, stakeholder meetings, etc.|
 | `initiatives/` | Strategic initiatives and groomed requests (`initiatives/groomed-requests/`) |
-| `tasks/` | Active tasks, archived backlogs (`tasks/_archived/`), and completed tasks (`tasks/_archived/completed/`) |
+| `tasks/` | Active tasks and completed tasks (`tasks/_archived/`) |
 | `GOALS.md` | Ownership areas and quarterly goals |
 | `BACKLOG.md` | Daily brain dump inbox of future work|
 | `_temp/` | Drop zone for files in transit or scratch work |
@@ -34,11 +35,6 @@ IMPORTANT — these override default behavior:
 ## Skills
 
 Skills are auto-invoked. Tell the user which skill you're using. When a SKILL.md specifies required search sources, you MUST search ALL listed sources before producing output — note any unavailable sources.
-
-## Tools
-
-Prefer MCP tools over file operations and CLI when available. For CLI integrations: `uv run -m tools.integrations.<name>`. See @TOOLS.md for full tool details.
-- **Search context**: Use `qmd query` (via Bash) to search across knowledge/, meetings/, initiatives/, and tasks/ before generating content. Prefer `qmd query` for semantic questions, `qmd search` for keyword lookups.
 
 ## Task System
 
@@ -51,10 +47,6 @@ Prefer MCP tools over file operations and CLI when available. For CLI integratio
 - Each task should reference the relevant goal from `GOALS.md` in its Context section
 - If no goal fits, ask whether to create a new goal entry
 - Remind the user when active tasks don't support any current goals
-
-## Data & Reporting
-
-When generating metrics reports, always verify: (1) date ranges match the requested period, (2) success rates use combined/aggregate data not individual segments, (3) incident data is from the correct week, (4) sports event periods are current. Cross-check all numbers.
 
 ## Git
 

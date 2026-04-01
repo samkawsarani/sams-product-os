@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Automated tests for SAMS PRODUCT OS Task Manager MCP Server
+Automated tests for Task Manager MCP Server
 
 Tests cover:
 - Ambiguity detection
@@ -8,6 +8,7 @@ Tests cover:
 - Task content generation (all categories)
 - Similarity calculation
 - Auto-categorization
+- Backlog parsing
 - Helper functions
 
 Run with: python3 -m pytest test_server.py -v
@@ -18,7 +19,7 @@ import tempfile
 import shutil
 from pathlib import Path
 from unittest.mock import patch
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from server import (
     is_ambiguous,
@@ -29,9 +30,12 @@ from server import (
     load_config,
     archive_task,
     write_task_file,
-    parse_yaml_frontmatter,
     get_all_tasks,
-    TASKS_DIR,
+    parse_backlog_items,
+    slugify,
+    generate_initiative_content,
+    generate_reference_content,
+    find_related_initiative,
 )
 
 
@@ -67,8 +71,8 @@ class TestAmbiguityDetection:
         clear_items = [
             "Add user authentication to the app",
             "Update the API documentation",
-            "Email Sarah about Q4 roadmap",
-            "Review the PRD draft for mobile app",
+            "Email the team about the roadmap",
+            "Review the design draft for onboarding",
             "Research competitor pricing models",
         ]
 
@@ -124,10 +128,10 @@ class TestTaskContentGeneration:
 
     def test_outreach_template(self):
         """Outreach tasks get appropriate sections"""
-        content = generate_task_content("Email Sarah", "outreach", "Q4 planning")
+        content = generate_task_content("Email the team", "outreach", "Sprint planning")
 
         assert "## Context" in content
-        assert "Q4 planning" in content
+        assert "Sprint planning" in content
         assert "## Contact Details" in content
         assert "Who:" in content
         assert "Channel:" in content
@@ -419,7 +423,7 @@ class TestEdgeCases:
 
     def test_unicode_in_title(self):
         """Unicode characters are handled correctly"""
-        result, _ = is_ambiguous("Fix authentication bug in français locale")
+        result, _ = is_ambiguous("Fix authentication bug in localised settings")
         assert result is False
 
     def test_empty_config_keywords(self):
@@ -443,7 +447,7 @@ class TestArchiveTask:
         shutil.rmtree(self.temp_dir)
 
     def test_archive_moves_file(self):
-        """archive_task() moves file to _archived/completed/ with date prefix"""
+        """archive_task() moves file to _archived/ with date prefix"""
         # Create a task file
         task_file = self.temp_tasks / "test-task.md"
         task_file.write_text("---\ntitle: Test Task\nstatus: d\n---\n\nBody\n")
@@ -458,15 +462,14 @@ class TestArchiveTask:
         assert archived_path.exists()
         today = datetime.now().strftime("%Y-%m-%d")
         assert archived_path.name == f"{today}-test-task.md"
-        assert archived_path.parent.name == "completed"
-        assert archived_path.parent.parent.name == "_archived"
+        assert archived_path.parent.name == "_archived"
 
     def test_archive_creates_directory(self):
-        """archive_task() creates _archived/completed/ if it doesn't exist"""
+        """archive_task() creates _archived/ if it doesn't exist"""
         task_file = self.temp_tasks / "test-task.md"
         task_file.write_text("---\ntitle: Test\n---\n\nBody\n")
 
-        archive_dir = self.temp_tasks / "_archived" / "completed"
+        archive_dir = self.temp_tasks / "_archived"
         assert not archive_dir.exists()
 
         with patch("server.TASKS_DIR", self.temp_tasks):
@@ -507,7 +510,7 @@ class TestGetAllTasksWithArchived:
         }, "Active body")
 
         # Create an archived task
-        archive_dir = self.temp_tasks / "_archived" / "completed"
+        archive_dir = self.temp_tasks / "_archived"
         archive_dir.mkdir(parents=True)
         archived_file = archive_dir / "2026-02-20-done-task.md"
         write_task_file(archived_file, {
@@ -546,6 +549,446 @@ class TestGetAllTasksWithArchived:
         archived = [t for t in tasks if t.get("archived")]
         assert len(archived) == 1
         assert archived[0]["title"] == "Done Task"
+
+
+class TestParseBacklogItems:
+    """Test block-based backlog parser"""
+
+    def test_heading_with_bullets_expands(self):
+        """Heading + bullets: each bullet becomes its own item with heading as context"""
+        content = """# Backlog
+## Legacy Migration
+- Need to talk to the team about migration plans
+- Define missing capabilities
+"""
+        items = parse_backlog_items(content)
+        assert len(items) == 2
+        assert items[0]["title"] == "Need to talk to the team about migration plans"
+        assert "Legacy Migration" in items[0]["description"]
+        assert items[1]["title"] == "Define missing capabilities"
+
+    def test_h3_headings(self):
+        """### headings should also work as item delimiters"""
+        content = """# Backlog
+### Scheduled Downtime Handling
+- How do we handle jobs during maintenance windows
+
+### New Payment Methods
+- What use cases beyond credit cards?
+"""
+        items = parse_backlog_items(content)
+        assert len(items) == 2
+        assert items[0]["title"] == "How do we handle jobs during maintenance windows"
+        assert items[1]["title"] == "What use cases beyond credit cards?"
+
+    def test_flat_bullets_no_headers(self):
+        """Just bullet points, no headers at all"""
+        content = """# Backlog
+
+- Email the team about the roadmap
+- Review the PRD draft
+- Research competitor pricing
+"""
+        items = parse_backlog_items(content)
+        assert len(items) == 3
+        assert items[0]["title"] == "Email the team about the roadmap"
+        assert items[1]["title"] == "Review the PRD draft"
+        assert items[2]["title"] == "Research competitor pricing"
+
+    def test_plain_text_blocks(self):
+        """Plain text separated by blank lines"""
+        content = """# Backlog
+
+Email the team about the roadmap
+
+Look into mobile perf issues
+Users complaining about slow startup times
+"""
+        items = parse_backlog_items(content)
+        assert len(items) == 2
+        assert items[0]["title"] == "Email the team about the roadmap"
+        assert items[1]["title"] == "Look into mobile perf issues"
+        assert "slow startup" in items[1]["description"]
+
+    def test_checklist_skips_done(self):
+        """Checked [x] items are skipped, unchecked [ ] are kept"""
+        content = """# Backlog
+
+- [x] Setup tool A
+- [ ] Setup tool B
+- [x] Update all configs
+- [ ] Setup tool C
+"""
+        items = parse_backlog_items(content)
+        titles = [i["title"] for i in items]
+        assert "Setup tool B" in titles
+        assert "Setup tool C" in titles
+        assert "Setup tool A" not in titles
+        assert "Update all configs" not in titles
+
+    def test_checklist_under_heading_skips_done(self):
+        """Checked [x] items under a heading are also skipped"""
+        content = """# Backlog
+### Setup TODO
+- [x] Setup tool A
+- [ ] Setup tool B
+- [x] Update all configs
+- [ ] Setup tool C
+"""
+        items = parse_backlog_items(content)
+        titles = [i["title"] for i in items]
+        assert "Setup tool B" in titles
+        assert "Setup tool C" in titles
+        assert "Setup tool A" not in titles
+        assert "Update all configs" not in titles
+        # Heading context preserved
+        assert all("Setup TODO" in i["description"] for i in items)
+
+    def test_mixed_headings_and_bullets(self):
+        """Mix of headed sections and standalone bullets"""
+        content = """# Backlog
+### Legacy Migration
+- Talk to the team about plans
+
+- Random standalone task here
+
+### New Payment Methods
+- Explore use cases
+"""
+        items = parse_backlog_items(content)
+        assert len(items) == 3
+        titles = [i["title"] for i in items]
+        assert "Talk to the team about plans" in titles
+        assert "Random standalone task here" in titles
+        assert "Explore use cases" in titles
+
+    def test_heading_with_text_description(self):
+        """Heading followed by prose, not bullets"""
+        content = """# Backlog
+## Strategy Feedback
+Overall, this is good. Few thoughts on ownership and dependency mapping.
+Who owns each pillar?
+"""
+        items = parse_backlog_items(content)
+        assert len(items) == 1
+        assert items[0]["title"] == "Strategy Feedback"
+        assert "ownership" in items[0]["description"]
+
+    def test_empty_backlog(self):
+        """Empty backlog returns no items"""
+        items = parse_backlog_items("# Backlog\n")
+        assert len(items) == 0
+
+    def test_skips_short_items(self):
+        """Items shorter than 3/5 chars are skipped"""
+        content = """# Backlog
+
+- Hi
+- Do this very important task
+"""
+        items = parse_backlog_items(content)
+        assert len(items) == 1
+        assert items[0]["title"] == "Do this very important task"
+
+    def test_h2_grouping_header_with_h3_items(self):
+        """h2 grouping header followed by h3 items (real-world format)"""
+        content = """# Backlog
+## Week of March 10
+### Task One
+- Details about task one
+
+### Task Two
+- Details about task two
+"""
+        items = parse_backlog_items(content)
+        titles = [i["title"] for i in items]
+        # Bullets under headings expand — title is the bullet text
+        assert "Details about task one" in titles
+        assert "Details about task two" in titles
+        # Heading context is preserved in description
+        task_one = [i for i in items if i["title"] == "Details about task one"][0]
+        assert "Task One" in task_one["description"]
+
+    def test_url_in_task_not_treated_as_reference(self):
+        """Items with URLs should keep their text as title, URL in description"""
+        content = """# Backlog
+### Setup TODO
+- [ ] Setup Tool A https://example.com/tool-a
+- [ ] Setup Tool B https://example.com/tool-b
+"""
+        items = parse_backlog_items(content)
+        assert len(items) == 2
+        # URL should be part of the title text, not cause misclassification
+        assert "Setup Tool A" in items[0]["title"]
+        assert "Setup Tool B" in items[1]["title"]
+
+    def test_asterisk_and_plus_bullets(self):
+        """Support * and + bullet styles"""
+        content = """# Backlog
+
+* Email the team about goals
++ Review the design draft
+- Research competitor trends
+"""
+        items = parse_backlog_items(content)
+        assert len(items) == 3
+
+
+class TestSlugify:
+    """Test slugify helper function"""
+
+    def test_simple_title(self):
+        assert slugify("Fix Auth Bug") == "fix-auth-bug"
+
+    def test_special_characters(self):
+        assert slugify("Email Team (Q4)!") == "email-team-q4"
+
+    def test_multiple_spaces(self):
+        assert slugify("Fix   the   bug") == "fix-the-bug"
+
+    def test_leading_trailing_special(self):
+        assert slugify("---hello world---") == "hello-world"
+
+    def test_empty_string(self):
+        assert slugify("") == ""
+
+    def test_unicode(self):
+        result = slugify("Café résumé")
+        assert "caf" in result
+
+
+class TestGenerateInitiativeContent:
+    """Test initiative content generation"""
+
+    def test_basic_content(self):
+        content = generate_initiative_content("Mobile Performance", "Users complaining about slow load times")
+        assert "# Mobile Performance" in content
+        assert "## Summary" in content
+        assert "Users complaining about slow load times" in content
+        assert "## Opportunity" in content
+        assert "## Status" in content
+        assert "## Open Questions" in content
+
+    def test_empty_description(self):
+        content = generate_initiative_content("Test Initiative", "")
+        assert "# Test Initiative" in content
+        assert "[Brief description of this initiative]" in content
+
+    def test_format_matches_existing(self):
+        """Output should have the same sections as existing initiative files"""
+        content = generate_initiative_content("Test", "Desc")
+        assert "# Test" in content
+        assert "## Summary" in content
+        assert "## Opportunity" in content
+        assert "## Status" in content
+        assert "Early idea" in content
+        assert "## Open Questions" in content
+
+
+class TestGenerateReferenceContent:
+    """Test reference content generation"""
+
+    def test_with_url(self):
+        content = generate_reference_content(
+            "API Design Article",
+            "Found article https://example.com/api-design about best practices"
+        )
+        assert "# API Design Article" in content
+        assert "**Source:** https://example.com/api-design" in content
+        assert "Found article" in content
+
+    def test_without_url(self):
+        content = generate_reference_content("Competitor Notes", "Some notes about competitors")
+        assert "# Competitor Notes" in content
+        assert "**Source:** [URL]" in content
+        assert "Some notes about competitors" in content
+
+    def test_empty_description(self):
+        content = generate_reference_content("Empty Ref", "")
+        assert "# Empty Ref" in content
+        assert "**Source:** [URL]" in content
+
+
+class TestFindRelatedInitiative:
+    """Test find_related_initiative helper"""
+
+    def setup_method(self):
+        self.temp_dir = tempfile.mkdtemp()
+        self.temp_initiatives = Path(self.temp_dir) / "initiatives"
+        self.temp_initiatives.mkdir()
+
+        # Create some initiative folders
+        (self.temp_initiatives / "migrate-legacy").mkdir()
+        (self.temp_initiatives / "mobile-performance").mkdir()
+        (self.temp_initiatives / "groomed-requests").mkdir()  # Should be ignored
+
+    def teardown_method(self):
+        shutil.rmtree(self.temp_dir)
+
+    def test_finds_matching_folder(self):
+        with patch("server.INITIATIVES_DIR", self.temp_initiatives):
+            result = find_related_initiative("Legacy migration timeline", "Details about legacy system migration")
+        assert result is not None
+        assert result.name == "migrate-legacy"
+
+    def test_no_match_returns_none(self):
+        with patch("server.INITIATIVES_DIR", self.temp_initiatives):
+            result = find_related_initiative("Unrelated topic", "Nothing matches here")
+        assert result is None
+
+    def test_ignores_groomed_requests(self):
+        with patch("server.INITIATIVES_DIR", self.temp_initiatives):
+            result = find_related_initiative("groomed requests info", "About groomed requests")
+        assert result is None
+
+    def test_handles_missing_directory(self):
+        with patch("server.INITIATIVES_DIR", Path("/nonexistent")):
+            result = find_related_initiative("Anything", "Description")
+        assert result is None
+
+    def test_matches_related_folder(self):
+        with patch("server.INITIATIVES_DIR", self.temp_initiatives):
+            result = find_related_initiative("Mobile performance research", "Looking into performance issues")
+        assert result is not None
+        assert result.name == "mobile-performance"
+
+
+class TestStatusTransitions:
+    """Test valid status transitions via file write/read roundtrip."""
+
+    def setup_method(self):
+        self.temp_dir = tempfile.mkdtemp()
+        self.temp_tasks = Path(self.temp_dir) / "tasks"
+        self.temp_tasks.mkdir()
+
+    def teardown_method(self):
+        shutil.rmtree(self.temp_dir)
+
+    @pytest.mark.parametrize("from_status,to_status", [
+        ("n", "s"),  # not started -> started
+        ("s", "b"),  # started -> blocked
+        ("b", "s"),  # blocked -> started
+        ("s", "d"),  # started -> done
+        ("n", "d"),  # not started -> done (skip started)
+        ("d", "n"),  # done -> not started (reopen)
+    ])
+    def test_status_transitions(self, from_status: str, to_status: str):
+        """Test all valid status transitions work."""
+        task_file = self.temp_tasks / f"transition-{from_status}-{to_status}.md"
+        write_task_file(task_file, {
+            "title": f"Transition {from_status} to {to_status}",
+            "priority": "P2",
+            "status": from_status,
+            "category": "technical",
+            "keywords": [],
+            "created_date": datetime.now().isoformat(),
+            "updated_date": datetime.now().isoformat(),
+        }, "")
+
+        from server import parse_yaml_frontmatter
+        fm, body = parse_yaml_frontmatter(task_file)
+        fm["status"] = to_status
+        write_task_file(task_file, fm, body)
+
+        content = task_file.read_text()
+        assert f"status: {to_status}" in content
+
+
+class TestTaskFileIntegrity:
+    """Test task file integrity after multiple operations."""
+
+    def setup_method(self):
+        self.temp_dir = tempfile.mkdtemp()
+        self.temp_tasks = Path(self.temp_dir) / "tasks"
+        self.temp_tasks.mkdir()
+
+    def teardown_method(self):
+        shutil.rmtree(self.temp_dir)
+
+    def test_multiple_updates_preserve_content(self):
+        """Multiple updates preserve all content."""
+        original_body = "## Context\nImportant context here.\n\n## Technical Details\n- Tech 1\n- Tech 2\n"
+        frontmatter = {
+            "title": "Integrity Test",
+            "priority": "P1",
+            "status": "n",
+            "category": "technical",
+            "keywords": ["test", "integrity"],
+            "created_date": datetime.now().isoformat(),
+            "updated_date": datetime.now().isoformat(),
+        }
+        task_file = self.temp_tasks / "integrity-test.md"
+        write_task_file(task_file, frontmatter, original_body)
+
+        from server import parse_yaml_frontmatter
+        for status in ["s", "b", "s", "d"]:
+            fm, body = parse_yaml_frontmatter(task_file)
+            fm["status"] = status
+            fm["updated_date"] = datetime.now().isoformat()
+            write_task_file(task_file, fm, body)
+
+        final_fm, final_body = parse_yaml_frontmatter(task_file)
+        assert final_fm["title"] == "Integrity Test"
+        assert final_fm["keywords"] == ["test", "integrity"]
+        assert "## Context" in final_body
+        assert "## Technical Details" in final_body
+
+    def test_special_characters_preserved(self):
+        """Special characters are preserved through updates."""
+        body = '## Context\nCode: `const x = { key: "value" };`\nURL: https://example.com/path?p=1&o=2\n'
+        task_file = self.temp_tasks / "special-chars.md"
+        write_task_file(task_file, {
+            "title": "Special chars test",
+            "priority": "P1",
+            "status": "n",
+            "category": "technical",
+            "keywords": [],
+            "created_date": datetime.now().isoformat(),
+            "updated_date": datetime.now().isoformat(),
+        }, body)
+
+        from server import parse_yaml_frontmatter
+        fm, read_body = parse_yaml_frontmatter(task_file)
+        fm["status"] = "s"
+        write_task_file(task_file, fm, read_body)
+
+        _, final_body = parse_yaml_frontmatter(task_file)
+        assert "https://example.com" in final_body
+        assert "const x = { key:" in final_body
+
+
+class TestClearBacklogSimplified:
+    """Test that clear_backlog just resets BACKLOG.md without archiving"""
+
+    def setup_method(self):
+        self.temp_dir = tempfile.mkdtemp()
+        self.temp_root = Path(self.temp_dir)
+        self.backlog_file = self.temp_root / "BACKLOG.md"
+        self.backlog_file.write_text("# Backlog\n\n- Item 1\n- Item 2\n")
+        # Create tasks/_archived to verify nothing gets written there
+        (self.temp_root / "tasks" / "_archived").mkdir(parents=True)
+
+    def teardown_method(self):
+        shutil.rmtree(self.temp_dir)
+
+    def test_clears_backlog(self):
+        """After clearing, BACKLOG.md should only have the header"""
+        import asyncio
+        from server import call_tool
+        with patch("server.PROJECT_ROOT", self.temp_root):
+            result = asyncio.run(call_tool("clear_backlog", {}))
+        assert self.backlog_file.read_text() == "# Backlog\n"
+        assert "cleared" in result[0].text.lower()
+
+    def test_no_archive_created(self):
+        """No archive file should be created"""
+        import asyncio
+        from server import call_tool
+        with patch("server.PROJECT_ROOT", self.temp_root):
+            asyncio.run(call_tool("clear_backlog", {}))
+        archive_dir = self.temp_root / "tasks" / "_archived"
+        archive_files = list(archive_dir.glob("*.md"))
+        assert len(archive_files) == 0
 
 
 if __name__ == "__main__":

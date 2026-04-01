@@ -1,7 +1,7 @@
 [project]
 name = "sams-product-os"
 version = "0.1.0"
-description = "A personal operating system for Claude Code/Cursor - how I organize my PM workspace"
+description = "AI powered personal operating system - how I organize my PM workspace"
 readme = "README.md"
 authors = [
     { name = "Sam Kawsarani" }
@@ -13,13 +13,6 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-integrations = [
-    "httpx>=0.27.0",
-    "python-dotenv>=1.0.0",
-    "google-auth>=2.0.0",
-    "google-auth-oauthlib>=1.0.0",
-    "google-api-python-client>=2.0.0",
-]
 evals = [
     "pytest>=7.0.0",
     "anthropic>=0.39.0",
@@ -29,7 +22,7 @@ dev = [
     "pytest>=7.0.0",
 ]
 all = [
-    "sams-pm-os[integrations,evals,dev]",
+    "sams-product-os[evals,dev]",
 ]
 
 [tool.setuptools.packages.find]

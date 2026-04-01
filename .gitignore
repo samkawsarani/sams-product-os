@@ -28,19 +28,19 @@ Thumbs.db
 .vscode/
 .obsidian/
 .cursor/
-.claude/*
-!.claude/skills/
 .idea/
 *.swp
 *.swo
+
+# Claude Code
+.claude/*
+!.claude/skills/
+!.claude/settings.json
 
 # Environment
 .env
 .env.local
 .venv
-
-# Secrets folder (OAuth credentials, tokens, etc.)
-.secrets/
 
 # Logs
 *.log

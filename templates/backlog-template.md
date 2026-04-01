@@ -12,7 +12,7 @@ Example of how to use BACKLOG.md for capturing raw ideas.
    - **Opportunities** → `knowledge/opportunities/` folder (strategic ideas to explore)
    - **Tasks** → `tasks/` folder (actionable items)
    - **References** → `knowledge/references/` (useful info)
-   - **Uncategorized** → Archived in `tasks/_archived/YYYY-MM-DD-backlog.md` (meeting notes, random thoughts)
+   - **Uncategorized** → Discarded (meeting notes, random thoughts)
 4. **Review** - Adjust priorities and add details
 
 ---

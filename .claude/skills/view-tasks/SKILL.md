@@ -1,6 +1,7 @@
 ---
 name: view-tasks
-description: Displays task views with optional arguments for different views. Pass 'today' for due/overdue tasks, 'upcoming' for next 7 days, or 'all' for complete task list with optional filters by priority, status, or category. Invoked when asked about tasks, what's due, or task status.
+model: haiku
+description: Displays task views with optional arguments for different views. Pass 'today' for due/overdue tasks, 'upcoming' for next 7 days, or 'all' for complete task list with optional filters by priority, status, or category. Invoked when asked about tasks, what's due, task status, or when user says "show me my tasks" or "what am I working on".
 allowed-tools: find_overdue_tasks, list_tasks, get_task_summary, Glob, Read
 argument-hint: "[view] — views: today, upcoming, all. Optional filters: priority, status, category"
 ---
@@ -8,7 +9,7 @@ argument-hint: "[view] — views: today, upcoming, all. Optional filters: priori
 ## Context
 
 Tasks are stored in markdown files in the `tasks/` directory with YAML frontmatter containing priority, status, due_date, category.
-Done tasks are auto-archived to `tasks/_archived/completed/` when marked as done.
+Done tasks are auto-archived to `tasks/_archived/` when marked as done.
 Today's date: $TODAY
 Arguments: $ARGUMENTS
 

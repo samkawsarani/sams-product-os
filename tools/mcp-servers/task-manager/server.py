@@ -21,6 +21,8 @@ from mcp.types import Tool, TextContent
 # Configuration
 PROJECT_ROOT = Path(__file__).parent.parent.parent.parent
 TASKS_DIR = PROJECT_ROOT / "tasks"
+INITIATIVES_DIR = PROJECT_ROOT / "initiatives"
+REFERENCES_DIR = PROJECT_ROOT / "knowledge" / "references"
 CONFIG_FILE = PROJECT_ROOT / "config.yaml"
 
 # Initialize MCP server
@@ -79,8 +81,8 @@ def write_task_file(file_path: Path, frontmatter: dict, body: str):
 
 
 def archive_task(task_file: Path) -> Path:
-    """Move a completed task to _archived/completed/ with YYYY-MM-DD date prefix."""
-    archive_dir = TASKS_DIR / "_archived" / "completed"
+    """Move a completed task to _archived/ with YYYY-MM-DD date prefix."""
+    archive_dir = TASKS_DIR / "_archived"
     archive_dir.mkdir(parents=True, exist_ok=True)
     today = datetime.now().strftime("%Y-%m-%d")
     archived_name = f"{today}-{task_file.name}"
@@ -117,7 +119,7 @@ def get_all_tasks(include_archived: bool = False) -> list[dict]:
         tasks.append(task)
 
     if include_archived:
-        archive_dir = TASKS_DIR / "_archived" / "completed"
+        archive_dir = TASKS_DIR / "_archived"
         if archive_dir.exists():
             for task_file in archive_dir.glob("*.md"):
                 frontmatter, body = parse_yaml_frontmatter(task_file)
@@ -378,6 +380,180 @@ def generate_task_content(title: str, category: str, context: str = "") -> str:
     return content
 
 
+BULLET_RE = re.compile(r'^[-*+]\s+')
+CHECKBOX_RE = re.compile(r'^[-*+]\s+\[(.)\]\s+')
+HEADING_RE = re.compile(r'^(#{1,6})\s+(.*)')
+
+
+def parse_backlog_items(content: str) -> list[dict]:
+    """
+    Parse backlog content into items using block-based splitting.
+
+    Works with any format: headings + bullets, flat bullets, plain text,
+    checklists, or any mix. Blank lines and headings both act as block
+    separators.
+
+    Returns list of {"title": str, "description": str}.
+    """
+    lines = content.split('\n')
+
+    # Step 1: Split into blocks. A new block starts at a blank line or heading.
+    blocks: list[list[str]] = []
+    current: list[str] = []
+
+    for line in lines:
+        stripped = line.strip()
+
+        # Skip blank lines — they end the current block
+        if not stripped:
+            if current:
+                blocks.append(current)
+                current = []
+            continue
+
+        # Headings always start a new block
+        if HEADING_RE.match(stripped):
+            if current:
+                blocks.append(current)
+                current = []
+
+        current.append(stripped)
+
+    if current:
+        blocks.append(current)
+
+    # Step 2: Convert blocks to items
+    items: list[dict] = []
+
+    for block in blocks:
+        first = block[0]
+
+        # Skip the top-level h1 header (# Backlog, etc.)
+        heading_match = HEADING_RE.match(first)
+        if heading_match and len(heading_match.group(1)) == 1:
+            # h1 — skip. If the block has body lines after h1, process them
+            # as a standalone block.
+            rest_lines = block[1:]
+            if rest_lines:
+                blocks.append(rest_lines)
+            continue
+
+        # Case A: Block starts with a heading (h2+)
+        if heading_match:
+            title = heading_match.group(2).strip()
+            desc_lines = block[1:]
+
+            # If all body lines are bullets/checkboxes, expand each as its
+            # own item (using the heading as context). This handles the common
+            # pattern of a heading followed by a checklist.
+            if desc_lines and all(BULLET_RE.match(l) for l in desc_lines):
+                heading_context = title  # preserve heading as context
+                for bline in desc_lines:
+                    cb_match = CHECKBOX_RE.match(bline)
+                    if cb_match and cb_match.group(1) == 'x':
+                        continue  # skip checked items
+                    text = CHECKBOX_RE.sub('', bline)
+                    text = BULLET_RE.sub('', text).strip()
+                    if len(text) >= 5:
+                        items.append({"title": text, "description": f"(from: {heading_context})"})
+            else:
+                # Heading with prose description — keep as single item
+                # Filter out checked checkbox lines from description
+                filtered = [l for l in desc_lines
+                            if not (CHECKBOX_RE.match(l) and CHECKBOX_RE.match(l).group(1) == 'x')]
+                description = '\n'.join(filtered)
+                if len(title) >= 3:
+                    items.append({"title": title, "description": description})
+            continue
+
+        # Case B: Block is all bullets/checkboxes — each is its own item
+        all_bullets = all(BULLET_RE.match(l) for l in block)
+        if all_bullets:
+            for bline in block:
+                # Skip checked checkboxes
+                cb_match = CHECKBOX_RE.match(bline)
+                if cb_match and cb_match.group(1) == 'x':
+                    continue
+                # Strip bullet/checkbox prefix
+                text = CHECKBOX_RE.sub('', bline)
+                text = BULLET_RE.sub('', text).strip()
+                if len(text) >= 5:
+                    items.append({"title": text, "description": ""})
+            continue
+
+        # Case C: Plain text or mixed — first line is title, rest is description
+        title = BULLET_RE.sub('', first).strip()
+        desc_lines = block[1:]
+        description = '\n'.join(desc_lines)
+        if len(title) >= 3:
+            items.append({"title": title, "description": description})
+
+    return items
+
+
+def slugify(title: str) -> str:
+    """Convert a title to a URL-friendly slug."""
+    return re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
+
+
+def generate_initiative_content(title: str, description: str) -> str:
+    """Generate markdown content for an initiative file."""
+    return f"""# {title}
+
+## Summary
+{description if description else '[Brief description of this initiative]'}
+
+## Opportunity
+- [Key opportunity or pain point]
+
+## Status
+Early idea — needs further discovery and scoping.
+
+## Open Questions
+- [Question 1]
+"""
+
+
+def generate_reference_content(title: str, description: str) -> str:
+    """Generate markdown content for a reference file."""
+    # Try to extract a URL from the description
+    url_match = re.search(r'https?://[^\s]+', description) if description else None
+    source = url_match.group(0) if url_match else "[URL]"
+
+    return f"""# {title}
+
+**Source:** {source}
+
+{description if description else '[Description of this reference]'}
+"""
+
+
+def find_related_initiative(title: str, description: str) -> Optional[Path]:
+    """
+    Scan initiatives/ for subfolder names matching keywords in the reference.
+    Returns the initiative folder path if found, or None.
+    """
+    if not INITIATIVES_DIR.exists():
+        return None
+
+    text = f"{title} {description}".lower()
+    words = set(re.findall(r'[a-z]{3,}', text))
+
+    best_match = None
+    best_score = 0
+
+    for item in INITIATIVES_DIR.iterdir():
+        if item.is_dir() and not item.name.startswith('.') and item.name != 'groomed-requests':
+            # Extract keywords from folder name
+            folder_words = set(item.name.lower().replace('-', ' ').replace('_', ' ').split())
+            overlap = len(words & folder_words)
+            if overlap > best_score and overlap >= 1:
+                best_score = overlap
+                best_match = item
+
+    return best_match
+
+
 # MCP Tool Handlers
 
 @app.list_tools()
@@ -546,28 +722,23 @@ async def list_tools() -> list[Tool]:
         ),
         Tool(
             name="process_backlog",
-            description="Process all items from BACKLOG.md with automated categorization, deduplication, and ambiguity detection. Returns summary of what would be created and flags any items needing clarification.",
+            description="Process all items from BACKLOG.md with automated categorization, deduplication, and ambiguity detection. When auto_create is true, creates task files in tasks/, initiative files in initiatives/, and reference files in knowledge/references/ (or related initiative folders). Returns summary of what would be created and flags any items needing clarification.",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "auto_create": {
                         "type": "boolean",
-                        "description": "If true, automatically create tasks/initiatives. If false (default), only return summary for review.",
+                        "description": "If true, automatically create tasks, initiatives, and references. If false (default), only return summary for review.",
                     }
                 },
             },
         ),
         Tool(
             name="clear_backlog",
-            description="Archive current BACKLOG.md content to tasks/_archived/ and reset backlog to empty state.",
+            description="Reset BACKLOG.md to empty state.",
             inputSchema={
                 "type": "object",
-                "properties": {
-                    "archive": {
-                        "type": "boolean",
-                        "description": "If true (default), archive to tasks/_archived/. If false, just clear without archiving.",
-                    }
-                },
+                "properties": {},
             },
         ),
     ]
@@ -707,7 +878,7 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent]:
             return [
                 TextContent(
                     type="text",
-                    text=f"Updated {filename} status to: d\nArchived to: _archived/completed/{archived_path.name}",
+                    text=f"Updated {filename} status to: d\nArchived to: _archived/{archived_path.name}",
                 )
             ]
 
@@ -860,7 +1031,7 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent]:
         cutoff = datetime.now() - timedelta(days=prune_after)
         dry_run = arguments.get("dry_run", False)
 
-        archive_dir = TASKS_DIR / "_archived" / "completed"
+        archive_dir = TASKS_DIR / "_archived"
         completed_tasks = []
 
         if archive_dir.exists():
@@ -979,55 +1150,7 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent]:
         if not backlog_content or backlog_content == "":
             return [TextContent(type="text", text="BACKLOG.md is empty")]
 
-        # Parse backlog items - supports two formats:
-        # 1. Structured: ## Title followed by description lines
-        # 2. Simple: bullet points (- item)
-        lines = backlog_content.split('\n')
-        items = []
-        current_item = None
-
-        for line in lines:
-            stripped = line.strip()
-
-            # Skip empty lines
-            if not stripped:
-                continue
-
-            # Skip top-level header (# Backlog, # Test Backlog, etc.)
-            if stripped.startswith('# ') and not stripped.startswith('## '):
-                continue
-
-            # New item: ## heading format
-            if stripped.startswith('## '):
-                # Save previous item if exists
-                if current_item:
-                    items.append(current_item)
-                # Start new item with title from heading
-                title = stripped[3:].strip()
-                current_item = {"title": title, "description": ""}
-
-            # Bullet point format (standalone items)
-            elif stripped.startswith(('- ', '* ', '+ ')) and current_item is None:
-                item_text = stripped.lstrip('- ').lstrip('* ').lstrip('+ ')
-                if len(item_text) >= 5:
-                    items.append({"title": item_text, "description": ""})
-
-            # Description line for current structured item
-            elif current_item is not None:
-                # Skip sub-bullets within meeting notes, etc.
-                if stripped.startswith(('- ', '* ', '+ ')):
-                    # This is a sub-item, add to description
-                    current_item["description"] += stripped + "\n"
-                else:
-                    # Regular description text
-                    if current_item["description"]:
-                        current_item["description"] += " " + stripped
-                    else:
-                        current_item["description"] = stripped
-
-        # Don't forget the last item
-        if current_item:
-            items.append(current_item)
+        items = parse_backlog_items(backlog_content)
 
         if not items:
             return [TextContent(type="text", text="No actionable items found in BACKLOG.md")]
@@ -1050,13 +1173,18 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent]:
             # Auto-categorize using both title and description
             category = auto_categorize(title, description, config)
 
-            # 1. Check if it's a reference (has URL) - these don't need action verbs
+            # 1. Check if it's a reference — requires explicit reference phrases
+            # or the item being primarily about a link (not just a task that has
+            # a URL in it, e.g. "Setup HubSpot MCP https://...")
             url_pattern = r'https?://[^\s]+'
             has_url = bool(re.search(url_pattern, full_text))
-            # Only classify as reference if it has a URL or explicit reference phrases
-            reference_phrases = ["found article", "found link", "read this", "source:", "reference:"]
+            reference_phrases = ["found article", "found link", "read this", "source:", "reference:",
+                                 "bookmark", "save this", "interesting read"]
             has_reference_phrase = any(phrase in full_text.lower() for phrase in reference_phrases)
-            is_reference = has_url or has_reference_phrase
+            # A URL alone doesn't make it a reference — the title must not be
+            # an action (check for action verbs) or must match a reference phrase
+            title_is_url = bool(re.match(url_pattern, title.strip()))
+            is_reference = has_reference_phrase or (has_url and title_is_url)
 
             if is_reference:
                 references.append({
@@ -1196,84 +1324,119 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent]:
                 result += "\n"
 
         # Auto-create if requested
-        if arguments.get("auto_create", False) and tasks_to_create:
-            result += f"\n## Creating Tasks...\n\n"
+        if arguments.get("auto_create", False):
+            created_any = False
 
-            for task_data in tasks_to_create:
-                # Generate filename
-                filename = re.sub(r"[^a-z0-9]+", "-", task_data["title"].lower())
-                filename = filename.strip("-") + ".md"
-                task_file = TASKS_DIR / filename
+            if tasks_to_create:
+                result += f"\n## Creating Tasks...\n\n"
+                created_any = True
 
-                if task_file.exists():
-                    result += f"⚠️  Skipped {filename} (already exists)\n"
-                    continue
+                for task_data in tasks_to_create:
+                    filename = slugify(task_data["title"]) + ".md"
+                    task_file = TASKS_DIR / filename
 
-                # Create frontmatter
-                now = datetime.now().isoformat()
-                frontmatter = {
-                    "title": task_data["title"],
-                    "priority": task_data["priority"],
-                    "status": "n",
-                    "category": task_data["category"],
-                    "keywords": [],
-                    "created_date": now,
-                    "updated_date": now,
-                }
+                    if task_file.exists():
+                        result += f"⚠️  Skipped {filename} (already exists)\n"
+                        continue
 
-                # Generate smart content using description as context
-                body = generate_task_content(
-                    task_data["title"],
-                    task_data["category"],
-                    task_data.get("description", "")
-                )
+                    now = datetime.now().isoformat()
+                    frontmatter = {
+                        "title": task_data["title"],
+                        "priority": task_data["priority"],
+                        "status": "n",
+                        "category": task_data["category"],
+                        "keywords": [],
+                        "resource_refs": [],
+                        "created_date": now,
+                        "updated_date": now,
+                    }
 
-                write_task_file(task_file, frontmatter, body)
-                result += f"✓ Created {filename}\n"
+                    body = generate_task_content(
+                        task_data["title"],
+                        task_data["category"],
+                        task_data.get("description", "")
+                    )
+                    # Add goal reference line after Context section
+                    body = body.replace(
+                        "\n\n## ",
+                        "\n\n**Goal:** [Link to relevant goal from GOALS.md]\n\n## ",
+                        1
+                    )
+
+                    write_task_file(task_file, frontmatter, body)
+                    result += f"✓ Created task: {filename}\n"
+
+            if initiatives:
+                result += f"\n## Creating Initiatives...\n\n"
+                created_any = True
+                INITIATIVES_DIR.mkdir(parents=True, exist_ok=True)
+
+                for init_data in initiatives:
+                    filename = slugify(init_data["title"]) + ".md"
+                    init_file = INITIATIVES_DIR / filename
+
+                    if init_file.exists():
+                        result += f"⚠️  Skipped {filename} (already exists)\n"
+                        continue
+
+                    content = generate_initiative_content(
+                        init_data["title"],
+                        init_data.get("description", "")
+                    )
+                    with open(init_file, "w") as f:
+                        f.write(content)
+                    result += f"✓ Created initiative: {filename}\n"
+
+            if references:
+                result += f"\n## Saving References...\n\n"
+                created_any = True
+                REFERENCES_DIR.mkdir(parents=True, exist_ok=True)
+
+                for ref_data in references:
+                    filename = slugify(ref_data["title"]) + ".md"
+
+                    # Check if reference relates to an existing initiative folder
+                    related_init = find_related_initiative(
+                        ref_data["title"],
+                        ref_data.get("description", "")
+                    )
+
+                    if related_init:
+                        ref_file = related_init / filename
+                    else:
+                        ref_file = REFERENCES_DIR / filename
+
+                    if ref_file.exists():
+                        result += f"⚠️  Skipped {filename} (already exists)\n"
+                        continue
+
+                    content = generate_reference_content(
+                        ref_data["title"],
+                        ref_data.get("description", "")
+                    )
+                    with open(ref_file, "w") as f:
+                        f.write(content)
+
+                    location = str(ref_file.relative_to(PROJECT_ROOT))
+                    result += f"✓ Saved reference: {location}\n"
+
+            if not created_any:
+                result += f"\n**Note:** No tasks, initiatives, or references to create.\n"
         else:
-            result += f"\n**Note:** Set auto_create=true to create tasks automatically.\n"
+            result += f"\n**Note:** Set auto_create=true to create tasks, initiatives, and references automatically.\n"
 
         return [TextContent(type="text", text=result)]
 
     elif name == "clear_backlog":
         backlog_file = PROJECT_ROOT / "BACKLOG.md"
-        archive = arguments.get("archive", True)
 
         if not backlog_file.exists():
             return [TextContent(type="text", text="No BACKLOG.md found")]
 
-        with open(backlog_file, "r") as f:
-            content = f.read()
-
-        if archive and content.strip():
-            # Archive to tasks/_archived
-            archive_dir = PROJECT_ROOT / "tasks" / "_archived"
-            archive_dir.mkdir(parents=True, exist_ok=True)
-
-            archive_file = archive_dir / f"{datetime.now().strftime('%Y-%m-%d')}-backlog.md"
-
-            # If file exists, append
-            if archive_file.exists():
-                with open(archive_file, "a") as f:
-                    f.write(f"\n\n## Backlog archived at {datetime.now().strftime('%H:%M:%S')}\n\n")
-                    f.write(content)
-            else:
-                with open(archive_file, "w") as f:
-                    f.write(f"# Notes - {datetime.now().strftime('%Y-%m-%d')}\n\n")
-                    f.write(f"## Backlog archived at {datetime.now().strftime('%H:%M:%S')}\n\n")
-                    f.write(content)
-
-        # Clear backlog
         with open(backlog_file, "w") as f:
             f.write("# Backlog\n")
 
-        if archive:
-            return [TextContent(
-                type="text",
-                text=f"✓ Backlog cleared and archived to tasks/_archived/{datetime.now().strftime('%Y-%m-%d')}-backlog.md"
-            )]
-        else:
-            return [TextContent(type="text", text="✓ Backlog cleared (not archived)")]
+        return [TextContent(type="text", text="✓ Backlog cleared")]
 
     return [TextContent(type="text", text=f"Unknown tool: {name}")]
 

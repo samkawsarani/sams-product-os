@@ -1,7 +1,8 @@
 ---
 name: process-backlog
-description: Processes BACKLOG.md into organized tasks, initiatives, and references with categorization, deduplication, and priority cap enforcement. Presents findings for review before creating. Invoked via /process-backlog or "triage the backlog".
-allowed-tools: process_backlog, clear_backlog, check_duplicates, create_task, list_tasks, Glob, Read, Write, Bash(qmd:*)
+model: sonnet
+description: Processes BACKLOG.md into organized tasks, initiatives, and references with categorization, deduplication, and priority cap enforcement. Presents findings for review before creating. Invoked via /process-backlog or "triage the backlog", "clean up the backlog", or "organize my brain dump".
+allowed-tools: process_backlog, clear_backlog, check_duplicates, create_task, list_tasks, Glob, Read, Write, Bash(qmd *)
 argument-hint:
 ---
 
@@ -22,8 +23,8 @@ Read `BACKLOG.md` and categorize each item:
 |----------|-------------|----------|
 | **Tasks** | `tasks/` | "Email Sarah about Q4", "Review PRD draft" - clear action + completion criteria |
 | **Initiatives** | `initiatives/` | "Mobile perf issues", "Enterprise SSO" - strategic ideas to explore |
-| **References** | `knowledge/references/` | Articles, competitor info, research - context to save |
-| **Notes** | `tasks/_archived/` | Meeting notes, incomplete thoughts |
+| **References** | `knowledge/references/` or related initiative folder | Articles, competitor info, research - context to save |
+| **Notes** | Discard (summary only) | Meeting notes, incomplete thoughts |
 
 If MCP available, use **process_backlog** (auto_create=false). Otherwise, read files directly.
 
@@ -36,10 +37,10 @@ Compare against existing items in `tasks/`, `initiatives/`, `knowledge/reference
 Show user a summary with:
 - **Tasks**: Table with title, category, priority, due date
 - **Initiatives**: Bullet list with name + description
-- **References**: Bullet list
+- **References**: Bullet list (noting if any relate to an existing initiative folder)
 - **Ambiguous items**: Items needing clarification
 - **Possible duplicates**: Similar existing items
-- **Notes to archive**: Remaining content
+- **Notes**: Remaining content (will be discarded)
 
 ### Step 4: Get Confirmation
 
@@ -63,19 +64,21 @@ Check caps from `config.yaml` before creating. If exceeded:
 
 ### Step 7: Create Approved Items
 
-**Tasks**: Use template from `templates/task-template.md` or create with frontmatter:
+**Tasks**: Create with frontmatter including:
 - title, category (from config keywords), priority, status: n, created_date, due_date
-- Link to relevant goal from `GOALS.md` in Context section
+- `resource_refs: []` in frontmatter
+- Full context from backlog item (description, sub-bullets) preserved in Context section
+- `**Goal:** [Link to relevant goal from GOALS.md]` line in Context section
 
-**Initiatives**: Use template from `templates/initiative-template.md`
+**Initiatives**: Create in `initiatives/` with format: Summary, Opportunity, Status, Open Questions
 
-**References**: Add to existing file if related topic exists, or create new file
+**References**: If related to an existing initiative folder (e.g., `initiatives/vertical-expansion/`), save there. Otherwise save in `knowledge/references/`.
 
-### Step 8: Archive & Clear
+### Step 8: Clear & Re-index
 
-1. Archive remaining content to `tasks/_archived/YYYY-MM-DD-backlog.md`
-2. Clear `BACKLOG.md` and restore the `# Backlog` header so the file is ready for new entries
-3. Summarize: tasks created (by priority), initiatives, references, archived items
+1. Clear `BACKLOG.md` using `clear_backlog`
+2. Run `qmd update && qmd embed` (via Bash) to re-index collections with new content
+3. Summarize what was created: tasks (by priority), initiatives, references (with locations)
 
 ## Key Reminders
 
