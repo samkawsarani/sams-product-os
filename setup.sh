@@ -264,6 +264,7 @@ step_knowledge_dirs() {
     product-analytics
     references
     voice-samples
+    decisions
   )
 
   for dir in "${dirs[@]}"; do
@@ -315,6 +316,46 @@ step_template_files() {
     "templates/goals-template.md" \
     "GOALS.md" \
     "GOALS.md"
+
+  # knowledge/INDEX.md — personal directory of knowledge folder contents
+  if [[ -f "$REPO_DIR/knowledge/INDEX.md" ]]; then
+    print_skip "knowledge/INDEX.md"
+  else
+    cat > "$REPO_DIR/knowledge/INDEX.md" << 'INDEX_EOF'
+# Knowledge Index
+
+Personal directory of context and learned knowledge for this AI assistant.
+
+---
+
+## Reference Context
+*Curated by you. Set up once, updated as things change.*
+
+| Folder | Contents |
+|--------|----------|
+| `about-me/` | Role, background, working style, 360 feedback |
+| `company-context/` | Company overview, product info, competitors, career framework |
+| `frameworks/` | PM methodologies, mental models |
+| `processes/` | How the team works, dev process, release flow |
+| `product-analytics/` | KPIs, metrics definitions, performance data |
+| `product-strategy/` | Current strategy, vision, roadmap |
+| `references/` | Articles, open requests, reference docs |
+| `voice-samples/` | Writing samples for AI voice matching |
+
+---
+
+## Domain Learning
+*Agent-authored. Grows from real work over time.*
+
+Each domain folder contains:
+- `knowledge.md` — dated facts and observations
+- `hypotheses.md` — unconfirmed patterns (track to 3 confirmations)
+- `rules.md` — confirmed patterns; applied by default
+
+*No domains yet. Created as work accumulates.*
+INDEX_EOF
+    print_success "Created knowledge/INDEX.md"
+  fi
 
   # BACKLOG.md — small enough to create inline
   if [[ -f "$REPO_DIR/BACKLOG.md" ]]; then
@@ -559,6 +600,7 @@ step_verification() {
   echo ""
   echo -e "  ${BOLD}Template Files${RESET}"
   local templates=(
+    "knowledge/INDEX.md"
     "knowledge/about-me/about-me.md"
     "knowledge/company-context/company-overview.md"
     "GOALS.md"

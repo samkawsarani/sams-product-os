@@ -6,7 +6,7 @@
 [![Star this repo](https://img.shields.io/github/stars/samkawsarani/sams-product-os?style=social)](https://github.com/samkawsarani/sams-product-os)
 
 
-*Quick links:* [Quick Start](#quick-start) · [Directory Structure](#directory-structure) · [Core Workflow](#core-workflow) · [Common Commands](#common-commands) · [Best Practices](#best-practices)
+*Quick links:* [Quick Start](#quick-start) · [Directory Structure](#directory-structure) · [Context Setup](#context-setup) · [Core Workflow](#core-workflow) · [Common Commands](#common-commands) · [Best Practices](#best-practices)
 
 ---
 
@@ -99,6 +99,37 @@ sams-product-os/
 └── config.yaml             # Customizable configuration for your AI agent
 
 ```
+
+---
+
+## Context Setup
+
+The `knowledge/` folder is your AI's long-term memory. It has two types of content:
+
+### Reference Context (set up by you)
+
+Files you create once and update as things change. The AI reads these to understand who you are, how your team works, and what your strategy is.
+
+| Folder | What to put there |
+|--------|-------------------|
+| `about-me/` | Role, background, working style, strengths |
+| `company-context/` | Mission, products, team, org structure |
+| `product-strategy/` | Vision, strategic pillars, roadmap, OKRs |
+| `frameworks/` | PM methodologies you use (RICE, JTBD, etc.) |
+| `processes/` | How your team works, sprint cadence, decision-making |
+| `references/` | Competitive research, articles, open requests |
+| `voice-samples/` | Writing samples for style matching (see [Voice Training](#voice-training)) |
+| `decisions/` | Decision log — one file per significant decision |
+
+AI reads files in priority order: `about-me/` → `product-strategy/` → `company-context/` → `frameworks/` → task-relevant folders.
+
+Reference files explicitly with `@knowledge/product-strategy/current-strategy.md`.
+
+### Domain Learning (maintained by your agent)
+
+As you work, your agent builds up learned knowledge in domain-specific folders (e.g., `knowledge/interac/`, `knowledge/checkout-flow/`). Each domain folder holds three files: `knowledge.md` (facts), `hypotheses.md` (patterns under observation), and `rules.md` (confirmed — applied by default). The agent creates these automatically; you never pre-populate them. See the Knowledge Architecture section in `AGENTS.md` for details.
+
+See `knowledge/INDEX.md` for a directory of what's in your knowledge folder.
 
 ---
 
