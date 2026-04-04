@@ -54,14 +54,14 @@ __pycache__/
 # Integration caches (workspace-specific data)
 tools/integrations/slack/mappings.json
 
-# Prototype code - keep root folder structure only
-prototypes/*
-!prototypes/.gitkeep
-!prototypes/README.md
 
 # Temp drop zone (files in transit, scratch work)
 _temp/*
 !_temp/.gitkeep
+
+# Agent system files — always tracked even inside gitignored directories
+!**/AGENTS.md
+!**/CLAUDE.md
 
 # Personal backlog (private daily inbox)
 BACKLOG.md

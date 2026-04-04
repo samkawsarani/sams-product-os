@@ -324,7 +324,8 @@ step_template_files() {
     cat > "$REPO_DIR/knowledge/INDEX.md" << 'INDEX_EOF'
 # Knowledge Index
 
-Personal directory of context and learned knowledge for this AI assistant.
+Personal directory of all context and learned knowledge.
+Last updated: $(date +%Y-%m-%d)
 
 ---
 
@@ -334,25 +335,23 @@ Personal directory of context and learned knowledge for this AI assistant.
 | Folder | Contents |
 |--------|----------|
 | `about-me/` | Role, background, working style, 360 feedback |
-| `company-context/` | Company overview, product info, competitors, career framework |
+| `company-context/` | Company overview, product info, competitors, org structure |
 | `frameworks/` | PM methodologies, mental models |
-| `processes/` | How the team works, dev process, release flow |
+| `processes/` | How the team works, sprint cadence, release flow |
 | `product-analytics/` | KPIs, metrics definitions, performance data |
 | `product-strategy/` | Current strategy, vision, roadmap |
-| `references/` | Articles, open requests, reference docs |
+| `references/` | Articles, open requests, research docs |
 | `voice-samples/` | Writing samples for AI voice matching |
+| `decisions/` | Decision log — one file per significant decision |
 
 ---
 
 ## Domain Learning
-*Agent-authored. Grows from real work over time.*
+*Agent-authored. Grows from real work over time. Each folder contains `knowledge.md`, `hypotheses.md`, `rules.md`.*
 
-Each domain folder contains:
-- `knowledge.md` — dated facts and observations
-- `hypotheses.md` — unconfirmed patterns (track to 3 confirmations)
-- `rules.md` — confirmed patterns; applied by default
-
-*No domains yet. Created as work accumulates.*
+| Domain Folder | Created | Description |
+|---------------|---------|-------------|
+| *(none yet — rows added here automatically when domain folders are created)* | | |
 INDEX_EOF
     print_success "Created knowledge/INDEX.md"
   fi
