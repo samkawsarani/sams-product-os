@@ -1,7 +1,5 @@
 # Initiatives — Agent Instructions
 
-Loaded automatically when working inside `initiatives/`.
-
 ## What is an Initiative
 
 An initiative is a strategic idea or opportunity too large or uncertain to be a single task. Initiatives are explored and shaped before being broken into tasks. Use `templates/initiative-template.md`.

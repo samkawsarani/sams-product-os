@@ -1,7 +1,5 @@
 # Tasks — Agent Instructions
 
-Loaded automatically when working inside `tasks/`.
-
 ## Task System
 
 **Priorities:** P0 (max 3) → P1 (max 7) → P2 (max 15) → P3 (unlimited)

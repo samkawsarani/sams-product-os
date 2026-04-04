@@ -1,7 +1,5 @@
 # Knowledge — Agent Instructions
 
-Loaded automatically when working inside `knowledge/`.
-
 ## Knowledge Architecture
 
 `knowledge/` has two kinds of content. The authoritative list is in `knowledge/INDEX.md`:
