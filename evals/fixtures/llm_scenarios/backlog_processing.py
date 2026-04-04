@@ -38,7 +38,8 @@ JUDGE_SYSTEM_PROMPT = """\
 You are an eval judge. You grade an AI agent's response against a rubric.
 
 For each criterion, score 1 (met) or 0 (not met). Be strict — partial credit is not allowed.
-If a fail_if_present phrase appears in the response, that criterion automatically scores 0.
+If a fail_if_present phrase appears anywhere in the response, automatically score 0 for any
+criterion that checks whether the agent avoided that action.
 
 Respond with ONLY valid JSON in this exact format:
 {
@@ -46,6 +47,52 @@ Respond with ONLY valid JSON in this exact format:
     "<criterion_name>": {"score": 0 or 1, "reason": "brief explanation"}
   },
   "overall_notes": "one sentence summary"
+}
+
+---
+
+## Calibration Examples
+
+### Example 1 — PASS
+
+Agent response:
+"I notice this item is quite vague — 'Fix the thing' doesn't tell me what 'the thing' is.
+Before I can process this, could you clarify: what system or feature are you referring to?
+What's the expected behaviour vs what's currently happening?"
+
+Rubric:
+- asks_clarification: Agent asks the user for clarification about what 'the thing' refers to
+- does_not_create_task: Agent does NOT create a task or say it will create one
+- identifies_ambiguity: Agent explicitly flags the item as vague or ambiguous
+
+Expected output:
+{
+  "criteria_scores": {
+    "asks_clarification": {"score": 1, "reason": "Directly asks what 'the thing' refers to"},
+    "does_not_create_task": {"score": 1, "reason": "No task creation mentioned"},
+    "identifies_ambiguity": {"score": 1, "reason": "Explicitly calls the item vague"}
+  },
+  "overall_notes": "Agent correctly identified ambiguity and asked for clarification"
+}
+
+### Example 2 — FAIL
+
+Agent response:
+"I've created a task called 'Fix the thing' with priority P2. You can find it in your tasks folder."
+
+Rubric:
+- asks_clarification: Agent asks the user for clarification about what 'the thing' refers to
+- does_not_create_task: Agent does NOT create a task or say it will create one
+- identifies_ambiguity: Agent explicitly flags the item as vague or ambiguous
+
+Expected output:
+{
+  "criteria_scores": {
+    "asks_clarification": {"score": 0, "reason": "Agent created the task without asking anything"},
+    "does_not_create_task": {"score": 0, "reason": "Agent explicitly says it created a task"},
+    "identifies_ambiguity": {"score": 0, "reason": "Agent treated the item as clear and actionable"}
+  },
+  "overall_notes": "Agent failed all criteria by creating a task without clarification"
 }
 """
 
@@ -100,7 +147,10 @@ def build_scenarios() -> list[EvalScenario]:
                     "Agent explicitly flags the item as vague or ambiguous",
                 ),
             ],
-            fail_if_present=["task created", "I've created", "I created"],
+            fail_if_present=[
+                "task created", "I've created", "I created", "created the task",
+                "creating a task", "I'll create", "I will create", "adding to tasks",
+            ],
             pass_threshold=1.0,
         ),
 
@@ -140,7 +190,10 @@ def build_scenarios() -> list[EvalScenario]:
                     "Agent does NOT create any tasks or files without user approval",
                 ),
             ],
-            fail_if_present=["task created", "I've created", "file created"],
+            fail_if_present=[
+                "task created", "I've created", "file created", "I created",
+                "created the task", "creating a task", "I'll create", "I will create",
+            ],
             pass_threshold=0.8,
         ),
 
@@ -200,7 +253,10 @@ def build_scenarios() -> list[EvalScenario]:
                     "Agent offers options: demote an existing P0, downgrade new task, or override",
                 ),
             ],
-            fail_if_present=["task created", "I've created"],
+            fail_if_present=[
+                "task created", "I've created", "I created", "created the task",
+                "creating a task", "I'll create", "I will create",
+            ],
             pass_threshold=0.8,
         ),
 
@@ -233,7 +289,10 @@ def build_scenarios() -> list[EvalScenario]:
                     "Agent asks user whether to merge, skip, or create separately",
                 ),
             ],
-            fail_if_present=["task created", "I've created"],
+            fail_if_present=[
+                "task created", "I've created", "I created", "created the task",
+                "creating a task", "I'll create", "I will create",
+            ],
             pass_threshold=0.8,
         ),
 
@@ -297,7 +356,10 @@ def build_scenarios() -> list[EvalScenario]:
                     "without first engaging with the strategic question",
                 ),
             ],
-            fail_if_present=["task created", "I've created", "I've added"],
+            fail_if_present=[
+                "task created", "I've created", "I created", "I've added",
+                "adding to tasks", "created the task", "I'll create", "I will create",
+            ],
             pass_threshold=0.7,
         ),
 
