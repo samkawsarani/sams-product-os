@@ -29,7 +29,7 @@ uv run pytest tools/mcp-servers/task-manager/test_server.py -v
 
 ### MCP Server (`tools/mcp-servers/task-manager/test_server.py`)
 
-Unit tests for the task-manager MCP server: ambiguity detection, clarification questions, task content generation, similarity calculation, auto-categorization, backlog parsing, config loading, archive/restore, status transitions, file integrity, and edge cases.
+Unit tests for the task-manager MCP server. Source of truth for all MCP function-level testing. See `tools/mcp-servers/task-manager/test_server.py`.
 
 ### Workflows (`evals/test_workflows.py`)
 
