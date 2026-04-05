@@ -1,0 +1,25 @@
+id: clear_item_goal_match
+name: Clear item matching a goal
+description: Agent receives a clear task that aligns with Goal 3 (Developer Experience).
+user_message: |
+  Process this backlog item:
+
+  ```
+  - Define developer portal requirements for API docs and test credentials
+  ```
+criteria:
+  - name: links_to_goal
+    description: Agent identifies this aligns with Goal 3 (Improve Merchant Onboarding & Developer Experience)
+  - name: suggests_category
+    description: "Agent suggests a category (e.g., technical, strategy, or discovery)"
+  - name: presents_for_review
+    description: Agent presents the item for user review before creating
+fail_if_present:
+  - "task created"
+  - "I've created"
+  - "I created"
+  - "created the task"
+  - "creating a task"
+  - "I'll create"
+  - "I will create"
+pass_threshold: 0.8
