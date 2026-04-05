@@ -1,0 +1,29 @@
+id: duplicate_detection
+name: Duplicate task detection
+description: Agent receives a task very similar to an existing one.
+user_message: |
+  Process this backlog item:
+
+  ```
+  - Fix authentication bug in the login flow
+  ```
+
+  Existing tasks:
+  - fix-login-auth-bug.md: 'Fix login authentication error for SSO users' (P1, started)
+  - update-api-docs.md: 'Update API documentation for v2 endpoints' (P2, not started)
+criteria:
+  - name: flags_duplicate
+    description: Agent flags that the new item is similar to the existing 'fix-login-auth-bug' task
+  - name: shows_existing
+    description: Agent shows the existing similar task for comparison
+  - name: asks_user
+    description: Agent asks user whether to merge, skip, or create separately
+fail_if_present:
+  - "task created"
+  - "I've created"
+  - "I created"
+  - "created the task"
+  - "creating a task"
+  - "I'll create"
+  - "I will create"
+pass_threshold: 0.8

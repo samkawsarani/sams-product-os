@@ -1,11 +1,23 @@
 """
-LLM eval scenarios for backlog processing behavior.
+LLM eval scenario loader and judge prompts for backlog processing behavior.
 
-Each scenario tests a behavioral contract from SKILL.md by giving Claude
-a realistic prompt and grading the response against a rubric.
+Scenarios are defined as YAML files in:
+  evals/fixtures/scenarios/    — designed behavioral scenarios
+  evals/fixtures/regressions/  — captured production failures
+
+Files starting with _ are ignored (templates, drafts).
+
+To add a scenario: create a new .yaml file in either directory.
+To capture a regression: copy evals/fixtures/regressions/_template.yaml.
 """
 
 from dataclasses import dataclass, field
+from pathlib import Path
+import yaml
+
+
+SCENARIOS_DIR = Path(__file__).parent.parent / "scenarios"
+REGRESSIONS_DIR = Path(__file__).parent.parent / "regressions"
 
 
 @dataclass
@@ -27,6 +39,7 @@ class EvalScenario:
     criteria: list[GradingCriterion] = field(default_factory=list)
     fail_if_present: list[str] = field(default_factory=list)
     pass_threshold: float = 0.8
+    requires_knowledge_context: bool = False
 
 
 # ============================================================================
@@ -37,7 +50,8 @@ JUDGE_SYSTEM_PROMPT = """\
 You are an eval judge. You grade an AI agent's response against a rubric.
 
 For each criterion, score 1 (met) or 0 (not met). Be strict — partial credit is not allowed.
-If a fail_if_present phrase appears in the response, that criterion automatically scores 0.
+If a fail_if_present phrase appears anywhere in the response, automatically score 0 for any
+criterion that checks whether the agent avoided that action.
 
 Respond with ONLY valid JSON in this exact format:
 {
@@ -45,6 +59,52 @@ Respond with ONLY valid JSON in this exact format:
     "<criterion_name>": {"score": 0 or 1, "reason": "brief explanation"}
   },
   "overall_notes": "one sentence summary"
+}
+
+---
+
+## Calibration Examples
+
+### Example 1 — PASS
+
+Agent response:
+"I notice this item is quite vague — 'Fix the thing' doesn't tell me what 'the thing' is.
+Before I can process this, could you clarify: what system or feature are you referring to?
+What's the expected behaviour vs what's currently happening?"
+
+Rubric:
+- asks_clarification: Agent asks the user for clarification about what 'the thing' refers to
+- does_not_create_task: Agent does NOT create a task or say it will create one
+- identifies_ambiguity: Agent explicitly flags the item as vague or ambiguous
+
+Expected output:
+{
+  "criteria_scores": {
+    "asks_clarification": {"score": 1, "reason": "Directly asks what 'the thing' refers to"},
+    "does_not_create_task": {"score": 1, "reason": "No task creation mentioned"},
+    "identifies_ambiguity": {"score": 1, "reason": "Explicitly calls the item vague"}
+  },
+  "overall_notes": "Agent correctly identified ambiguity and asked for clarification"
+}
+
+### Example 2 — FAIL
+
+Agent response:
+"I've created a task called 'Fix the thing' with priority P2. You can find it in your tasks folder."
+
+Rubric:
+- asks_clarification: Agent asks the user for clarification about what 'the thing' refers to
+- does_not_create_task: Agent does NOT create a task or say it will create one
+- identifies_ambiguity: Agent explicitly flags the item as vague or ambiguous
+
+Expected output:
+{
+  "criteria_scores": {
+    "asks_clarification": {"score": 0, "reason": "Agent created the task without asking anything"},
+    "does_not_create_task": {"score": 0, "reason": "Agent explicitly says it created a task"},
+    "identifies_ambiguity": {"score": 0, "reason": "Agent treated the item as clear and actionable"}
+  },
+  "overall_notes": "Agent failed all criteria by creating a task without clarification"
 }
 """
 
@@ -65,204 +125,43 @@ Grade the response. Return ONLY JSON.
 
 
 # ============================================================================
-# Scenario Definitions
+# YAML Loader
 # ============================================================================
 
-def build_scenarios() -> list[EvalScenario]:
-    """Return all eval scenarios. system_prompt is filled at test time."""
+def _load_yaml_scenario(path: Path) -> EvalScenario:
+    """Parse a single YAML file into an EvalScenario."""
+    data = yaml.safe_load(path.read_text())
 
-    return [
-        # ------------------------------------------------------------------
-        # 1. Ambiguous item — agent must ask, not create
-        # ------------------------------------------------------------------
-        EvalScenario(
-            id="ambiguous_item",
-            name="Ambiguous backlog item",
-            description="Agent receives a vague item and should ask for clarification instead of creating a task.",
-            system_prompt="",  # filled at runtime
-            user_message=(
-                "I just added this to my backlog:\n\n"
-                "```\n- Fix the thing\n```\n\n"
-                "Can you process this?"
-            ),
-            criteria=[
-                GradingCriterion(
-                    "asks_clarification",
-                    "Agent asks the user for clarification about what 'the thing' refers to",
-                ),
-                GradingCriterion(
-                    "does_not_create_task",
-                    "Agent does NOT create a task or say it will create one",
-                ),
-                GradingCriterion(
-                    "identifies_ambiguity",
-                    "Agent explicitly flags the item as vague or ambiguous",
-                ),
-            ],
-            fail_if_present=["task created", "I've created", "I created"],
-            pass_threshold=1.0,
-        ),
-
-        # ------------------------------------------------------------------
-        # 2. Mixed backlog — categorize, summarize, wait for confirmation
-        # ------------------------------------------------------------------
-        EvalScenario(
-            id="mixed_backlog",
-            name="Mixed backlog items",
-            description="Agent processes a backlog with task, initiative, reference, and ambiguous items.",
-            system_prompt="",
-            user_message=(
-                "Here's my backlog to process:\n\n"
-                "```\n"
-                "- Email Sarah about Q4 roadmap review by Friday\n"
-                "- Enterprise SSO — we should think about this strategically\n"
-                "- https://stripe.com/docs/api — good API doc reference\n"
-                "- Fix the thing\n"
-                "```\n\n"
-                "Process these please."
-            ),
-            criteria=[
-                GradingCriterion(
-                    "categorizes_items",
-                    "Agent categorizes items into tasks, initiatives, references, and ambiguous",
-                ),
-                GradingCriterion(
-                    "presents_summary",
-                    "Agent presents a structured summary or table before taking action",
-                ),
-                GradingCriterion(
-                    "waits_for_confirmation",
-                    "Agent asks the user how to proceed or waits for confirmation",
-                ),
-                GradingCriterion(
-                    "does_not_create",
-                    "Agent does NOT create any tasks or files without user approval",
-                ),
-            ],
-            fail_if_present=["task created", "I've created", "file created"],
-            pass_threshold=0.8,
-        ),
-
-        # ------------------------------------------------------------------
-        # 3. Orphan task — no goal match, should flag
-        # ------------------------------------------------------------------
-        EvalScenario(
-            id="orphan_task",
-            name="Orphan task with no goal alignment",
-            description="Agent receives a task that doesn't align with any goal in GOALS.md.",
-            system_prompt="",
-            user_message=(
-                "Process this backlog item:\n\n"
-                "```\n- Reorganize office supplies and restock printer paper\n```"
-            ),
-            criteria=[
-                GradingCriterion(
-                    "flags_no_goal",
-                    "Agent flags that this task doesn't align with any current goal in GOALS.md",
-                ),
-                GradingCriterion(
-                    "asks_about_alignment",
-                    "Agent asks the user about goal alignment or why this matters",
-                ),
-            ],
-            fail_if_present=[],
-            pass_threshold=1.0,
-        ),
-
-        # ------------------------------------------------------------------
-        # 4. P0 cap exceeded — should warn and offer options
-        # ------------------------------------------------------------------
-        EvalScenario(
-            id="p0_cap_exceeded",
-            name="P0 priority cap warning",
-            description="Agent tries to add a P0 task when 3 P0 tasks already exist.",
-            system_prompt="",
-            user_message=(
-                "Process this backlog item as P0:\n\n"
-                "```\n- URGENT: Fix payment processing timeout affecting all merchants\n```\n\n"
-                "Current P0 tasks:\n"
-                "1. Complete Interac Core transaction migration (due Feb 8)\n"
-                "2. Fix OBV verification failures in production\n"
-                "3. Resolve merchant portal outage\n"
-            ),
-            criteria=[
-                GradingCriterion(
-                    "warns_about_cap",
-                    "Agent warns that the P0 cap (3) would be exceeded",
-                ),
-                GradingCriterion(
-                    "shows_existing_p0s",
-                    "Agent shows or references the existing P0 tasks",
-                ),
-                GradingCriterion(
-                    "offers_options",
-                    "Agent offers options: demote an existing P0, downgrade new task, or override",
-                ),
-            ],
-            fail_if_present=["task created", "I've created"],
-            pass_threshold=0.8,
-        ),
-
-        # ------------------------------------------------------------------
-        # 5. Duplicate detection — should flag similarity
-        # ------------------------------------------------------------------
-        EvalScenario(
-            id="duplicate_detection",
-            name="Duplicate task detection",
-            description="Agent receives a task very similar to an existing one.",
-            system_prompt="",
-            user_message=(
-                "Process this backlog item:\n\n"
-                "```\n- Fix authentication bug in the login flow\n```\n\n"
-                "Existing tasks:\n"
-                "- fix-login-auth-bug.md: 'Fix login authentication error for SSO users' (P1, started)\n"
-                "- update-api-docs.md: 'Update API documentation for v2 endpoints' (P2, not started)\n"
-            ),
-            criteria=[
-                GradingCriterion(
-                    "flags_duplicate",
-                    "Agent flags that the new item is similar to the existing 'fix-login-auth-bug' task",
-                ),
-                GradingCriterion(
-                    "shows_existing",
-                    "Agent shows the existing similar task for comparison",
-                ),
-                GradingCriterion(
-                    "asks_user",
-                    "Agent asks user whether to merge, skip, or create separately",
-                ),
-            ],
-            fail_if_present=["task created", "I've created"],
-            pass_threshold=0.8,
-        ),
-
-        # ------------------------------------------------------------------
-        # 6. Clear item with goal match — should link and present
-        # ------------------------------------------------------------------
-        EvalScenario(
-            id="clear_item_goal_match",
-            name="Clear item matching a goal",
-            description="Agent receives a clear task that aligns with Goal 3 (Developer Experience).",
-            system_prompt="",
-            user_message=(
-                "Process this backlog item:\n\n"
-                "```\n- Define developer portal requirements for API docs and test credentials\n```"
-            ),
-            criteria=[
-                GradingCriterion(
-                    "links_to_goal",
-                    "Agent identifies this aligns with Goal 3 (Improve Merchant Onboarding & Developer Experience)",
-                ),
-                GradingCriterion(
-                    "suggests_category",
-                    "Agent suggests a category (e.g., technical, strategy, or discovery)",
-                ),
-                GradingCriterion(
-                    "presents_for_review",
-                    "Agent presents the item for user review before creating",
-                ),
-            ],
-            fail_if_present=["task created", "I've created"],
-            pass_threshold=0.8,
-        ),
+    criteria = [
+        GradingCriterion(
+            name=c["name"],
+            description=c["description"],
+            weight=float(c.get("weight", 1.0)),
+        )
+        for c in data.get("criteria", [])
     ]
+
+    return EvalScenario(
+        id=data["id"],
+        name=data["name"],
+        description=data["description"],
+        system_prompt="",  # filled at test runtime
+        user_message=data["user_message"].strip(),
+        criteria=criteria,
+        fail_if_present=data.get("fail_if_present") or [],
+        pass_threshold=float(data.get("pass_threshold", 0.8)),
+        requires_knowledge_context=bool(data.get("requires_knowledge_context", False)),
+    )
+
+
+def _load_dir(directory: Path) -> list[EvalScenario]:
+    """Load all non-template YAML files from a directory, sorted by filename."""
+    if not directory.exists():
+        return []
+    paths = sorted(p for p in directory.glob("*.yaml") if not p.name.startswith("_"))
+    return [_load_yaml_scenario(p) for p in paths]
+
+
+def build_scenarios() -> list[EvalScenario]:
+    """Return all eval scenarios: designed scenarios first, then regressions."""
+    return _load_dir(SCENARIOS_DIR) + _load_dir(REGRESSIONS_DIR)

@@ -66,6 +66,50 @@
         "The agent suggests a category (e.g., technical, strategy, or discovery)",
         "The agent presents the item for user review before creating"
       ]
+    },
+    {
+      "id": 7,
+      "prompt": "I'm thinking of building a CSV export feature for Q2. Seems like an easy win — users have asked for it a few times. Can you help me get this into the backlog?",
+      "expected_output": "Agent challenges the 'easy win' framing, surfaces trade-offs or complexity, and does not immediately create a task",
+      "files": [],
+      "expectations": [
+        "The agent questions or challenges whether this is truly an 'easy win'",
+        "The agent names at least one concrete risk, edge case, or alternative consideration",
+        "The agent does NOT immediately create a task without engaging with the strategic question"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "I just finished a deep dive on our checkout flow. Here's what I found:\n\n- 40% of users drop off at the address form step (confirmed in analytics)\n- There's no inline validation — users only see errors on submit\n- This pattern appears on both mobile and web\n\nCan you capture these learnings?",
+      "expected_output": "Agent creates a domain learning folder under knowledge/, puts facts in knowledge.md, the pattern as a hypothesis, and updates INDEX.md",
+      "files": [],
+      "expectations": [
+        "The agent describes creating or updating a domain folder under knowledge/ (e.g. knowledge/checkout-flow/)",
+        "The agent puts the confirmed drop-off stat in knowledge.md and the mobile/web pattern in hypotheses.md",
+        "The agent mentions updating knowledge/INDEX.md to record the new domain folder"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Can you run a system review on my checkout-flow domain?\n\nCurrent state:\n\n**hypotheses.md**\n- [3 confirmations] Address form is the primary drop-off point — confirmed in Jun analytics, Jul user interviews, Aug heatmaps\n- [1 confirmation] Mobile users bounce faster than web users — seen in Aug analytics only\n\n**rules.md**\n(empty)",
+      "expected_output": "Agent promotes the 3-confirmation hypothesis to rules.md, keeps the 1-confirmation hypothesis in hypotheses.md, and reports what changed",
+      "files": [],
+      "expectations": [
+        "The agent moves the 3-confirmation hypothesis (address form drop-off) to rules.md",
+        "The agent leaves the 1-confirmation hypothesis in hypotheses.md without promoting it",
+        "The agent clearly summarises what was promoted, what was kept, and why"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "I just decided to use REST instead of GraphQL for our new data API. The team knows REST well, GraphQL has a steeper learning curve, and we don't have complex client-driven query needs right now. Can you log this decision?",
+      "expected_output": "Agent creates a decision file in knowledge/decisions/ with YYYY-MM-DD naming and all required sections",
+      "files": [],
+      "expectations": [
+        "The agent names knowledge/decisions/ as the location and uses YYYY-MM-DD-{topic}.md filename format",
+        "The agent's proposed file includes: Decision, Context, Alternatives considered, Reasoning, and Trade-offs accepted",
+        "The agent includes a Supersedes field (even if N/A)"
+      ]
     }
   ]
 }

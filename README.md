@@ -87,7 +87,6 @@ sams-product-os/
 ├── knowledge/              # Persistent context & references for your AI agent
 ├── meetings/               # Meeting notes & transcripts
 ├── initiatives/            # Strategic initiatives & groomed requests
-├── prototypes/             # Your vibe coded apps & prototypes
 ├── _temp/                  # Drop zone for files in transit or scratch work
 ├── templates/              # Document templates
 ├── setup.sh                # Interactive setup script
@@ -127,7 +126,7 @@ Reference files explicitly with `@knowledge/product-strategy/current-strategy.md
 
 ### Domain Learning (maintained by your agent)
 
-As you work, your agent builds up learned knowledge in domain-specific folders (e.g., `knowledge/interac/`, `knowledge/checkout-flow/`). Each domain folder holds three files: `knowledge.md` (facts), `hypotheses.md` (patterns under observation), and `rules.md` (confirmed — applied by default). The agent creates these automatically; you never pre-populate them. See the Knowledge Architecture section in `AGENTS.md` for details.
+As you work, your agent builds up learned knowledge in domain-specific folders (e.g., `knowledge/interac/`, `knowledge/checkout-flow/`). Each domain folder holds three files: `knowledge.md` (facts), `hypotheses.md` (patterns under observation), and `rules.md` (confirmed — applied by default). The agent creates these automatically; you never pre-populate them. See `knowledge/AGENTS.md` for the full knowledge architecture and maintenance rules.
 
 See `knowledge/INDEX.md` for a directory of what's in your knowledge folder.
 
@@ -141,13 +140,13 @@ See `knowledge/INDEX.md` for a directory of what's in your knowledge folder.
 - `config.yaml` (priority caps, categories)
 - `evals/` folder (automated tests)
 - `.claude/skills/` folder (AI agent capabilities)
-- `AGENTS.md`
+- `AGENTS.md` and subdirectory `AGENTS.md` + `CLAUDE.md` files (agent instructions for each folder)
 
 **Gitignored (your data):**
 - `BACKLOG.md`
 - `GOALS.md`
 - `VOICE-GUIDE.md`
-- Content in `knowledge/`, `tasks/`, `meetings/`, `initiatives/`, `prototypes/`, `_temp/`
+- Content in `knowledge/`, `tasks/`, `meetings/`, `initiatives/`, `_temp/`
 
 ---
 

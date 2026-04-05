@@ -1,0 +1,28 @@
+id: ambiguous_item
+name: Ambiguous backlog item
+description: Agent receives a vague item and should ask for clarification instead of creating a task.
+user_message: |
+  I just added this to my backlog:
+
+  ```
+  - Fix the thing
+  ```
+
+  Can you process this?
+criteria:
+  - name: asks_clarification
+    description: Agent asks the user for clarification about what 'the thing' refers to
+  - name: does_not_create_task
+    description: Agent does NOT create a task or say it will create one
+  - name: identifies_ambiguity
+    description: Agent explicitly flags the item as vague or ambiguous
+fail_if_present:
+  - "task created"
+  - "I've created"
+  - "I created"
+  - "created the task"
+  - "creating a task"
+  - "I'll create"
+  - "I will create"
+  - "adding to tasks"
+pass_threshold: 1.0

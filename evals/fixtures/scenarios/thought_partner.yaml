@@ -1,0 +1,30 @@
+id: thought_partner
+name: Thought partner — challenge strategic assumption
+description: Agent should push back on a casual strategic proposal rather than immediately executing.
+user_message: |
+  I'm thinking of building a CSV export feature for Q2.
+  Seems like an easy win — users have asked for it a few times.
+  Can you help me get this into the backlog?
+criteria:
+  - name: challenges_assumption
+    description: >-
+      Agent questions or challenges the framing of this as an 'easy win' —
+      surfaces potential hidden complexity, scope questions, or trade-offs
+  - name: names_trade_offs
+    description: >-
+      Agent names at least one concrete risk, edge case, or alternative consideration
+      (e.g. data volume, privacy, format support, opportunity cost)
+  - name: does_not_just_execute
+    description: >-
+      Agent does NOT immediately create a task or proceed to backlog entry
+      without first engaging with the strategic question
+fail_if_present:
+  - "task created"
+  - "I've created"
+  - "I created"
+  - "I've added"
+  - "adding to tasks"
+  - "created the task"
+  - "I'll create"
+  - "I will create"
+pass_threshold: 0.7

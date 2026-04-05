@@ -1,0 +1,31 @@
+id: system_review
+name: System review — promote confirmed hypotheses to rules
+description: Agent runs a system review and promotes a hypothesis confirmed 3+ times.
+user_message: |
+  Can you run a system review on my checkout-flow domain?
+
+  Current state:
+
+  **hypotheses.md**
+  - [3 confirmations] Address form is the primary drop-off point — confirmed in Jun analytics, Jul user interviews, Aug heatmaps
+  - [1 confirmation] Mobile users bounce faster than web users — seen in Aug analytics only
+
+  **rules.md**
+  (empty)
+criteria:
+  - name: promotes_confirmed_hypothesis
+    description: >-
+      Agent identifies the address form drop-off hypothesis (3 confirmations) as ready to
+      promote AND presents what the rules.md entry should contain — not just "this should
+      be promoted" but the actual rule content or a clear statement of the rule
+  - name: keeps_unconfirmed
+    description: >-
+      Agent identifies the mobile bounce rate hypothesis as NOT ready to promote
+      (only 1 confirmation) and says it should stay in hypotheses.md
+  - name: reports_changes
+    description: >-
+      Agent clearly summarises what should be promoted, what should stay, and why —
+      framed as a recommendation or plan is acceptable since the agent cannot write files directly
+fail_if_present: []
+pass_threshold: 0.8
+requires_knowledge_context: true

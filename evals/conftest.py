@@ -103,40 +103,6 @@ def temp_project_dir(tmp_path: Path) -> Generator[Path, None, None]:
     yield tmp_path
 
 
-@pytest.fixture
-def temp_tasks_dir(temp_project_dir: Path) -> Path:
-    """Return the tasks directory within the temp project."""
-    return temp_project_dir / "tasks"
-
-
-# ============================================================================
-# Task Creation Fixtures
-# ============================================================================
-
-
-@pytest.fixture
-def create_task_file(temp_tasks_dir: Path):
-    """
-    Factory fixture to create task files in the temp directory.
-
-    Usage:
-        def test_something(create_task_file):
-            task_path = create_task_file("my-task.md", frontmatter, body)
-    """
-    def _create_task_file(
-        filename: str,
-        frontmatter: dict,
-        body: str = ""
-    ) -> Path:
-        task_path = temp_tasks_dir / filename
-        yaml_str = yaml.dump(frontmatter, default_flow_style=False, sort_keys=False)
-        content = f"---\n{yaml_str}---\n\n{body}\n"
-        task_path.write_text(content)
-        return task_path
-
-    return _create_task_file
-
-
 # ============================================================================
 # Test Data Loading Fixtures
 # ============================================================================
@@ -186,8 +152,6 @@ def load_expected_output(expected_dir: Path):
 
 def pytest_configure(config):
     """Register custom markers."""
-    config.addinivalue_line("markers", "slow: marks tests as slow")
-    config.addinivalue_line("markers", "integration: marks integration tests")
     config.addinivalue_line(
         "markers", "llm: marks tests that require LLM API calls (need ANTHROPIC_API_KEY)"
     )
@@ -223,7 +187,7 @@ def llm_model() -> str:
 @pytest.fixture(scope="session")
 def judge_model() -> str:
     """Model used for the judge. Override with LLM_JUDGE_MODEL env var."""
-    return os.environ.get("LLM_JUDGE_MODEL", "claude-sonnet-4-20250514")
+    return os.environ.get("LLM_JUDGE_MODEL", "claude-haiku-4-5-20251001")
 
 
 @pytest.fixture(scope="session")
@@ -246,8 +210,8 @@ def skill_md_content() -> str:
 
 @pytest.fixture(scope="session")
 def goals_md_content() -> str:
-    """Load GOALS.md content for LLM evals."""
-    path = PROJECT_ROOT / "GOALS.md"
-    if not path.exists():
-        pytest.skip("GOALS.md not found")
-    return path.read_text()
+    """Load GOALS.md for LLM evals. Uses real file if present, fixture fallback otherwise."""
+    real_path = PROJECT_ROOT / "GOALS.md"
+    if real_path.exists():
+        return real_path.read_text()
+    return (PROJECT_ROOT / "evals" / "fixtures" / "goals.md").read_text()

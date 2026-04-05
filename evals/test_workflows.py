@@ -2,15 +2,16 @@
 Workflow Tests
 
 Tests the backlog processing workflow:
-- Item classification (tasks, initiatives, references, notes)
-- Ambiguity detection
-- Auto-categorization
-- Deduplication
+- Item type detection (task, initiative, reference, notes)
+- Full backlog classification pipeline
+- Auto-categorization from config keywords
+
+Unit-level function tests (ambiguity detection, clarification questions,
+similarity, deduplication) live in tools/mcp-servers/task-manager/test_server.py.
 
 Run with: pytest evals/test_workflows.py -v
 """
 
-import json
 import re
 import sys
 from pathlib import Path
@@ -24,11 +25,8 @@ sys.path.insert(0, str(PROJECT_ROOT / "tools" / "mcp-servers" / "task-manager"))
 
 from server import (
     is_ambiguous,
-    generate_clarification_questions,
     auto_categorize,
-    calculate_similarity,
     load_config,
-    get_all_tasks,
 )
 
 import server
@@ -41,48 +39,6 @@ def mock_project_dirs(temp_project_dir: Path, monkeypatch):
     monkeypatch.setattr(server, "TASKS_DIR", temp_project_dir / "tasks")
     monkeypatch.setattr(server, "CONFIG_FILE", temp_project_dir / "config.yaml")
     return temp_project_dir
-
-
-class TestAmbiguityDetection:
-    """Test ambiguity detection for backlog items."""
-
-    @pytest.mark.parametrize("item,should_be_ambiguous", [
-        ("Bug", True),  # Too short
-        ("Fix it", True),  # Too short
-        ("The database", True),  # No action verb
-        ("Maybe update docs", True),  # Vague "maybe"
-        ("Should look into this", True),  # Vague "should"
-        ("Might need to refactor", True),  # Vague "might"
-        ("Fix authentication bug in login flow", False),  # Clear
-        ("Email Sarah about Q4 roadmap", False),  # Clear
-        ("Research competitor pricing models", False),  # Clear
-    ])
-    def test_ambiguity_detection(self, item: str, should_be_ambiguous: bool):
-        """Test various items for ambiguity detection."""
-        is_amb, reason = is_ambiguous(item)
-        assert is_amb == should_be_ambiguous, f"'{item}' ambiguity: expected {should_be_ambiguous}, got {is_amb} ({reason})"
-
-
-class TestClarificationQuestions:
-    """Test clarification question generation."""
-
-    def test_generates_deadline_question(self):
-        """Items without deadline info get deadline question."""
-        questions = generate_clarification_questions("Fix the bug")
-        has_deadline_q = any("when" in q.lower() for q in questions)
-        assert has_deadline_q
-
-    def test_generates_context_question(self):
-        """Items without context get context question."""
-        questions = generate_clarification_questions("Update documentation")
-        has_context_q = any("why" in q.lower() or "context" in q.lower() for q in questions)
-        assert has_context_q
-
-    def test_question_format(self):
-        """All questions end with question mark or parenthesis."""
-        questions = generate_clarification_questions("Something to do")
-        for q in questions:
-            assert q.endswith("?") or q.endswith(")"), f"'{q}' should be a question"
 
 
 class TestItemClassification:
@@ -251,61 +207,3 @@ class TestBacklogClassification:
         return tasks, initiatives, references, notes
 
 
-class TestDeduplication:
-    """Test duplicate detection."""
-
-    @pytest.fixture
-    def config(self, mock_project_dirs: Path):
-        """Load config for deduplication tests."""
-        return load_config()
-
-    def test_detect_exact_duplicate(self, mock_project_dirs: Path, create_task_file, config: dict):
-        """Exact duplicate titles are detected."""
-        create_task_file("existing-task.md", {
-            "title": "Fix authentication bug",
-            "priority": "P1",
-            "status": "n",
-            "category": "technical",
-            "keywords": ["auth", "bug"],
-        }, "")
-
-        existing_tasks = get_all_tasks()
-        new_task = {
-            "title": "Fix authentication bug",
-            "keywords": ["auth", "bug"],
-            "category": "technical",
-        }
-
-        similar = []
-        for task in existing_tasks:
-            similarity = calculate_similarity(new_task, task, config)
-            if similarity >= config["deduplication"]["similarity_threshold"]:
-                similar.append((task, similarity))
-
-        assert len(similar) >= 1
-        assert similar[0][1] >= 0.6
-
-    def test_no_false_positive(self, mock_project_dirs: Path, create_task_file, config: dict):
-        """Different tasks are not flagged as duplicates."""
-        create_task_file("write-docs.md", {
-            "title": "Write API documentation",
-            "priority": "P2",
-            "status": "n",
-            "category": "writing",
-            "keywords": ["docs", "api"],
-        }, "")
-
-        existing_tasks = get_all_tasks()
-        new_task = {
-            "title": "Schedule team meeting",
-            "keywords": ["meeting", "team"],
-            "category": "admin",
-        }
-
-        similar = []
-        for task in existing_tasks:
-            similarity = calculate_similarity(new_task, task, config)
-            if similarity >= config["deduplication"]["similarity_threshold"]:
-                similar.append((task, similarity))
-
-        assert len(similar) == 0

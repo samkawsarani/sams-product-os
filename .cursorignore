@@ -12,7 +12,6 @@ build/
 *.env
 *.env.local
 .venv
-.secrets/
 
 # Large binary files
 *.mp4
@@ -29,9 +28,6 @@ Thumbs.db
 .vscode/
 .idea/
 .obsidian/
-
-# Prototype code
-prototypes/
 
 # Project todos
 TODO.md

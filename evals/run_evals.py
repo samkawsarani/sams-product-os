@@ -6,9 +6,10 @@ Runs all tests and provides a summary.
 
 Usage:
     python evals/run_evals.py           # Run all evals
-    python evals/run_evals.py --quick   # Skip slow tests
     python evals/run_evals.py --mcp     # Only MCP server tests
     python evals/run_evals.py --workflows  # Only workflow tests
+    python evals/run_evals.py --behavior  # Only agent behavior tests
+    python evals/run_evals.py --llm     # Only LLM behavioral evals (needs ANTHROPIC_API_KEY)
 """
 
 import argparse
@@ -30,7 +31,6 @@ def run_tests(test_path: str, verbose: bool = True) -> int:
 
 def main():
     parser = argparse.ArgumentParser(description="Run SAMS PRODUCT OS evals")
-    parser.add_argument("--quick", action="store_true", help="Skip slow tests")
     parser.add_argument("--mcp", action="store_true", help="Only run MCP server tests")
     parser.add_argument("--workflows", action="store_true", help="Only run workflow tests")
     parser.add_argument("--behavior", action="store_true", help="Only run agent behavior tests")
@@ -39,7 +39,7 @@ def main():
     args = parser.parse_args()
 
     verbose = not args.quiet
-    results = {}
+    results: dict[str, int] = {}
 
     # Determine which tests to run
     if args.mcp:

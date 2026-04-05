@@ -1,0 +1,25 @@
+id: domain_learning_capture
+name: Domain learning — capture analysis into knowledge folder
+description: After completing analysis, agent should write learnings to the right domain files.
+user_message: |
+  I just finished a deep dive on our checkout flow. Here's what I found:
+
+  - 40% of users drop off at the address form step (confirmed in analytics)
+  - There's no inline validation — users only see errors on submit
+  - This pattern appears on both mobile and web
+
+  Can you capture these learnings?
+criteria:
+  - name: creates_domain_folder
+    description: >-
+      Agent describes creating or updating a domain-specific folder under knowledge/
+      (e.g. knowledge/checkout-flow/ or similar)
+  - name: classifies_correctly
+    description: >-
+      Agent puts the confirmed drop-off stat in knowledge.md (fact) and the
+      mobile/web pattern in hypotheses.md (not yet confirmed 3 times, not rules.md)
+  - name: updates_index
+    description: Agent mentions updating knowledge/INDEX.md to record the new domain folder
+fail_if_present: []
+pass_threshold: 0.7
+requires_knowledge_context: true

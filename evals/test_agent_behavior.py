@@ -14,17 +14,12 @@ Run with: pytest evals/test_agent_behavior.py -v
 """
 
 import re
-import sys
 from pathlib import Path
 from typing import Optional
 
 import pytest
 
-# tests/ -> evals/ -> project root
 PROJECT_ROOT = Path(__file__).parent.parent
-sys.path.insert(0, str(PROJECT_ROOT / "tools" / "mcp-servers" / "task-manager"))
-
-from server import is_ambiguous, generate_clarification_questions
 
 
 # ============================================================================
@@ -212,21 +207,21 @@ class TestAgentsMdCompliance:
             "AGENTS.md must reference GOALS.md for task alignment"
         )
 
-    def test_agents_md_defines_priority_system(self, agents_md: str):
-        """AGENTS.md must define the priority system."""
+    def test_agents_md_defines_priority_system(self, tasks_agents_md: str):
+        """tasks/AGENTS.md must define the priority system (moved from root in progressive disclosure refactor)."""
         priority_patterns = [
             r"p0.*p1.*p2.*p3",
             r"priorities.*p0",
             r"p0.*max.*3",
         ]
 
-        content_lower = agents_md.lower()
+        content_lower = tasks_agents_md.lower()
         has_priority_system = any(
             re.search(pattern, content_lower) for pattern in priority_patterns
         )
 
         assert has_priority_system, (
-            "AGENTS.md must define the priority system (P0-P3)"
+            "tasks/AGENTS.md must define the priority system (P0-P3)"
         )
 
 
@@ -284,106 +279,6 @@ class TestGoalAlignment:
         assert "developer" in all_keywords
         assert "tooling" in all_keywords
         assert "friction" in all_keywords
-
-
-# ============================================================================
-# Clarification Requirement Tests
-# ============================================================================
-
-
-class TestClarificationRequirements:
-    """Test when agent should ask for clarification."""
-
-    @pytest.mark.parametrize("item,should_clarify,reason", [
-        # Should clarify - too short (< 10 chars)
-        ("Fix it", True, "Too short"),
-        ("Bug", True, "Too short"),
-
-        # Should clarify - vague language detected
-        ("Do something about performance", True, "Contains 'something'"),
-        ("Maybe refactor the code", True, "Contains 'maybe'"),
-        ("Should look into this issue", True, "Contains 'should'"),
-
-        # Should NOT clarify - clear enough
-        ("Fix authentication bug in login API", False, "Clear action and target"),
-        ("Email Sarah about Q4 roadmap by Friday", False, "Clear action, target, deadline"),
-        ("Research competitor pricing models", False, "Clear research task"),
-        ("Deploy v2.1 to staging environment", False, "Clear deployment action"),
-    ])
-    def test_clarification_needed(self, item: str, should_clarify: bool, reason: str):
-        """Test items that should/shouldn't require clarification."""
-        is_amb, _ = is_ambiguous(item)
-
-        assert is_amb == should_clarify, (
-            f"'{item}' clarification={is_amb}, expected={should_clarify}. Reason: {reason}"
-        )
-
-    @pytest.mark.parametrize("item,reason", [
-        ("Update the thing", "Unclear what 'thing' refers to"),
-        ("Fix the issue", "No specific issue identified"),
-        ("Handle that problem", "Vague reference"),
-    ])
-    def test_vague_targets_need_clarification(self, item: str, reason: str):
-        """Items with vague targets should require clarification."""
-        is_amb, _ = is_ambiguous(item)
-        assert is_amb, f"'{item}' should be flagged as ambiguous: {reason}"
-
-    def test_clarification_questions_are_actionable(self):
-        """Clarification questions should be specific and actionable."""
-        vague_items = [
-            "Fix the bug",
-            "Update documentation",
-            "Something about users",
-        ]
-
-        for item in vague_items:
-            questions = generate_clarification_questions(item)
-
-            assert len(questions) > 0, f"Should generate questions for '{item}'"
-
-            # Questions should be actual questions
-            for q in questions:
-                assert q.endswith("?") or q.endswith(")"), (
-                    f"'{q}' should be a question"
-                )
-
-            # Should ask about at least one of: what, when, why
-            question_text = " ".join(questions).lower()
-            has_useful_question = any(
-                word in question_text
-                for word in ["what", "when", "why", "which", "how", "who"]
-            )
-            assert has_useful_question, (
-                f"Questions for '{item}' should include what/when/why/which/how"
-            )
-
-    def test_missing_deadline_triggers_question(self):
-        """Items without deadline should get deadline question."""
-        items_without_deadline = [
-            "Write the report",
-            "Review the PR",
-            "Send the email",
-        ]
-
-        for item in items_without_deadline:
-            questions = generate_clarification_questions(item)
-            has_deadline_q = any("when" in q.lower() for q in questions)
-            assert has_deadline_q, f"'{item}' should trigger deadline question"
-
-    def test_missing_context_triggers_question(self):
-        """Items without context should get context question."""
-        items_without_context = [
-            "Fix the bug",
-            "Update the config",
-        ]
-
-        for item in items_without_context:
-            questions = generate_clarification_questions(item)
-            has_context_q = any(
-                "why" in q.lower() or "context" in q.lower() or "goal" in q.lower()
-                for q in questions
-            )
-            assert has_context_q, f"'{item}' should trigger context question"
 
 
 # ============================================================================
@@ -451,72 +346,6 @@ class TestConfirmationBeforeAction:
 
 
 # ============================================================================
-# Behavioral Scenario Tests
-# ============================================================================
-
-
-class TestBehavioralScenarios:
-    """Test complete behavioral scenarios."""
-
-    def test_ambiguous_item_flow(self):
-        """
-        Scenario: User adds ambiguous item to backlog
-        Expected: Agent should ask for clarification, NOT create task
-        """
-        # Use an item that current server detects as ambiguous (vague language)
-        item = "Maybe fix something"
-
-        # Step 1: Detect ambiguity
-        is_amb, reason = is_ambiguous(item)
-        assert is_amb, f"Item should be detected as ambiguous. Got: {reason}"
-
-        # Step 2: Generate clarification questions
-        questions = generate_clarification_questions(item)
-        assert len(questions) > 0, "Should generate clarification questions"
-
-        # Step 3: Agent should NOT proceed to create task
-        # (This is a behavioral contract - agent must ask first)
-        should_create = not is_amb
-        assert not should_create, "Agent should NOT create task for ambiguous item"
-
-    def test_clear_item_with_goal_flow(self, sample_goals: list[dict]):
-        """
-        Scenario: User adds clear item that aligns with a goal
-        Expected: Agent should present with goal reference, ask confirmation
-        """
-        # Use explicit keywords that match goal keywords
-        item = "Fix developer tooling for better automation"
-
-        # Step 1: Item should not be ambiguous
-        is_amb, _ = is_ambiguous(item)
-        assert not is_amb, "Clear item should not be ambiguous"
-
-        # Step 2: Should match a goal
-        matching_goal = find_matching_goal(item, sample_goals)
-        assert matching_goal is not None, "Should find matching goal"
-        assert matching_goal["name"] == "Improve Developer Experience"
-
-        # Step 3: Agent should present findings WITH goal reference
-        # (Behavioral contract: include goal in presentation)
-
-    def test_orphan_task_flow(self, sample_goals: list[dict]):
-        """
-        Scenario: User adds task that doesn't align with any goal
-        Expected: Agent should flag this and ask about goal alignment
-        """
-        item = "Reorganize the file cabinet"
-
-        # Step 1: No matching goal
-        matching_goal = find_matching_goal(item, sample_goals)
-        assert matching_goal is None, "Should not match any goal"
-
-        # Step 2: Agent should ask about goal alignment
-        # (Behavioral contract: ask when task doesn't support goals)
-        should_ask_about_goals = matching_goal is None
-        assert should_ask_about_goals, "Agent should ask about goal alignment"
-
-
-# ============================================================================
 # Helper Functions
 # ============================================================================
 
@@ -556,39 +385,118 @@ def find_matching_goal(task_title: str, goals: list[dict]) -> Optional[dict]:
     return None
 
 
-def requires_confirmation(action: str, context: dict) -> bool:
+# ============================================================================
+# Progressive Disclosure — Fixtures
+# ============================================================================
+
+
+@pytest.fixture
+def knowledge_agents_md() -> str:
+    """Load knowledge/AGENTS.md content."""
+    f = PROJECT_ROOT / "knowledge" / "AGENTS.md"
+    if not f.exists():
+        pytest.skip("knowledge/AGENTS.md not found")
+    return f.read_text()
+
+
+@pytest.fixture
+def tasks_agents_md() -> str:
+    """Load tasks/AGENTS.md content."""
+    f = PROJECT_ROOT / "tasks" / "AGENTS.md"
+    if not f.exists():
+        pytest.skip("tasks/AGENTS.md not found")
+    return f.read_text()
+
+
+# ============================================================================
+# Progressive Disclosure — Structural Instruction Tests
+# ============================================================================
+
+
+class TestProgressiveDisclosureInstructions:
     """
-    Determine if an action requires user confirmation.
+    Verify that behavioral instructions are present in the correct AGENTS.md files
+    after the progressive disclosure refactor.
 
-    Args:
-        action: The action being taken (create, update, delete, etc.)
-        context: Context about the action (count, priority, etc.)
-
-    Returns:
-        True if confirmation is required
+    These are prerequisite checks — if an instruction isn't in the file,
+    the agent can't follow it.
     """
-    # Always confirm destructive actions
-    if action in ["delete", "archive", "clear"]:
-        return True
 
-    # Confirm bulk operations
-    if context.get("count", 1) > 1:
-        return True
+    def test_knowledge_agents_md_has_three_file_pattern(self, knowledge_agents_md: str):
+        """Domain learning folders must define the 3-file pattern."""
+        for filename in ("knowledge.md", "hypotheses.md", "rules.md"):
+            assert filename in knowledge_agents_md, (
+                f"knowledge/AGENTS.md must define the '{filename}' file in the domain learning pattern"
+            )
 
-    # Confirm priority upgrades
-    if action == "update_priority":
-        from_num = int(context.get("from_priority", "P3")[1])
-        to_num = int(context.get("to_priority", "P3")[1])
-        if to_num < from_num:  # Upgrading (P2 -> P1)
-            return True
+    def test_knowledge_agents_md_has_hypothesis_promotion(self, knowledge_agents_md: str):
+        """Hypothesis promotion rule (3 confirmations) must be present."""
+        content_lower = knowledge_agents_md.lower()
+        has_count = "3" in knowledge_agents_md or "three" in content_lower
+        has_promotion = "promot" in content_lower
+        assert has_count and has_promotion, (
+            "knowledge/AGENTS.md must describe hypothesis promotion after 3 confirmations"
+        )
 
-    # Confirm when near priority cap
-    if action == "create":
-        priority = context.get("priority", "P3")
-        current_count = context.get("current_count", 0)
-        caps = {"P0": 3, "P1": 7, "P2": 15, "P3": 999}
-        cap = caps.get(priority, 999)
-        if current_count >= cap - 1:
-            return True
+    def test_knowledge_agents_md_has_system_review_protocol(self, knowledge_agents_md: str):
+        """System review protocol must be in knowledge/AGENTS.md, not root."""
+        assert "## System Review Protocol" in knowledge_agents_md, (
+            "knowledge/AGENTS.md must contain the ## System Review Protocol section"
+        )
 
-    return False
+    def test_knowledge_agents_md_has_decision_journal(self, knowledge_agents_md: str):
+        """Decision journal instructions must be in knowledge/AGENTS.md."""
+        assert "## Decision Journal" in knowledge_agents_md, (
+            "knowledge/AGENTS.md must contain the ## Decision Journal section"
+        )
+
+    @pytest.mark.parametrize("section", [
+        "## Decision:",
+        "## Context:",
+        "## Reasoning:",
+        "## Trade-offs accepted:",
+    ])
+    def test_knowledge_agents_md_decision_format_has_required_sections(
+        self, knowledge_agents_md: str, section: str
+    ):
+        """Decision file format must include all required sections."""
+        assert section in knowledge_agents_md, (
+            f"knowledge/AGENTS.md decision journal format must include '{section}'"
+        )
+
+    def test_tasks_agents_md_has_priority_caps(self, tasks_agents_md: str):
+        """Priority caps enforcement must be in tasks/AGENTS.md."""
+        assert "## Priority Caps" in tasks_agents_md, (
+            "tasks/AGENTS.md must contain the ## Priority Caps section"
+        )
+
+    def test_tasks_agents_md_has_archiving_rule(self, tasks_agents_md: str):
+        """Archiving rule (move done tasks to _archived/) must be in tasks/AGENTS.md."""
+        assert "_archived" in tasks_agents_md, (
+            "tasks/AGENTS.md must reference _archived/ for completed task archival"
+        )
+
+    def test_root_agents_md_has_search_protocol(self, agents_md: str):
+        """Root AGENTS.md must define the QMD+Grep search protocol."""
+        assert "## Search Protocol" in agents_md, (
+            "Root AGENTS.md must contain ## Search Protocol section"
+        )
+        assert "QMD" in agents_md, "Search Protocol must mention QMD"
+        assert "Grep" in agents_md, "Search Protocol must mention Grep"
+
+    def test_root_agents_md_has_thought_partner_rule(self, agents_md: str):
+        """Root AGENTS.md must contain the thought partner / challenge rule."""
+        assert "Challenge" in agents_md, (
+            "Root AGENTS.md Core Rules must include the 'Challenge my thinking' rule"
+        )
+
+    @pytest.mark.parametrize("moved_section", [
+        "## Knowledge Architecture",
+        "## Task System",
+        "## Decision Journal",
+    ])
+    def test_root_agents_md_not_has_moved_sections(self, agents_md: str, moved_section: str):
+        """Sections moved to subdirectory AGENTS.md files must not appear in root."""
+        assert moved_section not in agents_md, (
+            f"'{moved_section}' was moved to a subdirectory AGENTS.md — it must not appear in root AGENTS.md"
+        )
