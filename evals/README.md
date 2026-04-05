@@ -104,7 +104,7 @@ evals/
 ## Maintenance
 
 Update tests when:
-- `config.yaml` keywords change — update categorization tests and `conftest.py` test config
+- `tools/mcp-servers/task-manager/config.yaml` keywords change — update categorization tests and `conftest.py` test config
 - Priority caps change — update cap enforcement tests
 - `AGENTS.md` requirements change — update behavior tests
 - `.claude/skills/process-backlog/SKILL.md` changes — update workflow compliance tests

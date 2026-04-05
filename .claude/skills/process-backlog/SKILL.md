@@ -65,7 +65,7 @@ Check caps from `tools/mcp-servers/task-manager/config.yaml` before creating. If
 ### Step 7: Create Approved Items
 
 **Tasks**: Create with frontmatter including:
-- title, category (from config keywords), priority, status: n, created_date, due_date
+- title, category (from `tools/mcp-servers/task-manager/config.yaml` keywords), priority, status: n, created_date, due_date
 - `resource_refs: []` in frontmatter
 - Full context from backlog item (description, sub-bullets) preserved in Context section
 - `**Goal:** [Link to relevant goal from GOALS.md]` line in Context section

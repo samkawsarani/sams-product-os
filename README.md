@@ -80,6 +80,7 @@ sams-product-os/
 │   └── mcp-servers/        # Custom MCP servers
 │       └── task-manager/   # Task management MCP server
 │           ├── server.py   # MCP server
+│           ├── config.yaml # Task manager configuration
 │           └── README.md   # MCP tool documentation
 │
 ├── evals/                  # AI agent tests & evaluation
@@ -94,8 +95,7 @@ sams-product-os/
 ├── GOALS.md                # Ownership areas & quarterly goals
 ├── AGENTS.md               # Your AI agent instructions
 ├── CLAUDE.md               # Points to AGENTS.md (agent instructions for Claude Code)
-├── VOICE-GUIDE.md          # Your writing style (optional)
-└── tools/mcp-servers/task-manager/config.yaml  # Task manager configuration
+└── VOICE-GUIDE.md          # Your writing style (optional)
 
 ```
 

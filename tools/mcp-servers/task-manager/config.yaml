@@ -1,8 +1,7 @@
 # Task Management System Configuration
 #
-# This file is read by AI during backlog processing and task management.
-# All values below are referenced in AGENTS.md and .claude/skills/process-backlog/SKILL.md.
-# Customize these settings to match your workflow.
+# Read by the task manager MCP server (server.py) and referenced in
+# .claude/skills/process-backlog/SKILL.md. Customize to match your workflow.
 
 # Task categories - modify based on your needs
 # Used by: Auto-categorization during /backlog processing

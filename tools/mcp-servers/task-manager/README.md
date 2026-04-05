@@ -445,8 +445,8 @@ category_keywords:
 
 **Priority caps hit?**
 - Check `get_task_summary()` for current counts
-- Adjust caps in config.yaml or deprioritize tasks
+- Adjust caps in `tools/mcp-servers/task-manager/config.yaml` or deprioritize tasks
 
 **Category not auto-assigned?**
-- Add keywords to `category_keywords` in config.yaml
+- Add keywords to `category_keywords` in `tools/mcp-servers/task-manager/config.yaml`
 - Check keyword matching logic in `auto_categorize()`
