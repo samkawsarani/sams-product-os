@@ -210,8 +210,8 @@ def skill_md_content() -> str:
 
 @pytest.fixture(scope="session")
 def goals_md_content() -> str:
-    """Load GOALS.md content for LLM evals."""
-    path = PROJECT_ROOT / "GOALS.md"
-    if not path.exists():
-        pytest.skip("GOALS.md not found")
-    return path.read_text()
+    """Load GOALS.md for LLM evals. Uses real file if present, fixture fallback otherwise."""
+    real_path = PROJECT_ROOT / "GOALS.md"
+    if real_path.exists():
+        return real_path.read_text()
+    return (PROJECT_ROOT / "evals" / "fixtures" / "goals.md").read_text()
