@@ -2,11 +2,12 @@
 Workflow Tests
 
 Tests the backlog processing workflow:
-- Item classification (tasks, initiatives, references, notes)
-- Auto-categorization
+- Item type detection (task, initiative, reference, notes)
+- Full backlog classification pipeline
+- Auto-categorization from config keywords
 
 Unit-level function tests (ambiguity detection, clarification questions,
-similarity/deduplication) live in tools/mcp-servers/task-manager/test_server.py.
+similarity, deduplication) live in tools/mcp-servers/task-manager/test_server.py.
 
 Run with: pytest evals/test_workflows.py -v
 """

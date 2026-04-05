@@ -33,11 +33,11 @@ Unit tests for the task-manager MCP server: ambiguity detection, clarification q
 
 ### Workflows (`evals/test_workflows.py`)
 
-Backlog classification, deduplication, ambiguity detection, clarification question generation, auto-categorization from config keywords.
+Item type detection (task/initiative/reference/notes) and full backlog classification pipeline with auto-categorization. Unit-level function tests live in `test_server.py`.
 
 ### Agent Behavior (`evals/test_agent_behavior.py`)
 
-Behavioral contract tests: verifies `.claude/skills/process-backlog/SKILL.md` and `AGENTS.md` contain required instructions (user review, confirmation, goal linking, ambiguity resolution, priority caps). Tests goal alignment, clarification triggers, and confirmation requirements.
+Behavioral contract tests: verifies `.claude/skills/process-backlog/SKILL.md` and `AGENTS.md` contain required instructions (user review, confirmation, goal linking, ambiguity resolution, priority caps). Tests goal alignment, confirmation requirements, and structural instruction placement for progressive disclosure.
 
 ### LLM Behavioral (`evals/test_llm_behavior.py`)
 
@@ -66,7 +66,7 @@ End-to-end evals in skill-creator compatible format, complementing the pytest su
 
 ### `evals.json`
 
-6 eval scenarios for `process-backlog` in the standard skill-creator schema (prompt + expected_output + expectations). Run via `/skill-creator` eval mode for grading and benchmarking.
+10 eval scenarios for `process-backlog` in the standard skill-creator schema (prompt + expected_output + expectations). Run via `/skill-creator` eval mode for grading and benchmarking.
 
 ### `trigger-eval.json`
 
