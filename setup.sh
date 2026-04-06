@@ -509,11 +509,9 @@ select_plugins_fzf() {
   local -a entries=("$@")
   local fzf_input=""
   for entry in "${entries[@]}"; do
-    local name desc star=""
+    local name desc
     name="${entry%%	*}"
     desc="${entry#*	}"
-    [[ "$name" == "write-doc" || "$name" == "write-comms" ]] && star=" ${YELLOW}★${RESET}"
-    # For fzf we use plain text (no ANSI in the name field for easy parsing)
     if [[ "$name" == "write-doc" || "$name" == "write-comms" ]]; then
       fzf_input+="${name}  ★  ${desc}"$'\n'
     else
@@ -555,8 +553,8 @@ select_plugins_fallback() {
     local i=0
     for name in "${names[@]}"; do
       local check=" " star=""
-      [[ "${selected[$name]:-0}" == "1" ]] && check="x"
-      [[ "$name" == "write-doc" || "$name" == "write-comms" ]] && star=" ${YELLOW}★${RESET}"
+      if [[ "${selected[$name]:-0}" == "1" ]]; then check="x"; fi
+      if [[ "$name" == "write-doc" || "$name" == "write-comms" ]]; then star=" ${YELLOW}★${RESET}"; fi
       local desc="${descs[$i]}"
       # Truncate description to ~55 chars
       if [[ ${#desc} -gt 55 ]]; then
@@ -572,7 +570,7 @@ select_plugins_fallback() {
     case "$choice" in
       d|done)
         for name in "${names[@]}"; do
-          [[ "${selected[$name]:-0}" == "1" ]] && echo "$name"
+          if [[ "${selected[$name]:-0}" == "1" ]]; then echo "$name"; fi
         done
         return ;;
       s|skip) return ;;
@@ -640,11 +638,11 @@ step_plugins() {
       local selected_names=()
       if command -v fzf &>/dev/null; then
         while IFS= read -r name; do
-          [[ -n "$name" ]] && selected_names+=("$name")
+          if [[ -n "$name" ]]; then selected_names+=("$name"); fi
         done < <(select_plugins_fzf "${PLUGIN_LIST[@]}")
       else
         while IFS= read -r name; do
-          [[ -n "$name" ]] && selected_names+=("$name")
+          if [[ -n "$name" ]]; then selected_names+=("$name"); fi
         done < <(select_plugins_fallback "${PLUGIN_LIST[@]}")
       fi
 
