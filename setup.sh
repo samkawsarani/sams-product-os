@@ -143,6 +143,15 @@ step_prerequisites() {
       print_success "Node.js / npm installed"
     fi
 
+    # fzf — used for interactive plugin picker in Step 9
+    if command -v fzf &>/dev/null; then
+      print_skip "fzf"
+    else
+      echo -e "  ${DIM}Installing fzf...${RESET}"
+      brew install fzf
+      print_success "fzf installed"
+    fi
+
   else
     # Non-macOS: just check what's available
     if command -v uv &>/dev/null; then
@@ -548,16 +557,12 @@ select_plugins_fallback() {
     desc="${entry#*	}"
     names+=("$name")
     descs+=("$desc")
-    if [[ "$name" == "write-doc" || "$name" == "write-comms" ]]; then
-      sel_flags+=(1)
-    else
-      sel_flags+=(0)
-    fi
+    sel_flags+=(1)
   done
 
   while true; do
     echo ""
-    echo -e "  ${BOLD}Select plugins to install${RESET}  ${DIM}(number to toggle, d=done, s=skip all)${RESET}"
+    echo -e "  ${BOLD}Select plugins to install${RESET}  ${DIM}(all selected — number to deselect, d=done, s=skip all)${RESET}"
     echo ""
     local i=0
     while [[ $i -lt ${#names[@]} ]]; do
