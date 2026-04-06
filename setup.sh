@@ -462,6 +462,148 @@ step_cursor_setup() {
 # Step 9: Plugin Marketplace (Optional)
 # ─────────────────────────────────────────────────────────────────────────────
 
+ask_scope() {
+  echo ""
+  echo -e "  Plugins can be installed at three scopes:"
+  echo ""
+  echo -e "    ${BOLD}user${RESET}    — Available across ALL your projects  (~/.claude/)"
+  echo -e "    ${BOLD}project${RESET} — This project only, committed        (.claude/settings.json)"
+  echo -e "    ${BOLD}local${RESET}   — This project only, not committed    (.claude/settings.local.json)"
+  echo ""
+  while true; do
+    echo -en "  ${BOLD}?${RESET} Scope ${DIM}[user/project/local]${RESET} (default: user): "
+    read -r _scope_answer
+    _scope_answer="${_scope_answer:-user}"
+    case "$(printf '%s' "$_scope_answer" | tr '[:upper:]' '[:lower:]')" in
+      user|project|local) PLUGIN_SCOPE="$_scope_answer"; return ;;
+      *) echo -e "  ${DIM}Please enter user, project, or local${RESET}" ;;
+    esac
+  done
+}
+
+build_plugin_list() {
+  # Outputs tab-separated lines: name\tdescription, recommended first
+  local raw
+  raw="$(claude plugin list --available --json 2>/dev/null || true)"
+  if [[ -z "$raw" ]]; then
+    PLUGIN_LIST=()
+    return
+  fi
+  # Parse JSON; put write-doc and write-comms first, rest sorted
+  local all_lines recommended other
+  all_lines="$(printf '%s' "$raw" | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+plugins = data.get('available', [])
+recommended = {'write-doc', 'write-comms'}
+rec = [p for p in plugins if p['name'] in recommended]
+other = [p for p in plugins if p['name'] not in recommended]
+other.sort(key=lambda p: p['name'])
+for p in rec + other:
+    desc = p.get('description', '').replace('\t', ' ')
+    print(p['name'] + '\t' + desc)
+" 2>/dev/null || true)"
+  if [[ -z "$all_lines" ]]; then
+    PLUGIN_LIST=()
+    return
+  fi
+  # Load into array
+  PLUGIN_LIST=()
+  while IFS= read -r line; do
+    [[ -n "$line" ]] && PLUGIN_LIST+=("$line")
+  done <<< "$all_lines"
+}
+
+select_plugins_fzf() {
+  # Takes plugin list as arguments (name\tdescription lines), returns selected names via stdout
+  local -a entries=("$@")
+  local fzf_input=""
+  for entry in "${entries[@]}"; do
+    local name desc star=""
+    name="${entry%%	*}"
+    desc="${entry#*	}"
+    [[ "$name" == "write-doc" || "$name" == "write-comms" ]] && star=" ${YELLOW}★${RESET}"
+    # For fzf we use plain text (no ANSI in the name field for easy parsing)
+    if [[ "$name" == "write-doc" || "$name" == "write-comms" ]]; then
+      fzf_input+="${name}  ★  ${desc}"$'\n'
+    else
+      fzf_input+="${name}     ${desc}"$'\n'
+    fi
+  done
+  local selected
+  selected="$(printf '%s' "$fzf_input" | fzf \
+    --multi \
+    --prompt="  Select plugins (TAB/SPACE toggles, ENTER confirms, ESC skips): " \
+    --header="TAB/SPACE=toggle  ENTER=install selected  ESC=skip all  ★=recommended" \
+    --no-info \
+    2>/dev/null || true)"
+  # Extract just the plugin name (first whitespace-delimited token)
+  printf '%s' "$selected" | awk '{print $1}'
+}
+
+select_plugins_fallback() {
+  # Takes plugin list as arguments (name\tdescription lines), returns selected names via stdout
+  local -a entries=("$@")
+  declare -A selected=()
+  local names=()
+  local descs=()
+  for entry in "${entries[@]}"; do
+    local name desc
+    name="${entry%%	*}"
+    desc="${entry#*	}"
+    names+=("$name")
+    descs+=("$desc")
+    if [[ "$name" == "write-doc" || "$name" == "write-comms" ]]; then
+      selected["$name"]=1
+    fi
+  done
+
+  while true; do
+    echo ""
+    echo -e "  ${BOLD}Select plugins to install${RESET}  ${DIM}(number to toggle, d=done, s=skip all)${RESET}"
+    echo ""
+    local i=0
+    for name in "${names[@]}"; do
+      local check=" " star=""
+      [[ "${selected[$name]:-0}" == "1" ]] && check="x"
+      [[ "$name" == "write-doc" || "$name" == "write-comms" ]] && star=" ${YELLOW}★${RESET}"
+      local desc="${descs[$i]}"
+      # Truncate description to ~55 chars
+      if [[ ${#desc} -gt 55 ]]; then
+        desc="${desc:0:52}..."
+      fi
+      printf "    ${DIM}[%2d]${RESET} [${BOLD}%s${RESET}]${star} ${BOLD}%-20s${RESET} ${DIM}%s${RESET}\n" \
+        "$((i+1))" "$check" "$name" "$desc"
+      ((i++))
+    done
+    echo ""
+    echo -en "  ${BOLD}>${RESET} "
+    read -r choice
+    case "$choice" in
+      d|done)
+        for name in "${names[@]}"; do
+          [[ "${selected[$name]:-0}" == "1" ]] && echo "$name"
+        done
+        return ;;
+      s|skip) return ;;
+      ''|*[!0-9]*)
+        echo -e "  ${DIM}Enter a number, d to confirm, or s to skip all${RESET}" ;;
+      *)
+        local idx=$((choice - 1))
+        if [[ $idx -ge 0 && $idx -lt ${#names[@]} ]]; then
+          local toggled="${names[$idx]}"
+          if [[ "${selected[$toggled]:-0}" == "1" ]]; then
+            unset "selected[$toggled]"
+          else
+            selected["$toggled"]=1
+          fi
+        else
+          echo -e "  ${DIM}Number out of range${RESET}"
+        fi ;;
+    esac
+  done
+}
+
 step_plugins() {
   print_header "Step 9: Plugin Marketplace (Optional)"
 
@@ -476,10 +618,12 @@ step_plugins() {
   echo -e "  ${DIM}https://github.com/${MARKETPLACE_REPO}${RESET}"
   echo ""
 
+  local marketplace_added=false
   if ask_yn "Add the plugin marketplace?" "y"; then
     echo -e "  ${DIM}Adding marketplace...${RESET}"
     if claude plugin marketplace add "$MARKETPLACE_REPO" 2>&1 | while IFS= read -r line; do echo -e "  ${DIM}${line}${RESET}"; done; then
       print_success "Plugin marketplace added"
+      marketplace_added=true
     else
       print_warning "Could not add marketplace — you can add it later with:"
       echo -e "     ${GREEN}claude plugin marketplace add ${MARKETPLACE_REPO}${RESET}"
@@ -487,6 +631,53 @@ step_plugins() {
   else
     print_info "Skipped — add it anytime with:"
     echo -e "     ${GREEN}claude plugin marketplace add ${MARKETPLACE_REPO}${RESET}"
+  fi
+
+  # Plugin picker — only if marketplace was added successfully
+  if [[ "$marketplace_added" == true ]]; then
+    echo -e "  ${DIM}Fetching available plugins...${RESET}"
+    PLUGIN_LIST=()
+    build_plugin_list
+
+    if [[ ${#PLUGIN_LIST[@]} -gt 0 ]]; then
+      echo ""
+      echo -e "  ${BOLD}${#PLUGIN_LIST[@]} plugins available.${RESET} Select which to install:"
+
+      ask_scope
+
+      local selected_names=()
+      if command -v fzf &>/dev/null; then
+        while IFS= read -r name; do
+          [[ -n "$name" ]] && selected_names+=("$name")
+        done < <(select_plugins_fzf "${PLUGIN_LIST[@]}")
+      else
+        while IFS= read -r name; do
+          [[ -n "$name" ]] && selected_names+=("$name")
+        done < <(select_plugins_fallback "${PLUGIN_LIST[@]}")
+      fi
+
+      if [[ ${#selected_names[@]} -gt 0 ]]; then
+        echo ""
+        local installed_plugins
+        installed_plugins="$(claude plugin list 2>/dev/null || true)"
+        for plugin in "${selected_names[@]}"; do
+          if echo "$installed_plugins" | grep -q "$plugin" 2>/dev/null; then
+            print_skip "$plugin (already installed)"
+          else
+            echo -e "  ${DIM}Installing ${plugin}...${RESET}"
+            if claude plugin install "${plugin}@sams-product-plugins" -s "$PLUGIN_SCOPE" 2>&1 \
+                | while IFS= read -r line; do echo -e "  ${DIM}${line}${RESET}"; done; then
+              print_success "$plugin installed"
+            else
+              print_warning "Could not install ${plugin} — try manually:"
+              echo -e "     ${GREEN}claude plugin install ${plugin}@sams-product-plugins -s ${PLUGIN_SCOPE}${RESET}"
+            fi
+          fi
+        done
+      else
+        print_info "No plugins selected — install anytime with: ${GREEN}claude plugin install <name>@sams-product-plugins${RESET}"
+      fi
+    fi
   fi
 
   # Check which official plugins are already installed
