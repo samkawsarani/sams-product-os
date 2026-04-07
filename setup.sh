@@ -414,56 +414,11 @@ step_mcp_config() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Step 8: Cursor Setup (Optional)
-# ─────────────────────────────────────────────────────────────────────────────
-
-step_cursor_setup() {
-  print_header "Step 8: Cursor Setup (Optional)"
-
-  if ! ask_yn "Do you use Cursor?" "n"; then
-    print_info "Skipping Cursor setup"
-    return
-  fi
-
-  # Skills symlink — only needed if NOT using Claude Code,
-  # since Cursor can read .claude/skills/ and plugins directly.
-  local cursor_dir="$REPO_DIR/.cursor"
-  mkdir -p "$cursor_dir"
-
-  if command -v claude &>/dev/null; then
-    print_info "Claude Code detected — skipping .cursor/skills symlink (Cursor reads .claude/skills/ directly)"
-  elif [[ -L "$cursor_dir/skills" ]] || [[ -d "$cursor_dir/skills" ]]; then
-    print_skip ".cursor/skills"
-  else
-    ln -s "../.claude/skills" "$cursor_dir/skills"
-    print_success "Created .cursor/skills symlink"
-  fi
-
-  # Cursor MCP config
-  local cursor_mcp="$cursor_dir/mcp.json"
-  if [[ -f "$cursor_mcp" ]]; then
-    if grep -q '"pm-tasks"' "$cursor_mcp" 2>/dev/null; then
-      print_skip ".cursor/mcp.json (pm-tasks already configured)"
-    else
-      print_warning ".cursor/mcp.json exists but missing pm-tasks server"
-      echo ""
-      echo -e "  Add this to your .cursor/mcp.json under ${BOLD}mcpServers${RESET}:"
-      echo ""
-      echo -e "${DIM}$PM_TASKS_JSON${RESET}"
-      echo ""
-    fi
-  else
-    echo "$PM_TASKS_MCP_FULL" > "$cursor_mcp"
-    print_success "Created .cursor/mcp.json with pm-tasks server"
-  fi
-}
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Step 9: Skills / Plugin Marketplace (Optional)
+# Step 8: Skills / Plugin Marketplace (Optional)
 # ─────────────────────────────────────────────────────────────────────────────
 
 step_plugins() {
-  print_header "Step 9: Skills / Plugin Marketplace (Optional)"
+  print_header "Step 8: Skills / Plugin Marketplace (Optional)"
 
   local marketplace_installed=false
   local has_claude=false
@@ -527,11 +482,11 @@ step_plugins() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Step 10: Verification
+# Step 9: Verification
 # ─────────────────────────────────────────────────────────────────────────────
 
 step_verification() {
-  print_header "Step 10: Verification"
+  print_header "Step 9: Verification"
 
   local pass=0
   local fail=0
@@ -678,7 +633,6 @@ main() {
   step_knowledge_dirs
   step_template_files
   step_mcp_config
-  step_cursor_setup
   step_plugins
   step_verification
   print_next_steps
