@@ -1,14 +1,14 @@
 ---
 name: process-backlog
 model: sonnet
-description: Processes BACKLOG.md into organized tasks, initiatives, and references with categorization, deduplication, and priority cap enforcement. Presents findings for review before creating. Invoked via /process-backlog or "triage the backlog", "clean up the backlog", or "organize my brain dump".
-allowed-tools: process_backlog, clear_backlog, check_duplicates, create_task, list_tasks, Glob, Read, Write, Bash(qmd *)
+description: Processes tasks/BACKLOG.md into organized tasks, initiatives, and references. Presents findings for review before creating anything. Invoked via /process-backlog or "triage the backlog", "clean up the backlog", or "organize my brain dump".
+allowed-tools: process_backlog, clear_backlog, check_duplicates, Glob, Read, Write, Bash(qmd *)
 argument-hint:
 ---
 
 ## Context
 
-- Config: `tools/mcp-servers/task-manager/config.yaml` (priority caps, category keywords, duplicate thresholds)
+- Backlog: `tasks/BACKLOG.md`
 - Today's date: $TODAY
 
 ## Workflow
@@ -17,25 +17,27 @@ argument-hint:
 
 ### Step 1: Analyze Backlog
 
-Read `BACKLOG.md` and categorize each item:
+Read `tasks/BACKLOG.md` and categorize each item:
 
 | Category | Destination | Examples |
 |----------|-------------|----------|
-| **Tasks** | `tasks/` | "Email Sarah about Q4", "Review PRD draft" - clear action + completion criteria |
-| **Initiatives** | `initiatives/` | "Mobile perf issues", "Enterprise SSO" - strategic ideas to explore |
-| **References** | `knowledge/references/` or related initiative folder | Articles, competitor info, research - context to save |
+| **Tasks** | Stay in `tasks/BACKLOG.md` | "Email Sarah about Q4", "Review PRD draft" — clear action, stays until moved to ACTIVE.md |
+| **Initiatives** | `initiatives/` | "Mobile perf issues", "Enterprise SSO" — strategic ideas to explore |
+| **References** | `knowledge/references/` or related initiative folder | Articles, competitor info, research — context to save |
 | **Notes** | Discard (summary only) | Meeting notes, incomplete thoughts |
 
-If MCP available, use **process_backlog** (auto_create=false). Otherwise, read files directly.
+If MCP available, use **process_backlog** (auto_create=false). Otherwise, read `tasks/BACKLOG.md` directly.
 
 ### Step 2: Check for Duplicates
 
-Compare against existing items in `tasks/`, `initiatives/`, `knowledge/references/`.
+Compare proposed items against existing content in `tasks/BACKLOG.md`, `tasks/ACTIVE.md`, and `initiatives/`.
+
+If MCP available, use **check_duplicates** per item. Otherwise, scan files directly.
 
 ### Step 3: Present Findings
 
 Show user a summary with:
-- **Tasks**: Table with title, category, priority, due date
+- **Tasks** (staying in backlog): Bullet list with title
 - **Initiatives**: Bullet list with name + description
 - **References**: Bullet list (noting if any relate to an existing initiative folder)
 - **Ambiguous items**: Items needing clarification
@@ -55,34 +57,23 @@ For vague items, ask:
 - When does this need to be done?
 - Why does this matter?
 
-### Step 6: Enforce Priority Caps
+### Step 6: Create Approved Items
 
-Check caps from `tools/mcp-servers/task-manager/config.yaml` before creating. If exceeded:
-1. Show current tasks at that priority
-2. Ask user to demote existing or downgrade new task
-3. Wait for decision
-
-### Step 7: Create Approved Items
-
-**Tasks**: Create with frontmatter including:
-- title, category (from `tools/mcp-servers/task-manager/config.yaml` keywords), priority, status: n, created_date, due_date
-- `resource_refs: []` in frontmatter
-- Full context from backlog item (description, sub-bullets) preserved in Context section
-- `**Goal:** [Link to relevant goal from GOALS.md]` line in Context section
+**Tasks**: Tasks stay as lines in `tasks/BACKLOG.md` — no individual files. Organize them under the appropriate topic header. Verify each task connects to a goal from `GOALS.md`. If no goal fits, flag it and ask user to clarify why it matters before adding.
 
 **Initiatives**: Create in `initiatives/` with format: Summary, Opportunity, Status, Open Questions
 
 **References**: If related to an existing initiative folder (e.g., `initiatives/vertical-expansion/`), save there. Otherwise save in `knowledge/references/`.
 
-### Step 8: Clear & Re-index
+### Step 7: Re-index
 
-1. Clear `BACKLOG.md` using `clear_backlog`
-2. Run `qmd update && qmd embed` (via Bash) to re-index collections with new content
-3. Summarize what was created: tasks (by priority), initiatives, references (with locations)
+Run `qmd update && qmd embed` (via Bash) to re-index collections with new content.
+Summarize what was organized: tasks kept (by topic), initiatives created, references saved (with locations).
 
 ## Key Reminders
 
-- **Never auto-create** - Always present findings first
+- **Never auto-create** — Always present findings first
 - **Ask for clarification** on ambiguous items before creating
-- **Link to goals** - If no goal fits, ask user to clarify why it matters
+- **Link to goals** — If no goal fits, ask user to clarify why it matters
+- **Tasks stay in the backlog** — they move to ACTIVE.md during weekly planning, not into individual files
 - Fewer clear items > many vague ones
