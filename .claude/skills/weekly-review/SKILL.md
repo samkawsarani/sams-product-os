@@ -36,10 +36,10 @@ Calculate the reporting period:
 
 **Actions:**
 1. Read `tasks/ACTIVE.md`
-2. Find all main checkboxes marked done: `- [x] Task title`
-   - These are tasks completed this week
-   - Sub-checkboxes (`  - [x]`) show progress within a task but don't count as completion — only the top-level checkbox does
-3. Items still `- [ ]` = in progress or not yet started
+2. Find all checkboxes marked done: `- [x]`
+   - Format varies — a task might be a heading with checkboxes under it, a standalone checkbox, or a mix
+   - Use context to determine what "done" means for each item; don't rely on nesting structure
+3. Items still `- [ ]` = active or not yet started
 
 **Output format:**
 ```

@@ -3,16 +3,9 @@
 
 ## In Progress
 
-- [ ] [Task title]
-  Project: [Initiative]  Due: [Date]
-  [Context — why this matters, what's needed, current status]
-  - [ ] [Sub-task]
-  - [ ] [Sub-task]
+<!-- Format is flexible — use whatever structure helps for the task -->
 
 ## Up Next
-
-- [ ] [Task title]
-  [Context]
 
 ## Waiting On
 

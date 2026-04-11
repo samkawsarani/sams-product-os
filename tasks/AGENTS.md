@@ -14,16 +14,7 @@ Three files, no individual task documents:
 
 **`tasks/BACKLOG.md`** — Free-form brain dump. Plain bullets, any format, unstructured. Not checkboxes — these are not yet committed.
 
-**`tasks/ACTIVE.md`** — Structured checkboxes. Each item follows this shape:
-```markdown
-- [ ] Task title
-  Project: [Initiative]  Due: [Date]   ← optional metadata line
-  Context prose — why this matters, current status, what's needed.
-  - [ ] Sub-task                        ← optional breakdown
-  - [ ] Sub-task
-```
-The main checkbox (`- [ ]` / `- [x]`) is the signal: unchecked = active, checked = done this week.
-Sub-checkboxes and metadata lines are optional — add them when they help, skip them when they don't.
+**`tasks/ACTIVE.md`** — Uses checkboxes, but format is flexible. A task might be a heading with checkboxes underneath, a single checkbox with context below it, or just a flat list of checkboxes — whatever fits the work. The key signal is the checkbox state: `- [ ]` = active, `- [x]` = done this week. Don't enforce a rigid structure when reading or writing ACTIVE.md.
 
 **`tasks/ACTIVE.md` Waiting On table** — stays as a markdown table, not checkboxes.
 
