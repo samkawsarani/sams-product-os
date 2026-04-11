@@ -86,7 +86,7 @@ sams-product-os/
 │   ├── integrations/       # Read-only API clients for external services
 │   └── mcp-servers/        # Custom MCP servers
 │       └── task-manager/   # Backlog management MCP server
-│           ├── server.py   # MCP server (3 tools: process_backlog, clear_backlog, check_duplicates)
+│           ├── server.py   # MCP server (2 tools: process_backlog, check_duplicates)
 │           └── README.md   # MCP tool documentation
 │
 ├── evals/                  # AI agent tests & evaluation
@@ -219,6 +219,7 @@ Tasks live in three files — no individual task files, no frontmatter, no prior
 ### Managing Tasks
 
 **Daily:**
+- `/daily-pulse` — morning briefing with calendar + active tasks
 - "What am I working on?" — agent reads `tasks/ACTIVE.md`
 - "Show my backlog" — agent reads `tasks/BACKLOG.md`
 - Brain dump into `tasks/BACKLOG.md`
@@ -226,7 +227,6 @@ Tasks live in three files — no individual task files, no frontmatter, no prior
 **Weekly:**
 - `/process-backlog` — classify and clean the backlog
 - `/weekly-review` — review progress, plan next week, log to archive
-- `/daily-pulse` — morning briefing with calendar + active tasks
 
 ---
 
@@ -279,9 +279,8 @@ uv sync
 
 Configure your AI assistant to use `tools/mcp-servers/task-manager/server.py` (see `tools/mcp-servers/task-manager/README.md`).
 
-**Provides 3 tools:**
+**Provides 2 tools:**
 - `process_backlog` — classify items from `tasks/BACKLOG.md` (tasks / initiatives / references)
-- `clear_backlog` — reset `tasks/BACKLOG.md` to blank template
 - `check_duplicates` — fuzzy-match a title against existing items in backlog, active, and initiatives
 
 ---
@@ -296,11 +295,6 @@ Configure your AI assistant to use `tools/mcp-servers/task-manager/server.py` (s
 **Weekly:**
 - `/process-backlog` — Classify and clean the backlog
 - `/weekly-review` — Reflect, plan, archive
-
-**Natural language works too:**
-- "What am I working on?" → shows ACTIVE.md
-- "What's in my backlog?" → shows BACKLOG.md
-- "Add [item] to my backlog" → adds to BACKLOG.md under appropriate header
 
 ---
 
