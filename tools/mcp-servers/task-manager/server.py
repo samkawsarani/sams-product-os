@@ -3,7 +3,7 @@
 SAMS PRODUCT OS Task Management MCP Server
 
 Provides programmatic access to backlog management through Model Context Protocol.
-Exposes 3 tools: process_backlog, clear_backlog, check_duplicates.
+Exposes 2 tools: process_backlog, check_duplicates.
 """
 
 import asyncio
@@ -352,14 +352,6 @@ async def list_tools() -> list[Tool]:
                 },
             },
         ),
-        Tool(
-            name="clear_backlog",
-            description="Reset tasks/BACKLOG.md to blank template with topic headers.",
-            inputSchema={
-                "type": "object",
-                "properties": {},
-            },
-        ),
     ]
 
 
@@ -557,33 +549,6 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent]:
             result += "\nSet auto_create=true to create initiative and reference files. Tasks remain in BACKLOG.md.\n"
 
         return [TextContent(type="text", text=result)]
-
-    elif name == "clear_backlog":
-        if not BACKLOG_FILE.exists():
-            return [TextContent(type="text", text="No tasks/BACKLOG.md found")]
-
-        blank = """# Backlog
-
-Brain dump inbox. Not prioritized, not committed — just captured.
-Run /process-backlog to classify and clean. Move items to ACTIVE.md during weekly planning.
-
-## Product
-
-## Strategy
-
-## Admin
-
-## Follow-ups
-
-## Team
-
----
-Last reviewed:
-"""
-        with open(BACKLOG_FILE, "w") as f:
-            f.write(blank)
-
-        return [TextContent(type="text", text="Backlog cleared and reset to blank template.")]
 
     return [TextContent(type="text", text=f"Unknown tool: {name}")]
 

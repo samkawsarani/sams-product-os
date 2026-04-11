@@ -2,7 +2,7 @@
 name: process-backlog
 model: sonnet
 description: Processes tasks/BACKLOG.md into organized tasks, initiatives, and references. Presents findings for review before creating anything. Invoked via /process-backlog or "triage the backlog", "clean up the backlog", or "organize my brain dump".
-allowed-tools: process_backlog, clear_backlog, check_duplicates, Glob, Read, Write, Bash(qmd *)
+allowed-tools: process_backlog, check_duplicates, Glob, Read, Write, Bash(qmd *)
 argument-hint:
 ---
 
