@@ -164,18 +164,18 @@ step_prerequisites() {
 # ─────────────────────────────────────────────────────────────────────────────
 
 step_python_deps() {
-  print_header "Step 3: Python Dependencies"
+  print_header "Step 3: Python Dependencies (Evals)"
 
   if ! command -v uv &>/dev/null; then
-    print_warning "uv not available — skipping Python dependency install"
-    print_info "Run 'uv sync' manually after installing uv"
+    print_warning "uv not available — skipping eval dependency install"
+    print_info "Run 'cd evals && uv sync' manually after installing uv"
     return
   fi
 
-  cd "$REPO_DIR"
-  echo -e "  ${DIM}Running uv sync...${RESET}"
+  cd "$REPO_DIR/evals"
+  echo -e "  ${DIM}Running uv sync in evals/...${RESET}"
   uv sync 2>&1 | while IFS= read -r line; do echo -e "  ${DIM}${line}${RESET}"; done
-  print_success "Python dependencies installed"
+  print_success "Eval dependencies installed"
 
 }
 

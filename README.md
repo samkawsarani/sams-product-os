@@ -427,7 +427,7 @@ What patterns have changed? What's new?
 Test that your system is working correctly after making changes:
 
 ```bash
-uv run pytest evals/ -v
+cd evals && uv run pytest -v
 ```
 
 This validates:
