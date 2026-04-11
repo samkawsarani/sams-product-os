@@ -2,7 +2,7 @@
 name: process-backlog
 model: sonnet
 description: Processes tasks/BACKLOG.md into organized tasks, initiatives, and references. Presents findings for review before creating anything. Invoked via /process-backlog or "triage the backlog", "clean up the backlog", or "organize my brain dump".
-allowed-tools: process_backlog, check_duplicates, Glob, Read, Write, Bash(qmd *)
+allowed-tools: Glob, Read, Write, Bash(qmd *)
 argument-hint:
 ---
 
@@ -26,13 +26,13 @@ Read `tasks/BACKLOG.md` and categorize each item:
 | **References** | `knowledge/references/` or related initiative folder | Articles, competitor info, research — context to save |
 | **Notes** | Discard (summary only) | Meeting notes, incomplete thoughts |
 
-If MCP available, use **process_backlog** (auto_create=false). Otherwise, read `tasks/BACKLOG.md` directly.
+Read `tasks/BACKLOG.md` directly.
 
 ### Step 2: Check for Duplicates
 
 Compare proposed items against existing content in `tasks/BACKLOG.md`, `tasks/ACTIVE.md`, and `initiatives/`.
 
-If MCP available, use **check_duplicates** per item. Otherwise, scan files directly.
+Scan `tasks/BACKLOG.md`, `tasks/ACTIVE.md`, and `initiatives/` directly.
 
 ### Step 3: Present Findings
 

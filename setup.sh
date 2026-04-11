@@ -177,12 +177,6 @@ step_python_deps() {
   uv sync 2>&1 | while IFS= read -r line; do echo -e "  ${DIM}${line}${RESET}"; done
   print_success "Python dependencies installed"
 
-  # Verify
-  if uv run python -c "import mcp; import yaml" &>/dev/null; then
-    print_success "Verified: mcp and pyyaml importable"
-  else
-    print_warning "Could not verify Python imports — check uv sync output"
-  fi
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -356,69 +350,40 @@ INDEX_EOF
     print_success "Created knowledge/INDEX.md"
   fi
 
-  # BACKLOG.md — small enough to create inline
-  if [[ -f "$REPO_DIR/BACKLOG.md" ]]; then
-    print_skip "BACKLOG.md"
+  # tasks/BACKLOG.md — small enough to create inline
+  mkdir -p "$REPO_DIR/tasks"
+  if [[ -f "$REPO_DIR/tasks/BACKLOG.md" ]]; then
+    print_skip "tasks/BACKLOG.md"
   else
-    cat > "$REPO_DIR/BACKLOG.md" << 'BACKLOG_EOF'
+    cat > "$REPO_DIR/tasks/BACKLOG.md" << 'BACKLOG_EOF'
 # Backlog
 
-Your daily inbox for all notes, ideas, tasks, and thoughts. Capture everything here throughout the day.
+Brain dump inbox. Not prioritized, not committed — just captured.
+Run /process-backlog to classify and clean. Move items to ACTIVE.md during weekly planning.
 
-Say `process my backlog` when you're ready to categorize and organize items into tasks, initiatives, or references.
+## Product
+
+## Strategy
+
+## Admin
+
+## Follow-ups
+
+## Team
+
+---
+Last reviewed:
 BACKLOG_EOF
-    print_success "Created BACKLOG.md"
+    print_success "Created tasks/BACKLOG.md"
   fi
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Step 7: MCP Configuration
-# ─────────────────────────────────────────────────────────────────────────────
-
-PM_TASKS_JSON='{
-    "pm-tasks": {
-      "command": "uv",
-      "args": ["run", "python", "tools/mcp-servers/task-manager/server.py"]
-    }
-  }'
-
-PM_TASKS_MCP_FULL='{
-  "mcpServers": {
-    "pm-tasks": {
-      "command": "uv",
-      "args": ["run", "python", "tools/mcp-servers/task-manager/server.py"]
-    }
-  }
-}'
-
-step_mcp_config() {
-  print_header "Step 7: MCP Configuration"
-
-  local mcp_file="$REPO_DIR/.mcp.json"
-
-  if [[ -f "$mcp_file" ]]; then
-    if grep -q '"pm-tasks"' "$mcp_file" 2>/dev/null; then
-      print_skip ".mcp.json (pm-tasks already configured)"
-    else
-      print_warning ".mcp.json exists but missing pm-tasks server"
-      echo ""
-      echo -e "  Add this to your .mcp.json under ${BOLD}mcpServers${RESET}:"
-      echo ""
-      echo -e "${DIM}$PM_TASKS_JSON${RESET}"
-      echo ""
-    fi
-  else
-    echo "$PM_TASKS_MCP_FULL" > "$mcp_file"
-    print_success "Created .mcp.json with pm-tasks server"
-  fi
-}
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Step 8: Skills / Plugin Marketplace (Optional)
+# Step 7: Skills / Plugin Marketplace (Optional)
 # ─────────────────────────────────────────────────────────────────────────────
 
 step_plugins() {
-  print_header "Step 8: Skills / Plugin Marketplace (Optional)"
+  print_header "Step 7: Skills / Plugin Marketplace (Optional)"
 
   local marketplace_installed=false
   local has_claude=false
@@ -482,11 +447,11 @@ step_plugins() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Step 9: Verification
+# Step 8: Verification
 # ─────────────────────────────────────────────────────────────────────────────
 
 step_verification() {
-  print_header "Step 9: Verification"
+  print_header "Step 8: Verification"
 
   local pass=0
   local fail=0
@@ -498,22 +463,6 @@ step_verification() {
     ((pass++))
   else
     print_error "claude CLI not found"
-    ((fail++))
-  fi
-
-  if command -v uv &>/dev/null; then
-    print_success "uv installed"
-    ((pass++))
-  else
-    print_error "uv not found"
-    ((fail++))
-  fi
-
-  if command -v uv &>/dev/null && uv run python -c "import mcp; import yaml" &>/dev/null; then
-    print_success "Python dependencies (mcp, pyyaml)"
-    ((pass++))
-  else
-    print_error "Python dependencies — run: uv sync"
     ((fail++))
   fi
 
@@ -554,7 +503,7 @@ step_verification() {
     "knowledge/about-me/about-me.md"
     "knowledge/company-context/company-overview.md"
     "GOALS.md"
-    "BACKLOG.md"
+    "tasks/BACKLOG.md"
   )
   for tmpl in "${templates[@]}"; do
     if [[ -f "$REPO_DIR/$tmpl" ]]; then
@@ -574,14 +523,6 @@ step_verification() {
     ((pass++))
   else
     print_error ".claude/skills/ directory missing"
-    ((fail++))
-  fi
-
-  if [[ -f "$REPO_DIR/.mcp.json" ]] && grep -q '"pm-tasks"' "$REPO_DIR/.mcp.json" 2>/dev/null; then
-    print_success ".mcp.json with pm-tasks"
-    ((pass++))
-  else
-    print_error ".mcp.json missing or pm-tasks not configured"
     ((fail++))
   fi
 
@@ -607,7 +548,7 @@ print_next_steps() {
   echo ""
   echo -e "  ${BOLD}2.${RESET} Define your quarterly goals in GOALS.md"
   echo ""
-  echo -e "  ${BOLD}3.${RESET} Start brain-dumping to BACKLOG.md"
+  echo -e "  ${BOLD}3.${RESET} Start brain-dumping to tasks/BACKLOG.md"
   echo ""
   echo -e "  ${BOLD}4.${RESET} Say ${GREEN}/process-backlog${RESET} when you're ready to organize"
   echo ""
@@ -632,7 +573,6 @@ main() {
   step_qmd
   step_knowledge_dirs
   step_template_files
-  step_mcp_config
   step_plugins
   step_verification
   print_next_steps
