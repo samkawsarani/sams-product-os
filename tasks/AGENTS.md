@@ -2,38 +2,49 @@
 
 ## Task System
 
-**Priorities:** P0 (max 3) → P1 (max 7) → P2 (max 15) → P3 (unlimited)
-**Status:** `n` = not started, `s` = started, `b` = blocked, `d` = done
-**Storage:** Active tasks in `tasks/`, completed tasks in `tasks/_archived/`
+Three files, no individual task documents:
 
-Task files use YAML frontmatter:
-```yaml
----
-title: Task title
-category: technical | outreach | research | writing | admin | strategy | stakeholder | discovery | other
-priority: P1
-status: n
-created_date: YYYY-MM-DD
-due_date: YYYY-MM-DD
-resource_refs: []
----
-```
+| File | Purpose |
+|------|---------|
+| `tasks/BACKLOG.md` | Brain dump inbox. Topic-organized bullets. Not committed work. |
+| `tasks/ACTIVE.md` | This week's focus: In Progress, Up Next, Waiting On. |
+| `tasks/_archived/YYYY-MM.md` | Monthly retrospective log. Shipped vs. Completed. Key Learnings. |
 
-See `templates/task-template.md` for the full task file format with required sections.
+## How It Works
 
-## Priority Caps
+**Capture** → Brain dump into `tasks/BACKLOG.md` under the appropriate topic header. Bullets only — not checkboxes, not committed work.
 
-Priority caps are strict. Before creating a task, verify current counts. If a cap would be exceeded:
-1. Show the user the current tasks at that priority level
-2. Ask them to demote an existing task or lower the new task's priority
-3. Wait for their decision before creating anything
+**Plan** → During weekly planning, move items from `tasks/BACKLOG.md` into `tasks/ACTIVE.md`. In Progress = working on now. Up Next = committed this week. Waiting On = blocked on someone else.
+
+**Archive** → At week's end, log completed work into the current month's `tasks/_archived/YYYY-MM.md` under the appropriate week section. Distinguish Shipped (delivered externally) from Completed (internal work done). Then reset ACTIVE.md for the next week.
 
 ## Goals Alignment
 
-- Each task's Context section must reference the relevant goal from `GOALS.md`
-- If no existing goal fits, ask whether to create a new goal entry or reconsider whether the task belongs now
-- When reviewing tasks, flag any that no longer support a current goal
+Before recommending what to work on or pull into ACTIVE.md, read `GOALS.md`. Flag backlog items that don't connect to a current goal — ask the user to clarify before adding them or to confirm they want to proceed anyway.
 
 ## Archiving
 
-When a task status is set to `d`, move the file to `tasks/_archived/`. Never delete task files — they are a permanent record.
+When logging completed work:
+1. Find or create `tasks/_archived/YYYY-MM.md` for the current month
+2. Add a "Week of [Date Range]" section if it doesn't exist
+3. Log items under **Shipped** (went live / delivered externally) or **Completed** (internal work done)
+4. Never delete ACTIVE.md content without user confirmation — ask first
+
+Use `templates/archive-template.md` when creating a new monthly file.
+Use `templates/active-template.md` when resetting ACTIVE.md for a new week.
+
+## Backlog Processing
+
+When processing `tasks/BACKLOG.md`:
+- **Tasks** stay in the backlog as organized lines — no individual task files
+- **Initiatives** (strategic ideas to explore) → `initiatives/`
+- **References** (articles, research, competitor info) → `knowledge/references/` or related initiative folder
+
+Use `/process-backlog` to classify and clean. Always present findings before creating anything.
+
+## What Not To Do
+
+- Do not create individual task files — tasks live in BACKLOG.md and ACTIVE.md only
+- Do not use priority codes (P0/P1/P2/P3) — the three-bucket system replaces this
+- Do not use status codes (n/s/b/d) — position in ACTIVE.md is the status indicator
+- Do not assign due dates unless the user explicitly provides one
