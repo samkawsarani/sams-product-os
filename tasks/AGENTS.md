@@ -10,11 +10,28 @@ Three files, no individual task documents:
 | `tasks/ACTIVE.md` | This week's focus: In Progress, Up Next, Waiting On. |
 | `tasks/_archived/YYYY-MM.md` | Monthly retrospective log. Shipped vs. Completed. Key Learnings. |
 
+## File Formats
+
+**`tasks/BACKLOG.md`** — Free-form brain dump. Plain bullets, any format, unstructured. Not checkboxes — these are not yet committed.
+
+**`tasks/ACTIVE.md`** — Structured checkboxes. Each item follows this shape:
+```markdown
+- [ ] Task title
+  Project: [Initiative]  Due: [Date]   ← optional metadata line
+  Context prose — why this matters, current status, what's needed.
+  - [ ] Sub-task                        ← optional breakdown
+  - [ ] Sub-task
+```
+The main checkbox (`- [ ]` / `- [x]`) is the signal: unchecked = active, checked = done this week.
+Sub-checkboxes and metadata lines are optional — add them when they help, skip them when they don't.
+
+**`tasks/ACTIVE.md` Waiting On table** — stays as a markdown table, not checkboxes.
+
 ## How It Works
 
-**Capture** → Brain dump into `tasks/BACKLOG.md` under the appropriate topic header. Bullets only — not checkboxes, not committed work.
+**Capture** → Brain dump into `tasks/BACKLOG.md` in whatever format comes naturally. Plain bullets, notes, links — just get it down.
 
-**Plan** → During weekly planning, move items from `tasks/BACKLOG.md` into `tasks/ACTIVE.md`. In Progress = working on now. Up Next = committed this week. Waiting On = blocked on someone else.
+**Plan** → During weekly planning, move items from `tasks/BACKLOG.md` into `tasks/ACTIVE.md` as structured checkboxes. In Progress = working on now. Up Next = committed this week. Waiting On = blocked on someone else.
 
 **Archive** → At week's end, log completed work into the current month's `tasks/_archived/YYYY-MM.md` under the appropriate week section. Distinguish Shipped (delivered externally) from Completed (internal work done). Then reset ACTIVE.md for the next week.
 

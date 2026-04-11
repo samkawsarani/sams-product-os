@@ -35,9 +35,11 @@ Calculate the reporting period:
 ## Step 1: Review Completed Work
 
 **Actions:**
-1. Read the current month's archive file: `tasks/_archived/YYYY-MM.md` (use today's date to find the right file)
-2. Find entries from the past week's date range (look for the matching "Week of" section)
-3. Also read `tasks/ACTIVE.md` to see what's still in progress
+1. Read `tasks/ACTIVE.md`
+2. Find all main checkboxes marked done: `- [x] Task title`
+   - These are tasks completed this week
+   - Sub-checkboxes (`  - [x]`) show progress within a task but don't count as completion — only the top-level checkbox does
+3. Items still `- [ ]` = in progress or not yet started
 
 **Output format:**
 ```
@@ -50,14 +52,15 @@ Calculate the reporting period:
 - [Item that was finished internally]
 
 ### Still In Progress
-- [Item still active in ACTIVE.md]
+- [Task] — [brief status from context]
 
 **Highlights:**
 - [Major win or milestone]
 - [Concerning pattern or gap, if any]
 ```
 
-- If the archive section for this week doesn't exist yet, note it and work from ACTIVE.md only
+- If nothing is checked off in ACTIVE.md, say so and ask the user to call out what got done before proceeding
+- Distinguish Shipped (external delivery) from Completed (internal) based on task context
 
 ---
 
