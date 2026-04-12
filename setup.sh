@@ -275,6 +275,25 @@ step_template_files() {
     "GOALS.md" \
     "GOALS.md"
 
+  copy_template \
+    "templates/backlog-template.md" \
+    "tasks/BACKLOG.md" \
+    "tasks/BACKLOG.md"
+
+  copy_template \
+    "templates/active-template.md" \
+    "tasks/ACTIVE.md" \
+    "tasks/ACTIVE.md"
+
+  # tasks/_archived/ — monthly retrospective logs
+  mkdir -p "$REPO_DIR/tasks/_archived"
+  if [[ ! -f "$REPO_DIR/tasks/_archived/.gitkeep" ]]; then
+    touch "$REPO_DIR/tasks/_archived/.gitkeep"
+    print_success "Created tasks/_archived/"
+  else
+    print_skip "tasks/_archived/"
+  fi
+
   # knowledge/INDEX.md — personal directory of knowledge folder contents
   if [[ -f "$REPO_DIR/knowledge/INDEX.md" ]]; then
     print_skip "knowledge/INDEX.md"
@@ -314,32 +333,6 @@ INDEX_EOF
     print_success "Created knowledge/INDEX.md"
   fi
 
-  # tasks/BACKLOG.md — small enough to create inline
-  mkdir -p "$REPO_DIR/tasks"
-  if [[ -f "$REPO_DIR/tasks/BACKLOG.md" ]]; then
-    print_skip "tasks/BACKLOG.md"
-  else
-    cat > "$REPO_DIR/tasks/BACKLOG.md" << 'BACKLOG_EOF'
-# Backlog
-
-Brain dump inbox. Not prioritized, not committed — just captured.
-Run /process-backlog to classify and clean. Move items to ACTIVE.md during weekly planning.
-
-## Product
-
-## Strategy
-
-## Admin
-
-## Follow-ups
-
-## Team
-
----
-Last reviewed:
-BACKLOG_EOF
-    print_success "Created tasks/BACKLOG.md"
-  fi
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -468,6 +461,7 @@ step_verification() {
     "knowledge/company-context/company-overview.md"
     "GOALS.md"
     "tasks/BACKLOG.md"
+    "tasks/ACTIVE.md"
   )
   for tmpl in "${templates[@]}"; do
     if [[ -f "$REPO_DIR/$tmpl" ]]; then
