@@ -31,9 +31,7 @@ Never skip either method. Note if QMD is unavailable and fall back to Grep only.
 
 | Path | Contents |
 |------|----------|
-| `knowledge/` | Reference context + agent-authored domain learning (see `knowledge/INDEX.md`) |
-| `knowledge/decisions/` | Decision log — dated decision files |
-| `knowledge/people/` | One file per person — direct reports, stakeholders, key peers. Optional. |
+| `knowledge/` | Reference context (about you, company, strategy, people, decisions) + agent-learned domain context. See `knowledge/INDEX.md`. |
 | `meetings/` | Meeting transcripts and notes |
 | `initiatives/` | Strategic initiatives and groomed requests |
 | `tasks/ACTIVE.md` | This week's focus: In Progress, Up Next, Waiting On |

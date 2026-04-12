@@ -82,26 +82,17 @@ Move items from `tasks/BACKLOG.md` into `tasks/ACTIVE.md`:
 
 ```
 sams-product-os/
-├── .claude/skills/         # AI agent skills & slash commands. Trigger via `/skillname`
-├── tools/                  # Tools to extend AI agent capabilities
-│   ├── integrations/       # Read-only API clients for external services
-│   └── mcp-servers/        # Custom MCP servers (add your own here)
-│
-├── tasks/                  # Your personal tasks
-│   ├── BACKLOG.md          # Brain dump inbox — topic-organized, not yet committed
-│   ├── ACTIVE.md           # This week's focus: In Progress, Up Next, Waiting On
-│   └── _archived/          # Monthly retrospective logs (YYYY-MM.md)
-├── knowledge/              # Persistent context & references for your AI agent
-├── meetings/               # Meeting notes & transcripts
-├── initiatives/            # Strategic initiatives & groomed requests
-├── _temp/                  # Drop zone for files in transit or scratch work
-├── templates/              # Document templates
-├── setup.sh                # Interactive setup script
-├── GOALS.md                # Ownership areas & quarterly goals
-├── AGENTS.md               # Your AI agent instructions
-├── CLAUDE.md               # Points to AGENTS.md (agent instructions for Claude Code)
-└── VOICE-GUIDE.md          # Your writing style (optional)
-
+├── tasks/          # BACKLOG.md (brain dump), ACTIVE.md (this week), _archived/ (monthly logs)
+├── knowledge/      # about you, company, strategy, people, decisions + agent-learned context
+├── initiatives/    # strategic ideas to explore
+├── meetings/       # notes and transcripts
+├── templates/      # document starters
+├── _temp/          # scratch work and files in transit
+├── tools/          # MCP servers and API integrations
+├── .claude/skills/ # slash commands and agent capabilities
+├── GOALS.md        # quarterly goals and ownership areas
+├── AGENTS.md       # agent instructions
+└── setup.sh        # interactive setup
 ```
 
 ---
