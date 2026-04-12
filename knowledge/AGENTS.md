@@ -32,6 +32,22 @@ Each domain folder uses three files:
 
 Never wait for a System Review to update the index. Update at the moment of creation. Never recreate INDEX.md from scratch — always edit in place.
 
+## Relationships
+
+`knowledge/relationships/` holds one file per person — direct reports, key stakeholders, cross-functional peers, executives you work with regularly.
+
+**When to use it:** If the user asks to prep for a 1:1, draft a message to a specific person, or think through a people situation — check if a file exists for that person first. If it does, read it before responding.
+
+**File format** — loose, user-maintained. Typical contents:
+- Role and background
+- What they care about most
+- Communication style / how they like to receive information
+- Current projects or priorities
+- Open items or follow-ups
+- For direct reports: growth areas, career goals, recent feedback given
+
+**This folder is optional and not needed from day one.** Add files as relationships become important enough to track. Never create files proactively — only when the user explicitly asks or provides the information.
+
 ## Decision Journal
 
 Before making any decision that affects more than today's task, search `knowledge/decisions/` using both QMD and Grep. Follow prior decisions unless new information invalidates the reasoning.

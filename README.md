@@ -124,6 +124,7 @@ Files you create once and update as things change. The AI reads these to underst
 | `references/` | Competitive research, articles, open requests |
 | `voice-samples/` | Writing samples for style matching (see [Voice Training](#voice-training)) |
 | `decisions/` | Decision log — one file per significant decision |
+| `relationships/` | *(Optional)* One file per person — direct reports, stakeholders, key peers. Useful at manager/director/VP level. |
 
 AI reads files in priority order: `about-me/` → `product-strategy/` → `company-context/` → `frameworks/` → task-relevant folders.
 

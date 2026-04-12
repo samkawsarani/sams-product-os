@@ -223,6 +223,7 @@ step_knowledge_dirs() {
     references
     voice-samples
     decisions
+    relationships
   )
 
   for dir in "${dirs[@]}"; do
@@ -320,6 +321,7 @@ Last updated: $(date +%Y-%m-%d)
 | `references/` | Articles, open requests, research docs |
 | `voice-samples/` | Writing samples for AI voice matching |
 | `decisions/` | Decision log — one file per significant decision |
+| `relationships/` | *(Optional)* One file per person — direct reports, stakeholders, key peers |
 
 ---
 
