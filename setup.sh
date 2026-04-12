@@ -95,8 +95,7 @@ step_platform_check() {
     IS_MACOS=false
     print_warning "Non-macOS detected ($os) — some steps require manual installation"
     echo ""
-    echo -e "  Install these tools manually before continuing:"
-    echo -e "    ${BOLD}uv${RESET}   — https://docs.astral.sh/uv/"
+    echo -e "  Install Node.js manually before continuing: https://nodejs.org"
     echo ""
     echo -e "  ${DIM}Press Enter to continue with the rest of setup...${RESET}"
     read -r
@@ -125,15 +124,6 @@ step_prerequisites() {
     fi
     print_success "Homebrew"
 
-    # uv
-    if command -v uv &>/dev/null; then
-      print_skip "uv"
-    else
-      echo -e "  ${DIM}Installing uv...${RESET}"
-      brew install uv
-      print_success "uv installed"
-    fi
-
     # npm / Node.js
     if command -v npm &>/dev/null; then
       print_skip "npm"
@@ -145,12 +135,6 @@ step_prerequisites() {
 
   else
     # Non-macOS: just check what's available
-    if command -v uv &>/dev/null; then
-      print_success "uv"
-    else
-      print_warning "uv not found — install from https://docs.astral.sh/uv/"
-    fi
-
     if command -v npm &>/dev/null; then
       print_success "npm"
     else
@@ -160,31 +144,11 @@ step_prerequisites() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Step 3: Python Dependencies
-# ─────────────────────────────────────────────────────────────────────────────
-
-step_python_deps() {
-  print_header "Step 3: Python Dependencies (Evals)"
-
-  if ! command -v uv &>/dev/null; then
-    print_warning "uv not available — skipping eval dependency install"
-    print_info "Run 'cd evals && uv sync' manually after installing uv"
-    return
-  fi
-
-  cd "$REPO_DIR/evals"
-  echo -e "  ${DIM}Running uv sync in evals/...${RESET}"
-  uv sync 2>&1 | while IFS= read -r line; do echo -e "  ${DIM}${line}${RESET}"; done
-  print_success "Eval dependencies installed"
-
-}
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Step 4: QMD Search Engine
+# Step 3: QMD Search Engine
 # ─────────────────────────────────────────────────────────────────────────────
 
 step_qmd() {
-  print_header "Step 4: QMD Search Engine"
+  print_header "Step 3: QMD Search Engine"
 
   if ! command -v npm &>/dev/null; then
     print_warning "npm not available — skipping QMD installation"
@@ -243,11 +207,11 @@ step_qmd() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Step 5: Knowledge Base Directories
+# Step 4: Knowledge Base Directories
 # ─────────────────────────────────────────────────────────────────────────────
 
 step_knowledge_dirs() {
-  print_header "Step 5: Knowledge Base Directories"
+  print_header "Step 4: Knowledge Base Directories"
 
   local dirs=(
     about-me
@@ -274,7 +238,7 @@ step_knowledge_dirs() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Step 6: Template Files
+# Step 5: Template Files
 # ─────────────────────────────────────────────────────────────────────────────
 
 copy_template() {
@@ -294,7 +258,7 @@ copy_template() {
 }
 
 step_template_files() {
-  print_header "Step 6: Template Files"
+  print_header "Step 5: Template Files"
 
   copy_template \
     "templates/about-me-template.md" \
@@ -379,11 +343,11 @@ BACKLOG_EOF
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Step 7: Skills / Plugin Marketplace (Optional)
+# Step 6: Skills / Plugin Marketplace (Optional)
 # ─────────────────────────────────────────────────────────────────────────────
 
 step_plugins() {
-  print_header "Step 7: Skills / Plugin Marketplace (Optional)"
+  print_header "Step 6: Skills / Plugin Marketplace (Optional)"
 
   local marketplace_installed=false
   local has_claude=false
@@ -447,11 +411,11 @@ step_plugins() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Step 8: Verification
+# Step 7: Verification
 # ─────────────────────────────────────────────────────────────────────────────
 
 step_verification() {
-  print_header "Step 8: Verification"
+  print_header "Step 7: Verification"
 
   local pass=0
   local fail=0
@@ -569,7 +533,6 @@ main() {
   print_banner
   step_platform_check
   step_prerequisites
-  step_python_deps
   step_qmd
   step_knowledge_dirs
   step_template_files

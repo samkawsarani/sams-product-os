@@ -34,8 +34,7 @@ cd sams-product-os
 ### 2. Prerequisites
 
 - **macOS**: Install [Homebrew](https://brew.sh) — the setup script handles the rest
-- **Node.js / npm**: Required for [QMD](https://github.com/tobi/qmd) search — install via [nvm](https://github.com/nvm-sh/nvm) or [nodejs.org](https://nodejs.org)
-- **Other platforms**: Install [Node.js](https://nodejs.org) manually
+- **Other platforms**: Install [Node.js](https://nodejs.org) manually (required for [QMD](https://github.com/tobi/qmd) search)
 
 ### 3. Run Setup
 
@@ -88,7 +87,6 @@ sams-product-os/
 │   ├── integrations/       # Read-only API clients for external services
 │   └── mcp-servers/        # Custom MCP servers (add your own here)
 │
-├── evals/                  # AI agent tests & evaluation
 ├── tasks/                  # Your personal tasks
 │   ├── BACKLOG.md          # Brain dump inbox — topic-organized, not yet committed
 │   ├── ACTIVE.md           # This week's focus: In Progress, Up Next, Waiting On
@@ -144,7 +142,6 @@ See `knowledge/INDEX.md` for a directory of what's in your knowledge folder.
 **Committed (shared structure):**
 - Directory structure
 - Documentation, templates, `.claude/skills/`
-- `evals/` folder (automated tests)
 - `.claude/skills/` folder (AI agent capabilities)
 - `AGENTS.md` and subdirectory `AGENTS.md` + `CLAUDE.md` files (agent instructions for each folder)
 
@@ -419,24 +416,6 @@ What patterns have changed? What's new?
 - Generic responses? Add more to `knowledge/`
 - AI not using context? Use @ mentions explicitly
 - Overwhelmed by backlog? `/process-backlog` to declutter
-
----
-
-## Running Evals
-
-Test that your system is working correctly after making changes:
-
-```bash
-cd evals && uv run pytest -v
-```
-
-This validates:
-- Backlog item classification (task / initiative / reference)
-- Deduplication behavior
-- Agent instruction structure (progressive disclosure across AGENTS.md files)
-- Skill behavior contracts
-
-See `evals/README.md` for details.
 
 ---
 
