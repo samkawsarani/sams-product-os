@@ -2,7 +2,7 @@
 
 > Turn your AI assistant into a product management partner. Process ideas, generate specs, prioritize strategically.
 
-[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-orange.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Star this repo](https://img.shields.io/github/stars/samkawsarani/sams-product-os?style=social)](https://github.com/samkawsarani/sams-product-os)
 
 
@@ -433,8 +433,5 @@ This project was inspired by the work of several amazing builders in the space. 
 ---
 
 ## License
-This work is licensed under CC BY-NC-SA 4.0.
 
-Copyright © 2026 Sam Kawsarani. You may view, use, modify, and share this repo with attribution for non-commercial purposes. Commercial sale is not permitted, but you may use it internally for work and business.
-
-Full license: [https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode)
+[MIT](LICENSE) — Copyright (c) 2026 Sam Kawsarani
