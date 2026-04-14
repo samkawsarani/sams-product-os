@@ -137,12 +137,8 @@ See `knowledge/INDEX.md` for a directory of what's in your knowledge folder.
 - `AGENTS.md` and subdirectory `AGENTS.md` + `CLAUDE.md` files (agent instructions for each folder)
 
 **Gitignored (your data):**
-- `tasks/BACKLOG.md`
-- `tasks/ACTIVE.md`
-- `tasks/_archived/`
-- `GOALS.md`
-- `VOICE-GUIDE.md`
-- Content in `knowledge/`, `tasks/`, `meetings/`, `projects/`, `_temp/`
+- `GOALS.md`, `VOICE-GUIDE.md`
+- Content in `tasks/`, `knowledge/`, `projects/`, `meetings/`, `_temp/`
 - Note: `AGENTS.md` and `CLAUDE.md` inside any folder are always tracked
 
 ---
@@ -220,14 +216,17 @@ Tasks live in three files — no individual task files, no frontmatter, no prior
 
 ## Projects
 
-A project is committed discrete work — a clear objective, connected to a goal, with real outputs. One file per project in `projects/`.
+A project is committed discrete work — a clear objective, connected to a goal, with real outputs. One folder per project in `projects/`.
 
-**Create a project:**
 ```
-Copy templates/project-brief-template.md to projects/{slug}.md
+projects/
+└── checkout-redesign/
+    ├── brief.md        # From templates/project-brief-template.md
+    ├── research.md
+    └── outputs/
 ```
 
-Each project file has:
+Each project brief has:
 ```markdown
 # Checkout Redesign
 
@@ -245,7 +244,7 @@ Each project file has:
 ## Updates
 ```
 
-Active projects generate tasks — reference the project file when adding related items to `tasks/ACTIVE.md` or `tasks/BACKLOG.md`.
+Active projects generate tasks — reference the project folder when adding related items to `tasks/ACTIVE.md` or `tasks/BACKLOG.md`.
 
 ---
 
@@ -439,17 +438,6 @@ What patterns have changed? What's new?
 - Generic responses? Add more to `knowledge/`
 - AI not using context? Use @ mentions explicitly
 - Overwhelmed by backlog? `/process-backlog` to declutter
-
----
-
-## For Contributors
-
-Contributions should:
-- Not include personal information
-- Be generic and configurable
-- Include documentation
-- Follow the existing patterns
-- Test with your AI assistant before submitting
 
 ---
 
