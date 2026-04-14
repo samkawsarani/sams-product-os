@@ -143,7 +143,7 @@ step_qmd() {
     echo -e "  ${DIM}Adding QMD collection for this project...${RESET}"
     if qmd collection add "$REPO_DIR" --name product-os 2>&1 | while IFS= read -r line; do echo -e "  ${DIM}${line}${RESET}"; done; then
       print_success "QMD collection 'product-os' added"
-      qmd context add qmd://product-os "Personal PM operating system — tasks, initiatives, knowledge base, meetings, and references" 2>/dev/null
+      qmd context add qmd://product-os "Personal PM operating system — tasks, projects, knowledge base, meetings, and references" 2>/dev/null
       print_success "QMD collection context added"
     else
       print_warning "Could not add QMD collection — try manually:"

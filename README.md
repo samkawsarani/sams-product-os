@@ -149,12 +149,12 @@ See `knowledge/INDEX.md` for a directory of what's in your knowledge folder.
 ## Core Workflow
 
 ```
-tasks/BACKLOG.md → /process-backlog → Tasks (stay in backlog) / Initiatives / References
+tasks/BACKLOG.md → /process-backlog → Tasks (stay in backlog) / Opportunities / References
                  → weekly planning → tasks/ACTIVE.md → tasks/_archived/YYYY-MM.md
 ```
 
 1. **Brain dump** to `tasks/BACKLOG.md` throughout the day
-2. **Process** with `/process-backlog` — AI classifies items, creates initiative and reference files
+2. **Process** with `/process-backlog` — AI classifies items, creates opportunity and reference files
 3. **Plan** — Move items into `tasks/ACTIVE.md` for the week: In Progress, Up Next, Waiting On
 4. **Archive** — Log completed work to `tasks/_archived/YYYY-MM.md` during weekly review
 
