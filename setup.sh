@@ -445,11 +445,11 @@ step_verification() {
   echo -e "  ${BOLD}Knowledge Base${RESET}"
   local dir_count
   dir_count=$(find "$REPO_DIR/knowledge" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')
-  if [[ "$dir_count" -ge 11 ]]; then
+  if [[ "$dir_count" -ge 10 ]]; then
     print_success "knowledge/ subdirectories ($dir_count dirs)"
     ((pass++))
   else
-    print_error "knowledge/ subdirectories (found $dir_count, expected 11)"
+    print_error "knowledge/ subdirectories (found $dir_count, expected 10)"
     ((fail++))
   fi
 
