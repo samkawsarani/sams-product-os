@@ -82,9 +82,9 @@ Move items from `tasks/BACKLOG.md` into `tasks/ACTIVE.md`:
 
 ```
 sams-product-os/
-├── tasks/          # BACKLOG.md (brain dump), ACTIVE.md (this week), _archived/ (monthly logs)
+├── tasks/          # Simple backlog → active → archive flow
 ├── knowledge/      # Persistent reference material & agent-learned context
-├── projects/       # Committed discrete work — one file per project
+├── projects/       # Discrete work with its own context, research, and outputs
 ├── meetings/       # Meeting notes and transcripts
 ├── templates/      # Document structures for consistent outputs
 ├── _temp/          # Scratch work and files in transit
