@@ -6,7 +6,7 @@
 [![Star this repo](https://img.shields.io/github/stars/samkawsarani/sams-product-os?style=social)](https://github.com/samkawsarani/sams-product-os)
 
 
-*Quick links:* [Quick Start](#quick-start) · [Directory Structure](#directory-structure) · [Context Setup](#context-setup) · [Core Workflow](#core-workflow) · [Tasks](#tasks) · [Projects](#projects) · [Common Commands](#common-commands) · [Best Practices](#best-practices)
+*Quick links:* [Quick Start](#quick-start) · [Directory Structure](#directory-structure) · [Context Setup](#context-setup) · [Core Workflow](#core-workflow) · [Tasks](#tasks) · [Projects](#projects) · [Skills](#skills) · [Best Practices](#best-practices)
 
 ---
 
@@ -284,20 +284,6 @@ Browse and install additional skills (analytics, grooming, research, writing, an
 ```
 /plugin install {PLUGIN-NAME}@sams-product-plugins
 ```
-
----
-
-## Common Commands
-
-**Daily:**
-- `/daily-pulse` — Morning briefing: calendar + active tasks
-- "What am I working on?" — agent reads ACTIVE.md
-- Brain dump into `tasks/BACKLOG.md`
-
-**Weekly:**
-- `/process-backlog` — Classify and clean the backlog
-- `/weekly-review` — Reflect, plan, archive
-- `/weekly-update` — Draft stakeholder update email
 
 ---
 
