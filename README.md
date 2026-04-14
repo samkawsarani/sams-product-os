@@ -74,7 +74,7 @@ Move items from `tasks/BACKLOG.md` into `tasks/ACTIVE.md`:
 - **Up Next** — committed this week
 - **Waiting On** — blocked on someone else
 
-> **Start here, build as you go.** `GOALS.md` and `tasks/BACKLOG.md` are the core — fill those in first. Add a few files to `knowledge/` about your role, company, and strategy; the agent gets meaningfully smarter with even basic context, and you can add more over time. The MCP server, voice training, and plugins are optional — add them when you feel the friction of not having them.
+> **Start here, build as you go.** `GOALS.md` and `tasks/BACKLOG.md` are the core — fill those in first. Add a few files to `knowledge/` about your role, company, and strategy; the agent gets meaningfully smarter with even basic context, and you can add more over time. Voice training and plugins are optional — add them when you feel the friction of not having them.
 
 ---
 
@@ -88,7 +88,7 @@ sams-product-os/
 ├── meetings/       # notes and transcripts
 ├── templates/      # document starters
 ├── _temp/          # scratch work and files in transit
-├── tools/          # MCP servers and API integrations
+├── tools/          # API integrations and custom tooling
 ├── .claude/skills/ # slash commands and agent capabilities
 ├── GOALS.md        # quarterly goals and ownership areas
 ├── AGENTS.md       # agent instructions
