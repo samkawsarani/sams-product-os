@@ -1,4 +1,48 @@
 #!/usr/bin/env bash
+#
+# Sams Product OS — Setup Script
+# Creates workspace structure, seeds starter files, installs optional tooling.
+#
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │ AGENT INSTRUCTIONS                                                      │
+# │                                                                         │
+# │ If you are an AI agent (e.g. Claude Code) reading this file:            │
+# │ Do NOT execute this script as bash. Instead, walk through the           │
+# │ setup interactively using your tools.                                   │
+# │                                                                         │
+# │ Follow these steps:                                                     │
+# │                                                                         │
+# │ 1. CREATE WORKSPACE STRUCTURE                                           │
+# │    - Create knowledge/ subdirs: about-me, company-context,              │
+# │      product-strategy, processes, product-analytics, references,        │
+# │      voice-samples, decisions, people, opportunities                    │
+# │    - Create tasks/ subdirs: _archived/                                  │
+# │    - Create projects/ folder                                            │
+# │    - Copy templates to their destinations (skip if file exists):        │
+# │        templates/about-me-template.md  → knowledge/about-me/about-me.md│
+# │        templates/company-overview-template.md                           │
+# │                          → knowledge/company-context/company-overview.md│
+# │        templates/goals-template.md     → GOALS.md                      │
+# │        templates/backlog-template.md   → tasks/BACKLOG.md              │
+# │        templates/active-template.md    → tasks/ACTIVE.md               │
+# │                                                                         │
+# │ 2. ASK THE USER THESE QUESTIONS ONE AT A TIME:                          │
+# │    Q1: "What's your current role?"                                      │
+# │        e.g. Product Manager, Senior Engineer, Founder, VP               │
+# │    Q2: "What's your primary professional focus right now?"              │
+# │        e.g. Launching a new product, scaling the team, hitting OKRs    │
+# │    Q3: "What are your 2–4 goals this quarter?"                          │
+# │        e.g. Ship mobile redesign, improve activation by 20%             │
+# │                                                                         │
+# │ 3. GENERATE GOALS.md                                                    │
+# │    Use answers to populate GOALS.md using templates/goals-template.md  │
+# │                                                                         │
+# │ 4. SUMMARIZE                                                            │
+# │    Tell the user what was created and suggest next steps:               │
+# │    - Fill in knowledge/about-me/about-me.md with your background        │
+# │    - Brain dump into tasks/BACKLOG.md                                   │
+# │    - Run /process-backlog to triage                                     │
+# └─────────────────────────────────────────────────────────────────────────┘
 set -euo pipefail
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -79,118 +123,34 @@ ask_yn() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Step 1: Platform Check
-# ─────────────────────────────────────────────────────────────────────────────
-
-step_platform_check() {
-  print_header "Step 1: Platform Check"
-
-  local os
-  os="$(uname -s)"
-
-  if [[ "$os" == "Darwin" ]]; then
-    IS_MACOS=true
-    print_success "macOS detected — full automated setup available"
-  else
-    IS_MACOS=false
-    print_warning "Non-macOS detected ($os) — some steps require manual installation"
-    echo ""
-    echo -e "  Install these tools manually before continuing:"
-    echo -e "    ${BOLD}uv${RESET}   — https://docs.astral.sh/uv/"
-    echo ""
-    echo -e "  ${DIM}Press Enter to continue with the rest of setup...${RESET}"
-    read -r
-  fi
-}
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Step 2: Prerequisites
+# Step 1: Prerequisites
 # ─────────────────────────────────────────────────────────────────────────────
 
 step_prerequisites() {
-  print_header "Step 2: Prerequisites"
+  print_header "Step 1: Prerequisites"
 
   # Claude Code CLI
   if command -v claude &>/dev/null; then
     print_success "claude"
   else
-    print_warning "claude not found — install Claude Code CLI to use this product OS or install plugins from the marketplace"
+    print_warning "claude not found — install from https://claude.ai/code"
   fi
 
-  if [[ "$IS_MACOS" == true ]]; then
-    # Check Homebrew
-    if ! command -v brew &>/dev/null; then
-      print_error "Homebrew not found — install from https://brew.sh then re-run setup"
-      exit 1
-    fi
-    print_success "Homebrew"
-
-    # uv
-    if command -v uv &>/dev/null; then
-      print_skip "uv"
-    else
-      echo -e "  ${DIM}Installing uv...${RESET}"
-      brew install uv
-      print_success "uv installed"
-    fi
-
-    # npm / Node.js
-    if command -v npm &>/dev/null; then
-      print_skip "npm"
-    else
-      echo -e "  ${DIM}Installing Node.js (includes npm)...${RESET}"
-      brew install node
-      print_success "Node.js / npm installed"
-    fi
-
+  # Node.js / npm — needed for QMD search (optional)
+  if command -v npm &>/dev/null; then
+    print_success "npm (Node.js)"
   else
-    # Non-macOS: just check what's available
-    if command -v uv &>/dev/null; then
-      print_success "uv"
-    else
-      print_warning "uv not found — install from https://docs.astral.sh/uv/"
-    fi
-
-    if command -v npm &>/dev/null; then
-      print_success "npm"
-    else
-      print_warning "npm not found — install Node.js from https://nodejs.org"
-    fi
+    print_warning "npm not found — install Node.js to enable QMD search: https://nodejs.org"
+    print_info "QMD is optional — the agent falls back to file search without it"
   fi
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Step 3: Python Dependencies
-# ─────────────────────────────────────────────────────────────────────────────
-
-step_python_deps() {
-  print_header "Step 3: Python Dependencies"
-
-  if ! command -v uv &>/dev/null; then
-    print_warning "uv not available — skipping Python dependency install"
-    print_info "Run 'uv sync' manually after installing uv"
-    return
-  fi
-
-  cd "$REPO_DIR"
-  echo -e "  ${DIM}Running uv sync...${RESET}"
-  uv sync 2>&1 | while IFS= read -r line; do echo -e "  ${DIM}${line}${RESET}"; done
-  print_success "Python dependencies installed"
-
-  # Verify
-  if uv run python -c "import mcp; import yaml" &>/dev/null; then
-    print_success "Verified: mcp and pyyaml importable"
-  else
-    print_warning "Could not verify Python imports — check uv sync output"
-  fi
-}
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Step 4: QMD Search Engine
+# Step 2: QMD Search Engine
 # ─────────────────────────────────────────────────────────────────────────────
 
 step_qmd() {
-  print_header "Step 4: QMD Search Engine"
+  print_header "Step 2: QMD Search Engine"
 
   if ! command -v npm &>/dev/null; then
     print_warning "npm not available — skipping QMD installation"
@@ -227,7 +187,7 @@ step_qmd() {
     echo -e "  ${DIM}Adding QMD collection for this project...${RESET}"
     if qmd collection add "$REPO_DIR" --name product-os 2>&1 | while IFS= read -r line; do echo -e "  ${DIM}${line}${RESET}"; done; then
       print_success "QMD collection 'product-os' added"
-      qmd context add qmd://product-os "Personal PM operating system — tasks, initiatives, knowledge base, meetings, and references" 2>/dev/null
+      qmd context add qmd://product-os "Personal PM operating system — tasks, projects, knowledge base, meetings, and references" 2>/dev/null
       print_success "QMD collection context added"
     else
       print_warning "Could not add QMD collection — try manually:"
@@ -249,22 +209,23 @@ step_qmd() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Step 5: Knowledge Base Directories
+# Step 3: Knowledge Base Directories
 # ─────────────────────────────────────────────────────────────────────────────
 
 step_knowledge_dirs() {
-  print_header "Step 5: Knowledge Base Directories"
+  print_header "Step 3: Knowledge Base Directories"
 
   local dirs=(
     about-me
     company-context
     product-strategy
-    frameworks
     processes
     product-analytics
     references
     voice-samples
     decisions
+    people
+    opportunities
   )
 
   for dir in "${dirs[@]}"; do
@@ -273,14 +234,13 @@ step_knowledge_dirs() {
       print_skip "knowledge/$dir/"
     else
       mkdir -p "$path"
-      touch "$path/.gitkeep"
       print_success "Created knowledge/$dir/"
     fi
   done
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Step 6: Template Files
+# Step 4: Template Files
 # ─────────────────────────────────────────────────────────────────────────────
 
 copy_template() {
@@ -300,7 +260,7 @@ copy_template() {
 }
 
 step_template_files() {
-  print_header "Step 6: Template Files"
+  print_header "Step 4: Template Files"
 
   copy_template \
     "templates/about-me-template.md" \
@@ -316,6 +276,24 @@ step_template_files() {
     "templates/goals-template.md" \
     "GOALS.md" \
     "GOALS.md"
+
+  copy_template \
+    "templates/backlog-template.md" \
+    "tasks/BACKLOG.md" \
+    "tasks/BACKLOG.md"
+
+  copy_template \
+    "templates/active-template.md" \
+    "tasks/ACTIVE.md" \
+    "tasks/ACTIVE.md"
+
+  # projects/ — committed discrete work
+  mkdir -p "$REPO_DIR/projects"
+  print_success "Created projects/"
+
+  # tasks/_archived/ — monthly retrospective logs
+  mkdir -p "$REPO_DIR/tasks/_archived"
+  print_success "Created tasks/_archived/"
 
   # knowledge/INDEX.md — personal directory of knowledge folder contents
   if [[ -f "$REPO_DIR/knowledge/INDEX.md" ]]; then
@@ -336,13 +314,14 @@ Last updated: $(date +%Y-%m-%d)
 |--------|----------|
 | `about-me/` | Role, background, working style, 360 feedback |
 | `company-context/` | Company overview, product info, competitors, org structure |
-| `frameworks/` | PM methodologies, mental models |
 | `processes/` | How the team works, sprint cadence, release flow |
 | `product-analytics/` | KPIs, metrics definitions, performance data |
 | `product-strategy/` | Current strategy, vision, roadmap |
 | `references/` | Articles, open requests, research docs |
 | `voice-samples/` | Writing samples for AI voice matching |
 | `decisions/` | Decision log — one file per significant decision |
+| `opportunities/` | Observed problems and ideas to explore — groomed feature requests, market signals, patterns |
+| `people/` | *(Optional)* One file per person — direct reports, stakeholders, key peers |
 
 ---
 
@@ -356,69 +335,14 @@ INDEX_EOF
     print_success "Created knowledge/INDEX.md"
   fi
 
-  # BACKLOG.md — small enough to create inline
-  if [[ -f "$REPO_DIR/BACKLOG.md" ]]; then
-    print_skip "BACKLOG.md"
-  else
-    cat > "$REPO_DIR/BACKLOG.md" << 'BACKLOG_EOF'
-# Backlog
-
-Your daily inbox for all notes, ideas, tasks, and thoughts. Capture everything here throughout the day.
-
-Say `process my backlog` when you're ready to categorize and organize items into tasks, initiatives, or references.
-BACKLOG_EOF
-    print_success "Created BACKLOG.md"
-  fi
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Step 7: MCP Configuration
-# ─────────────────────────────────────────────────────────────────────────────
-
-PM_TASKS_JSON='{
-    "pm-tasks": {
-      "command": "uv",
-      "args": ["run", "python", "tools/mcp-servers/task-manager/server.py"]
-    }
-  }'
-
-PM_TASKS_MCP_FULL='{
-  "mcpServers": {
-    "pm-tasks": {
-      "command": "uv",
-      "args": ["run", "python", "tools/mcp-servers/task-manager/server.py"]
-    }
-  }
-}'
-
-step_mcp_config() {
-  print_header "Step 7: MCP Configuration"
-
-  local mcp_file="$REPO_DIR/.mcp.json"
-
-  if [[ -f "$mcp_file" ]]; then
-    if grep -q '"pm-tasks"' "$mcp_file" 2>/dev/null; then
-      print_skip ".mcp.json (pm-tasks already configured)"
-    else
-      print_warning ".mcp.json exists but missing pm-tasks server"
-      echo ""
-      echo -e "  Add this to your .mcp.json under ${BOLD}mcpServers${RESET}:"
-      echo ""
-      echo -e "${DIM}$PM_TASKS_JSON${RESET}"
-      echo ""
-    fi
-  else
-    echo "$PM_TASKS_MCP_FULL" > "$mcp_file"
-    print_success "Created .mcp.json with pm-tasks server"
-  fi
-}
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Step 8: Skills / Plugin Marketplace (Optional)
+# Step 5: Skills / Plugin Marketplace (Optional)
 # ─────────────────────────────────────────────────────────────────────────────
 
 step_plugins() {
-  print_header "Step 8: Skills / Plugin Marketplace (Optional)"
+  print_header "Step 5: Skills / Plugin Marketplace (Optional)"
 
   local marketplace_installed=false
   local has_claude=false
@@ -482,11 +406,11 @@ step_plugins() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Step 9: Verification
+# Step 6: Verification
 # ─────────────────────────────────────────────────────────────────────────────
 
 step_verification() {
-  print_header "Step 9: Verification"
+  print_header "Step 6: Verification"
 
   local pass=0
   local fail=0
@@ -498,22 +422,6 @@ step_verification() {
     ((pass++))
   else
     print_error "claude CLI not found"
-    ((fail++))
-  fi
-
-  if command -v uv &>/dev/null; then
-    print_success "uv installed"
-    ((pass++))
-  else
-    print_error "uv not found"
-    ((fail++))
-  fi
-
-  if command -v uv &>/dev/null && uv run python -c "import mcp; import yaml" &>/dev/null; then
-    print_success "Python dependencies (mcp, pyyaml)"
-    ((pass++))
-  else
-    print_error "Python dependencies — run: uv sync"
     ((fail++))
   fi
 
@@ -529,8 +437,7 @@ step_verification() {
     print_success "qmd"
     ((pass++))
   else
-    print_error "qmd not found — run: npm install -g @tobilu/qmd"
-    ((fail++))
+    print_warning "qmd not found (optional) — run: npm install -g @tobilu/qmd"
   fi
 
   # Knowledge base
@@ -538,11 +445,11 @@ step_verification() {
   echo -e "  ${BOLD}Knowledge Base${RESET}"
   local dir_count
   dir_count=$(find "$REPO_DIR/knowledge" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')
-  if [[ "$dir_count" -ge 8 ]]; then
+  if [[ "$dir_count" -ge 10 ]]; then
     print_success "knowledge/ subdirectories ($dir_count dirs)"
     ((pass++))
   else
-    print_error "knowledge/ subdirectories (found $dir_count, expected 8)"
+    print_error "knowledge/ subdirectories (found $dir_count, expected 10)"
     ((fail++))
   fi
 
@@ -554,7 +461,8 @@ step_verification() {
     "knowledge/about-me/about-me.md"
     "knowledge/company-context/company-overview.md"
     "GOALS.md"
-    "BACKLOG.md"
+    "tasks/BACKLOG.md"
+    "tasks/ACTIVE.md"
   )
   for tmpl in "${templates[@]}"; do
     if [[ -f "$REPO_DIR/$tmpl" ]]; then
@@ -577,14 +485,6 @@ step_verification() {
     ((fail++))
   fi
 
-  if [[ -f "$REPO_DIR/.mcp.json" ]] && grep -q '"pm-tasks"' "$REPO_DIR/.mcp.json" 2>/dev/null; then
-    print_success ".mcp.json with pm-tasks"
-    ((pass++))
-  else
-    print_error ".mcp.json missing or pm-tasks not configured"
-    ((fail++))
-  fi
-
   # Summary
   echo ""
   echo -e "  ──────────────────────────────"
@@ -601,17 +501,19 @@ step_verification() {
 print_next_steps() {
   print_header "Setup Complete — Next Steps"
 
-  echo -e "  ${BOLD}1.${RESET} Fill in your context files ${DIM}(15-20 min)${RESET}"
+  echo -e "  ${BOLD}1.${RESET} Delete any ${DIM}.gitkeep${RESET} files — they're placeholders, not needed once you add real content"
+  echo ""
+  echo -e "  ${BOLD}2.${RESET} Fill in your context files ${DIM}(15-20 min)${RESET}"
   echo -e "     - knowledge/about-me/about-me.md"
   echo -e "     - knowledge/company-context/company-overview.md"
   echo ""
-  echo -e "  ${BOLD}2.${RESET} Define your quarterly goals in GOALS.md"
+  echo -e "  ${BOLD}3.${RESET} Define your quarterly goals in GOALS.md"
   echo ""
-  echo -e "  ${BOLD}3.${RESET} Start brain-dumping to BACKLOG.md"
+  echo -e "  ${BOLD}4.${RESET} Start brain-dumping to tasks/BACKLOG.md"
   echo ""
-  echo -e "  ${BOLD}4.${RESET} Say ${GREEN}/process-backlog${RESET} when you're ready to organize"
+  echo -e "  ${BOLD}5.${RESET} Say ${GREEN}/process-backlog${RESET} when you're ready to organize"
   echo ""
-  echo -e "  ${BOLD}5.${RESET} Add more skills anytime:"
+  echo -e "  ${BOLD}6.${RESET} Add more skills anytime:"
   echo -e "     Via marketplace:  ${GREEN}claude plugin install <name>@sams-product-plugins${RESET}"
   echo -e "     Via npx:          ${GREEN}npx skills add ${MARKETPLACE_REPO} --skill <name>${RESET}"
   echo -e "     Install all:      ${GREEN}npx skills add ${MARKETPLACE_REPO}${RESET}"
@@ -626,13 +528,10 @@ print_next_steps() {
 
 main() {
   print_banner
-  step_platform_check
   step_prerequisites
-  step_python_deps
   step_qmd
   step_knowledge_dirs
   step_template_files
-  step_mcp_config
   step_plugins
   step_verification
   print_next_steps

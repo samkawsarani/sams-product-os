@@ -14,11 +14,12 @@ meetings/*
 !meetings/.gitkeep
 !meetings/README.md
 
-# Initiatives (strategic work, personal)
-initiatives/**/*
-!initiatives/**/
-!initiatives/**/.gitkeep
-!initiatives/**/README.md
+# Projects (committed work, personal)
+projects/**/*
+!projects/**/
+!projects/**/.gitkeep
+!projects/**/AGENTS.md
+!projects/**/CLAUDE.md
 
 # OS files
 .DS_Store
@@ -79,10 +80,4 @@ evals/results/
 # Project todos
 TODO.md
 
-# MCP folder and Config (keep structure but ignore content)
-tools/mcp-servers/**/*
-!tools/mcp-servers/**/
-!tools/mcp-servers/**/.gitkeep
-!tools/mcp-servers/**/README.md
-!tools/mcp-servers/task-manager/*
 .mcp.json

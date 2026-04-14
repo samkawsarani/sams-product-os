@@ -2,38 +2,51 @@
 
 ## Task System
 
-**Priorities:** P0 (max 3) → P1 (max 7) → P2 (max 15) → P3 (unlimited)
-**Status:** `n` = not started, `s` = started, `b` = blocked, `d` = done
-**Storage:** Active tasks in `tasks/`, completed tasks in `tasks/_archived/`
+Three files, no individual task documents:
 
-Task files use YAML frontmatter:
-```yaml
----
-title: Task title
-category: technical | outreach | research | writing | admin | strategy | stakeholder | discovery | other
-priority: P1
-status: n
-created_date: YYYY-MM-DD
-due_date: YYYY-MM-DD
-resource_refs: []
----
-```
+| File | Purpose |
+|------|---------|
+| `tasks/BACKLOG.md` | Brain dump inbox. Topic-organized bullets. Not committed work. |
+| `tasks/ACTIVE.md` | This week's focus: In Progress, Up Next, Waiting On. |
+| `tasks/_archived/YYYY-MM.md` | Monthly retrospective log. Shipped vs. Completed. Key Learnings. |
 
-See `templates/task-template.md` for the full task file format with required sections.
+## File Formats
 
-## Priority Caps
+**`tasks/BACKLOG.md`** — Free-form brain dump. Plain bullets, any format, unstructured. Not checkboxes — these are not yet committed.
 
-Priority caps are strict. Before creating a task, verify current counts. If a cap would be exceeded:
-1. Show the user the current tasks at that priority level
-2. Ask them to demote an existing task or lower the new task's priority
-3. Wait for their decision before creating anything
+**`tasks/ACTIVE.md`** — Uses checkboxes, but format is flexible. A task might be a heading with checkboxes underneath, a single checkbox with context below it, or just a flat list of checkboxes — whatever fits the work. The key signal is the checkbox state: `- [ ]` = active, `- [x]` = done this week. Don't enforce a rigid structure when reading or writing ACTIVE.md.
+
+**`tasks/ACTIVE.md` Waiting On table** — stays as a markdown table, not checkboxes.
+
+## How It Works
+
+**Capture** → Brain dump into `tasks/BACKLOG.md` in whatever format comes naturally. Plain bullets, notes, links — just get it down.
+
+**Plan** → During weekly planning, move items from `tasks/BACKLOG.md` into `tasks/ACTIVE.md` as structured checkboxes. In Progress = working on now. Up Next = committed this week. Waiting On = blocked on someone else.
+
+**Archive** → At week's end, log completed work into the current month's `tasks/_archived/YYYY-MM.md` under the appropriate week section. Distinguish Shipped (delivered externally) from Completed (internal work done). Then reset ACTIVE.md for the next week.
 
 ## Goals Alignment
 
-- Each task's Context section must reference the relevant goal from `GOALS.md`
-- If no existing goal fits, ask whether to create a new goal entry or reconsider whether the task belongs now
-- When reviewing tasks, flag any that no longer support a current goal
+Before recommending what to work on or pull into ACTIVE.md, read `GOALS.md`. Flag backlog items that don't connect to a current goal — ask the user to clarify before adding them or to confirm they want to proceed anyway.
 
 ## Archiving
 
-When a task status is set to `d`, move the file to `tasks/_archived/`. Never delete task files — they are a permanent record.
+When logging completed work:
+1. Find or create `tasks/_archived/YYYY-MM.md` for the current month
+2. Add a "Week of [Date Range]" section if it doesn't exist
+3. Log items under **Shipped** (went live / delivered externally) or **Completed** (internal work done)
+4. Never delete ACTIVE.md content without user confirmation — ask first
+
+Use `templates/archive-template.md` when creating a new monthly file.
+Use `templates/active-template.md` when resetting ACTIVE.md for a new week.
+
+## Backlog Processing
+
+When processing `tasks/BACKLOG.md`:
+- **Tasks** stay in the backlog as organized lines — no individual task files
+- **Opportunities** (strategic ideas to explore) → `knowledge/opportunities/`
+- **References** (articles, research, competitor info) → `knowledge/references/`
+
+Use `/process-backlog` to classify and clean. Always present findings before creating anything.
+

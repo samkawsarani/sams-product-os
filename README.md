@@ -2,11 +2,11 @@
 
 > Turn your AI assistant into a product management partner. Process ideas, generate specs, prioritize strategically.
 
-[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-orange.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Star this repo](https://img.shields.io/github/stars/samkawsarani/sams-product-os?style=social)](https://github.com/samkawsarani/sams-product-os)
 
 
-*Quick links:* [Quick Start](#quick-start) · [Directory Structure](#directory-structure) · [Context Setup](#context-setup) · [Core Workflow](#core-workflow) · [Common Commands](#common-commands) · [Best Practices](#best-practices)
+*Quick links:* [Quick Start](#quick-start) · [Directory Structure](#directory-structure) · [Context Setup](#context-setup) · [Core Workflow](#core-workflow) · [Tasks](#tasks) · [Projects](#projects) · [Best Practices](#best-practices)
 
 ---
 
@@ -14,8 +14,8 @@
 
 Sams Product OS is an AI-powered personal operating system to organize my PM workspace
 
-- **Priority-Focused Workflow** - Max 3 P0 tasks keeps you focused
-- **Backlog Processing** - Brain dump → Organized tasks/initiatives
+- **Three-Bucket Workflow** - Backlog → Active → Archive keeps you focused
+- **Backlog Processing** - Brain dump → Organized tasks/opportunities/references
 - **Document Generation** - Specs, briefs, PRDs from conversation
 - **Research Synthesis** - Transform interviews into insights
 - **Voice Training** - Match your writing style
@@ -33,9 +33,8 @@ cd sams-product-os
 
 ### 2. Prerequisites
 
-- **macOS**: Install [Homebrew](https://brew.sh) — the setup script handles the rest
-- **Node.js / npm**: Required for [QMD](https://github.com/tobi/qmd) search — install via [nvm](https://github.com/nvm-sh/nvm) or [nodejs.org](https://nodejs.org)
-- **Other platforms**: Install [uv](https://docs.astral.sh/uv/) and [Node.js](https://nodejs.org) manually
+- **[Claude Code](https://claude.ai/code)** — required to use this system
+- **[Node.js](https://nodejs.org)** — optional, needed for [QMD](https://github.com/tobi/qmd) semantic search. The agent falls back to file search without it.
 
 ### 3. Run Setup
 
@@ -43,19 +42,19 @@ cd sams-product-os
 ./setup.sh
 ```
 
-The interactive setup will install dependencies (including [QMD](https://github.com/tobi/qmd) for fast knowledge base search), create your workspace, configure MCP, and verify everything works. It will also walk you through optional Cursor setup and plugin installation.
+Creates your workspace, sets up knowledge base directories, seeds starter files, and optionally installs QMD and plugins.
 
 ### 4. Start Using It
 
-**Brain dump to BACKLOG.md:**
+**Brain dump to `tasks/BACKLOG.md`:**
 ```markdown
-## Mobile Performance Issues
-- Source: Support tickets (15 this week)
-- Context: Android app slow on startup
-- Impact: 4.2⭐ rating drop
+## Product
+- Follow up with Sarah about Q4 goals
 
-## Follow up with Sarah about Q4 goals
-- Need to align on OKRs by end of week
+## Strategy
+- Mobile Performance Issues
+  - Source: Support tickets (15 this week)
+  - Context: Android app slow on startup
 ```
 
 **Process your backlog:**
@@ -64,9 +63,18 @@ The interactive setup will install dependencies (including [QMD](https://github.
 ```
 
 AI categorizes into:
-- **Tasks** → `tasks/` (P0-P3 priority, max 3 P0 tasks)
-- **Initiatives** → `initiatives/` (strategic ideas to explore)
+- **Tasks** → stay in `tasks/BACKLOG.md` (organized under topic headers)
+- **Opportunities** → `knowledge/opportunities/` (observed problems and ideas to explore)
 - **References** → `knowledge/references/` (useful context)
+
+**Plan your week:**
+
+Move items from `tasks/BACKLOG.md` into `tasks/ACTIVE.md`:
+- **In Progress** — working on now
+- **Up Next** — committed this week
+- **Waiting On** — blocked on someone else
+
+> **Start here, build as you go.** `GOALS.md` and `tasks/BACKLOG.md` are the core — fill those in first. Add a few files to `knowledge/` about your role, company, and strategy; the agent gets meaningfully smarter with even basic context, and you can add more over time. Voice training and plugins are optional — add them when you feel the friction of not having them.
 
 ---
 
@@ -74,29 +82,17 @@ AI categorizes into:
 
 ```
 sams-product-os/
-├── .claude/skills/         # AI agent skills & slash commands. Trigger via `/skillname`
-├── tools/                  # Tools to extend AI agent capabilities
-│   ├── integrations/       # Read-only API clients for external services
-│   └── mcp-servers/        # Custom MCP servers
-│       └── task-manager/   # Task management MCP server
-│           ├── server.py   # MCP server
-│           ├── config.yaml # Task manager configuration
-│           └── README.md   # MCP tool documentation
-│
-├── evals/                  # AI agent tests & evaluation
-├── tasks/                  # Your personal tasks
-├── knowledge/              # Persistent context & references for your AI agent
-├── meetings/               # Meeting notes & transcripts
-├── initiatives/            # Strategic initiatives & groomed requests
-├── _temp/                  # Drop zone for files in transit or scratch work
-├── templates/              # Document templates
-├── setup.sh                # Interactive setup script
-├── BACKLOG.md              # Daily brain dump inbox of future work
-├── GOALS.md                # Ownership areas & quarterly goals
-├── AGENTS.md               # Your AI agent instructions
-├── CLAUDE.md               # Points to AGENTS.md (agent instructions for Claude Code)
-└── VOICE-GUIDE.md          # Your writing style (optional)
-
+├── tasks/          # Simple backlog → active → archive flow
+├── knowledge/      # Persistent reference material & agent-learned context
+├── projects/       # Discrete work with its own context, research, and outputs
+├── meetings/       # Meeting notes and transcripts
+├── templates/      # Document structures for consistent outputs
+├── _temp/          # Scratch work and files in transit
+├── tools/          # API integrations and custom tooling
+├── .claude/skills/ # Slash commands and agent capabilities
+├── GOALS.md        # Quarterly goals and ownership areas
+├── AGENTS.md       # Agent instructions
+└── setup.sh        # Interactive setup
 ```
 
 ---
@@ -114,19 +110,20 @@ Files you create once and update as things change. The AI reads these to underst
 | `about-me/` | Role, background, working style, strengths |
 | `company-context/` | Mission, products, team, org structure |
 | `product-strategy/` | Vision, strategic pillars, roadmap, OKRs |
-| `frameworks/` | PM methodologies you use (RICE, JTBD, etc.) |
 | `processes/` | How your team works, sprint cadence, decision-making |
 | `references/` | Competitive research, articles, open requests |
 | `voice-samples/` | Writing samples for style matching (see [Voice Training](#voice-training)) |
 | `decisions/` | Decision log — one file per significant decision |
+| `opportunities/` | Observed problems and ideas to explore — groomed feature requests, market signals, patterns |
+| `people/` | *(Optional)* One file per person — direct reports, stakeholders, key peers. Useful at manager/director/VP level. |
 
-AI reads files in priority order: `about-me/` → `product-strategy/` → `company-context/` → `frameworks/` → task-relevant folders.
+AI reads files in priority order: `about-me/` → `product-strategy/` → `company-context/` → task-relevant folders.
 
 Reference files explicitly with `@knowledge/product-strategy/current-strategy.md`.
 
 ### Domain Learning (maintained by your agent)
 
-As you work, your agent builds up learned knowledge in domain-specific folders (e.g., `knowledge/interac/`, `knowledge/checkout-flow/`). Each domain folder holds three files: `knowledge.md` (facts), `hypotheses.md` (patterns under observation), and `rules.md` (confirmed — applied by default). The agent creates these automatically; you never pre-populate them. See `knowledge/AGENTS.md` for the full knowledge architecture and maintenance rules.
+As you work, your agent builds up learned knowledge in domain-specific folders (e.g., `knowledge/payments/`, `knowledge/checkout-flow/`). Each domain folder holds three files: `knowledge.md` (facts), `hypotheses.md` (patterns under observation), and `rules.md` (confirmed — applied by default). The agent creates these automatically; you never pre-populate them. See `knowledge/AGENTS.md` for the full knowledge architecture and maintenance rules.
 
 See `knowledge/INDEX.md` for a directory of what's in your knowledge folder.
 
@@ -135,77 +132,118 @@ See `knowledge/INDEX.md` for a directory of what's in your knowledge folder.
 ## What Gets Committed vs. Gitignored
 
 **Committed (shared structure):**
-- Directory structure
-- Documentation, templates, `.claude/skills/`
-- `tools/mcp-servers/task-manager/config.yaml` (priority caps, categories)
-- `evals/` folder (automated tests)
-- `.claude/skills/` folder (AI agent capabilities)
+- Directory structure, templates, `.claude/skills/`
 - `AGENTS.md` and subdirectory `AGENTS.md` + `CLAUDE.md` files (agent instructions for each folder)
 
 **Gitignored (your data):**
-- `BACKLOG.md`
-- `GOALS.md`
-- `VOICE-GUIDE.md`
-- Content in `knowledge/`, `tasks/`, `meetings/`, `initiatives/`, `_temp/`
+- `GOALS.md`, `VOICE-GUIDE.md`
+- Content in `tasks/`, `knowledge/`, `projects/`, `meetings/`, `_temp/`
+- Note: `AGENTS.md` and `CLAUDE.md` inside any folder are always tracked
 
 ---
 
 ## Core Workflow
 
 ```
-BACKLOG.md → /process-backlog → Tasks (P0≤3) / Initiatives / References
+tasks/BACKLOG.md → /process-backlog → Tasks (stay in backlog) / Opportunities / References
+                 → weekly planning → tasks/ACTIVE.md → tasks/_archived/YYYY-MM.md
 ```
 
-1. **Brain dump** to `BACKLOG.md` throughout the day
-2. **Process** with `/process-backlog` - AI categorizes and enforces priority caps
-3. **Work** - Focus on your 3 P0 tasks, explore initiatives, generate docs
+1. **Brain dump** to `tasks/BACKLOG.md` throughout the day
+2. **Process** with `/process-backlog` — AI classifies items, creates opportunity and reference files
+3. **Plan** — Move items into `tasks/ACTIVE.md` for the week: In Progress, Up Next, Waiting On
+4. **Archive** — Log completed work to `tasks/_archived/YYYY-MM.md` during weekly review
 
 ---
 
 ## Tasks
 
-### Task File Structure
+### Three-Bucket System
 
-Each task is a markdown file in `tasks/` with YAML frontmatter:
+Tasks live in three files.
 
-- **title** - Task name
-- **category** - technical, outreach, research, writing, admin, other
-- **priority** - P0 (Critical), P1 (High), P2 (Normal), P3 (Low)
-- **status** - n (not_started), s (started), b (blocked), d (done)
-- **created_date** - YYYY-MM-DD
-- **due_date** - YYYY-MM-DD (optional)
-- **resource_refs** - Links to related files
+**`tasks/BACKLOG.md`** — Brain dump inbox. Bullets organized by topic header. Not committed work yet.
+```markdown
+## Product
+- Follow up with Sarah about Q4 goals
 
-Content sections:
-- **Context** - Goals and references
-- **Next Actions** - Steps to complete
-- **Progress Log** - Notes, blockers, decisions
+## Strategy
+- Research competitive pricing changes
+```
+
+**`tasks/ACTIVE.md`** — This week's focus. Three sections:
+```markdown
+# Active — Week of Apr 7–11
+**Focus:** Ship the pricing experiment
+
+## In Progress
+- [ ] Review PRD draft with eng lead
+
+## Up Next
+- [ ] Schedule merchant feedback call
+
+## Waiting On
+| Who | What | Since | Next step |
+|-----|------|-------|-----------|
+| Legal | Contract review | Apr 8 | Follow up if no word by Apr 10 |
+```
+
+**`tasks/_archived/YYYY-MM.md`** — Monthly retrospective. Logged at week-end.
+```markdown
+## Week of Apr 7–11
+
+### Shipped
+- Pricing experiment launched to 10% of users
+
+### Completed
+- PRD draft reviewed and approved
+```
 
 ### Managing Tasks
 
-**Update:**
-- "Mark task [name] as complete"
-- "Change task [name] status/priority/category"
+**Daily:**
+- `/daily-pulse` — morning briefing with calendar + active tasks
+- "What am I working on?" — agent reads `tasks/ACTIVE.md`
+- "Show my backlog" — agent reads `tasks/BACKLOG.md`
+- Brain dump into `tasks/BACKLOG.md`
 
-**Find:**
-- "Find tasks older than [N] days"
-- "Find stale tasks"
+**Weekly:**
+- `/process-backlog` — classify and clean the backlog
+- `/weekly-review` — review progress, plan next week, log to archive
 
-**Prune:**
-- "Prune completed tasks older than [N] days"
+---
 
-Tasks are marked complete with `status: d`. No file movement needed.
+## Projects
 
-### Priority System
+A project is committed discrete work — a clear objective, connected to a goal, with real outputs. One folder per project in `projects/`.
 
-Tasks use P0-P3 with strict caps to prevent overwhelm:
+```
+projects/
+└── checkout-redesign/
+    ├── brief.md        # From templates/project-brief-template.md
+    ├── research.md
+    └── outputs/
+```
 
-- **P0** (Critical): Max 3 tasks - Today's focus
-- **P1** (High): Max 7 tasks - This week
-- **P2** (Medium): Max 15 tasks - This month
-- **P3** (Low): Unlimited - Backlog
+Each project brief has:
+```markdown
+# Checkout Redesign
 
-When `/process-backlog` would exceed caps, AI asks you to deprioritize.
+**Goal:** [Which goal from GOALS.md does this serve?]
+**Status:** Active | On Hold | Complete
+**Started:** YYYY-MM-DD
+
+## Objective
+## Target Customer
+## Success
+## What I Believe
+## What I Need to Research
+## Solution Directions
+## Risks to Validate
+## Updates
+```
+
+Active projects generate tasks — reference the project folder when adding related items to `tasks/ACTIVE.md` or `tasks/BACKLOG.md`.
 
 ---
 
@@ -215,14 +253,23 @@ This is the base project with core skills built in. Install additional skills fr
 
 ### Built-in Skills
 
-**View Tasks (`view-tasks` skill):**
-- `/view-tasks today`: due today and overdue tasks
-- `/view-tasks upcoming`: tasks due in next 7 days
-- `/view-tasks all`: all tasks with optional filters
+**Process Backlog (`/process-backlog`):**
+- Process `tasks/BACKLOG.md` into organized tasks, opportunities, references
+- Deduplication and goal-alignment checks
 
-**Process Backlog (`process-backlog` skill):**
-- Process BACKLOG.md into tasks, initiatives, references
-- Deduplication and priority cap enforcement
+**Daily Pulse (`/daily-pulse`):**
+- Morning briefing — calendar + active task priorities
+- `/daily-pulse tomorrow`: tomorrow look-ahead
+- `/daily-pulse week`: week overview
+
+**Weekly Review (`/weekly-review`):**
+- Reflect on past week, plan next week, log to archive
+- `/weekly-review quick`: condensed version
+
+**Weekly Update (`/weekly-update`):**
+- Draft a stakeholder update email
+- Uses Linear projects and initiatives if MCP is connected, falls back to `tasks/ACTIVE.md`
+- Reads `knowledge/people/` for stakeholder preferences
 
 ### Plugin Marketplace
 
@@ -237,48 +284,6 @@ Browse and install additional skills (analytics, grooming, research, writing, an
 ```
 /plugin install {PLUGIN-NAME}@sams-product-plugins
 ```
-
----
-
-## MCP Servers (Optional)
-
-MCP (Model Context Protocol) provides direct tool access for faster operations.
-
-### Task Manager MCP
-
-For faster task operations:
-
-```bash
-uv sync
-```
-
-Configure your AI assistant to use `tools/mcp-servers/task-manager/server.py` (see `tools/mcp-servers/task-manager/README.md`).
-
-**Benefits:**
-- 10x faster task operations (CRUD, deduplication, statistics)
-- Auto-categorization and priority enforcement
-- Find stale/overdue tasks, prune completed ones
-
----
-
-## Common Commands
-
-**Daily:**
-- "What should I work on today?" - Review P0/P1 tasks
-- `/process-backlog` - Process ideas into tasks/initiatives
-- `/view-tasks today` - Quick view of due/overdue tasks
-
-**Weekly:**
-- `/view-tasks upcoming` - Tasks due in next 7 days
-
-**Tasks:**
-- `/view-tasks all` - View all tasks with filters
-- "Mark task [name] as complete"
-- "Find stale tasks"
-- "Prune completed tasks" - Delete tasks older than 90 days
-
-**Natural language works too:**
-- "What are my P0 tasks?"
 
 ---
 
@@ -402,68 +407,31 @@ What patterns have changed? What's new?
 ## Best Practices
 
 **Daily:**
-- Brain dump to BACKLOG.md throughout the day
-- `/process-backlog` weekly to organize
+- Brain dump to `tasks/BACKLOG.md` throughout the day
+- Ask "what am I working on?" to check active tasks
+
+**Weekly:**
+- `/process-backlog` to classify and clean
+- `/weekly-review` to reflect, plan, and archive
+- Update `tasks/ACTIVE.md` at the start of each week
 
 **Context:**
-- Start small - add context as you go
+- Start small — add context as you go
 - Update voice samples quarterly
 
 **Tips:**
 - Use @ mentions: `@knowledge/product-strategy/`
 - Process 3-5 backlog items at a time, not 50
-- Let priority caps guide you - max 3 P0 tasks
+- Keep ACTIVE.md focused — if you can't finish it this week, it belongs in the backlog
 - Install additional skills from the plugin marketplace
 
 **Troubleshooting:**
 - Generic responses? Add more to `knowledge/`
 - AI not using context? Use @ mentions explicitly
-- Too many tasks? Let AI enforce priority caps
-
----
-
-## Running Evals
-
-Test that your system is working correctly after making changes:
-
-```bash
-uv run pytest evals/ -v
-```
-
-This validates:
-- Task categorization
-- Auto-categorization based on `tools/mcp-servers/task-manager/config.yaml` keywords
-- Priority caps enforcement (P0≤3, P1≤7, P2≤15)
-- File format and structure
-
-See `evals/README.md` for details.
-
----
-
-## For Contributors
-
-Contributions should:
-- Not include personal information
-- Be generic and configurable
-- Include documentation
-- Follow the existing patterns
-- Test with your AI assistant before submitting
-
----
-
-## Acknowledgements
-
-This project was inspired by the work of several amazing builders in the space. Special thanks to:
-
-- [Aman Khan](<https://github.com/amanaiproduct>) - PersonalOS
-- [Tal Raviv](https://www.talraviv.co) - LinkedIn Content + Articles
-- [Carl Velloti](https://github.com/carlvellotti/carls-product-os) - carls-product-os, cursor-pm-course, claude-code-everyone-course
+- Overwhelmed by backlog? `/process-backlog` to declutter
 
 ---
 
 ## License
-This work is licensed under CC BY-NC-SA 4.0.
 
-Copyright © 2026 Sam Kawsarani. You may view, use, modify, and share this repo with attribution for non-commercial purposes. Commercial sale is not permitted, but you may use it internally for work and business.
-
-Full license: [https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode)
+[MIT](LICENSE) — Copyright (c) 2026 Sam Kawsarani
