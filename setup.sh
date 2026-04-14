@@ -234,7 +234,6 @@ step_knowledge_dirs() {
       print_skip "knowledge/$dir/"
     else
       mkdir -p "$path"
-      touch "$path/.gitkeep"
       print_success "Created knowledge/$dir/"
     fi
   done
@@ -294,12 +293,7 @@ step_template_files() {
 
   # tasks/_archived/ — monthly retrospective logs
   mkdir -p "$REPO_DIR/tasks/_archived"
-  if [[ ! -f "$REPO_DIR/tasks/_archived/.gitkeep" ]]; then
-    touch "$REPO_DIR/tasks/_archived/.gitkeep"
-    print_success "Created tasks/_archived/"
-  else
-    print_skip "tasks/_archived/"
-  fi
+  print_success "Created tasks/_archived/"
 
   # knowledge/INDEX.md — personal directory of knowledge folder contents
   if [[ -f "$REPO_DIR/knowledge/INDEX.md" ]]; then
