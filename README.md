@@ -160,7 +160,7 @@ tasks/BACKLOG.md → /process-backlog → Tasks (stay in backlog) / Opportunitie
 
 ### Three-Bucket System
 
-Tasks live in three files — no individual task files, no frontmatter, no priority codes.
+Tasks live in three files.
 
 **`tasks/BACKLOG.md`** — Brain dump inbox. Bullets organized by topic header. Not committed work yet.
 ```markdown
