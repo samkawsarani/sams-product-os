@@ -45,8 +45,8 @@ Use `templates/active-template.md` when resetting ACTIVE.md for a new week.
 
 When processing `tasks/BACKLOG.md`:
 - **Tasks** stay in the backlog as organized lines — no individual task files
-- **Initiatives** (strategic ideas to explore) → `initiatives/`
-- **References** (articles, research, competitor info) → `knowledge/references/` or related initiative folder
+- **Opportunities** (strategic ideas to explore) → `knowledge/opportunities/`
+- **References** (articles, research, competitor info) → `knowledge/references/`
 
 Use `/process-backlog` to classify and clean. Always present findings before creating anything.
 

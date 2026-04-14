@@ -80,7 +80,7 @@ If no prior decision exists — or you're replacing one — log it:
 When a system review runs (user-triggered — never automatic):
 - **Knowledge hygiene:** For each domain folder — promote any hypothesis confirmed 3+ times to `rules.md`, discard any with 3+ contradictions, prune rules not applied in 30+ days
 - **Decisions audit:** Scan `knowledge/decisions/` — did recent trade-offs play out as expected? Flag any needing a follow-up decision
-- **Goals alignment:** Are active tasks still tied to current goals in `GOALS.md`? Flag stale initiatives
+- **Goals alignment:** Are active tasks still tied to current goals in `GOALS.md`? Flag stale projects or backlog items
 - **Index hygiene:** Verify every domain folder has a row in `knowledge/INDEX.md`; fill gaps; update `Last updated`
 
 After the review, report what changed and ask the user to update "Last system review" in root `AGENTS.md`.
