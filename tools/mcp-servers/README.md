@@ -24,7 +24,7 @@ The skill will guide you through creating MCP servers for:
 
 See `.claude/skills/mcp-builder/SKILL.md` for details.
 
-### 3. Install and Configure
+### 2. Install and Configure
 
 Once you've created your MCP server:
 
