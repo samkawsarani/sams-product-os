@@ -1,7 +1,7 @@
 ---
 name: daily-pulse
-model: haiku
-description: Generates a morning briefing combining calendar agenda with active task priorities and goal alignment. Invoked via /daily-pulse or "morning pulse", "what's my day look like". Supports variations (tomorrow, week).
+model: sonnet
+description: Generates a morning briefing combining calendar agenda, email and Slack triage, meeting prep, and active task priorities. Invoked via /daily-pulse or "morning pulse", "what's my day look like". Supports variations (tomorrow, week).
 argument-hint: '[optional: "tomorrow", "week"]'
 ---
 
@@ -11,11 +11,11 @@ Find task and goal context.
 Today's date: $TODAY
 Arguments: `$ARGUMENTS` (optional — see variations: tomorrow, week)
 
-**Best timing:** First thing in morning, before checking email/Slack
+**Best timing:** Run first thing — it replaces your manual inbox/Slack scan.
 
 ## Your Task
 
-Generate a morning pulse that combines calendar agenda with active task priorities.
+Generate a morning pulse that combines calendar agenda, inbox and Slack triage, meeting prep, and active task priorities into a single plan for the day.
 
 If user provided arguments: $ARGUMENTS
 - "tomorrow" → Use Tomorrow Look-Ahead variation
@@ -24,6 +24,10 @@ If user provided arguments: $ARGUMENTS
 ---
 
 ## Default: Full Morning Pulse
+
+### Step 0: Refresh Index
+
+Run `qmd update && qmd embed` to ensure semantic search reflects any content added since last session.
 
 ### Step 1: Calendar Agenda
 
@@ -40,7 +44,59 @@ If user provided arguments: $ARGUMENTS
    - Any **scheduling conflicts** (overlapping events)
    - Only include bullets that are relevant — don't pad with filler
 
-### Step 2: Active Task Priorities
+### Step 2: Gmail Triage
+
+**Actions:**
+1. Check unread email and surface messages that need attention today.
+2. Filter to: emails needing a reply, time-sensitive items, emails from key people, action items, meeting-related threads.
+3. Ignore newsletters, automated notifications, FYI-only threads, and read-only updates.
+4. **Exclude system notifications from tools** (Linear, Figma, Miro, GitHub, Jira, Notion, Slack digest emails, etc.) **unless you are directly tagged or mentioned** in them — in that case, surface it.
+5. **For emails containing metrics or data** (dashboards, reports, analytics summaries, weekly stats), extract and summarize the key numbers inline — don't just list the subject, give the headline figures.
+6. If more than 10 unread, surface only the top 5 most actionable.
+
+**Output section: `INBOX`**
+```
+INBOX
+- [Sender] — [Subject] — [Why it needs attention / action needed]
+- ...
+```
+Omit section if inbox is clear.
+
+### Step 3: Slack Triage
+
+**Actions:**
+1. Check Slack for unanswered DMs, threads where you were mentioned or tagged but haven't replied, and anything urgent in key channels.
+2. Surface messages that need a response, not just reading.
+3. Cap at 5 items to avoid noise.
+
+**Output section: `SLACK`**
+```
+SLACK
+- [Channel/DM] — [Brief summary] — [Action needed]
+- ...
+```
+Omit section if nothing actionable.
+
+### Step 4: Meeting Prep
+
+**Actions:**
+1. For each meeting on today's calendar, check:
+   - Is there an agenda or prep doc? Search `projects/` and `meetings/` by event name.
+   - Is a decision or output expected from this meeting?
+   - Are there open tasks in `ACTIVE.md` directly tied to this meeting's topic?
+2. Flag meetings that look under-prepped (no agenda, decision-heavy, involves key stakeholders).
+3. For flagged meetings, offer a one-line prep suggestion.
+
+**Output section: `MEETING PREP`**
+```
+MEETING PREP
+- [Meeting name] @ [time] — [Prep suggestion or "looks ready"]
+  - Open: [relevant task or doc gap if any]
+- ...
+```
+Omit section if no meetings today or all look prepared.
+
+### Step 5: Active Task Priorities
 
 **Actions:**
 1. Read `tasks/ACTIVE.md`
@@ -50,57 +106,19 @@ If user provided arguments: $ARGUMENTS
    - Any items in the **Waiting On** table that look overdue (based on the "Since" date vs. today)
 3. Read `GOALS.md` for goal alignment context
 
-### Step 3: Synthesize
+### Step 6: Synthesize
 
-Combine calendar + tasks into a unified briefing.
+Combine calendar + inbox + slack + tasks into a unified briefing.
 
 **Omit any section that would be empty — don't show headers or placeholder text for empty sections.**
 
-**Output format:**
-```
-Daily Pulse for [Day, Date]
+See `references/output-format.md` for the full output structure and section examples.
 
-CALENDAR
-| Time | Event |
-|------|-------|
-| [Start]–[End] | [Event title] |
-| [Start]–[End] | [Event title] *(you're optional)* |
-| ... | ... |
+The YOUR PLAN section should be opinionated — give a clear recommended sequence interleaving task work, communication responses, and meeting prep. Don't just list everything; prioritize.
 
-A few things to note:
-- [Person] declined [Meeting] and asked to move it to [new time] — "[reason]"
-- You have a free block from [X]–[Y] (Xh Xm) and another from [Y]–[Z] (Xh Xm)
-- Your [morning/afternoon] is fairly packed back-to-back from [X] to [Y]
-- [Meeting A] and [Meeting B] overlap at [time] — you'll need to pick one
+### Step 7: Offer Support
 
-TOP PRIORITIES
-1. [In Progress task with context]
-   Goal: [Goal name]
-   Why today: [Urgency/impact]
-
-2. [Second In Progress or top Up Next item]
-   ...
-
-3. [Third priority]
-   ...
-
-UP NEXT
-  - [Task] — [brief context]
-  - ...
-
-WAITING ON
-  - [Who] — [What] (since [date], [N] days)
-  [Flag if this looks overdue or needs a nudge]
-```
-
-### Step 4: Offer Support
-
-```
-Ready to start?
-- Say "start [task name]" to move it to In Progress in ACTIVE.md
-- Say "/daily-pulse tomorrow" for tomorrow's briefing
-- Say "/daily-pulse week" for the week overview
-```
+After the briefing, show the ready-to-start prompt block from `references/output-format.md`.
 
 ---
 
@@ -129,29 +147,7 @@ Ready to start?
 3. Summarize per-day: meeting count, total meeting time
 4. Read `tasks/ACTIVE.md` and show all In Progress + Up Next items
 
-**Output format:**
-```
-Week Overview ([Date Range])
-
-[Day]  [N] meetings  [X]h
-[Day]  [N] meetings  [X]h
-...
-
-BUSIEST DAY: [Day] -- [Context]
-LIGHTEST DAY: [Day] -- Best for deep work
-
-ACTIVE THIS WEEK
-In Progress:
-- [Task] — [brief context]
-
-Up Next:
-- [Task]
-- [Task]
-
-WAITING ON
-| Who | What | Since | Next step |
-|-----|------|-------|-----------|
-```
+See `references/output-format.md` for the Week Overview output structure.
 
 ---
 
@@ -161,4 +157,4 @@ WAITING ON
 - Focus on outcomes, not activity
 - Update ACTIVE.md when you begin work on something
 - If user seems stuck choosing, make a recommendation
-- If calendar fetch fails, proceed with task-only pulse and note the issue
+- Each data source is optional — if a source is unavailable, proceed with the rest and note what was skipped

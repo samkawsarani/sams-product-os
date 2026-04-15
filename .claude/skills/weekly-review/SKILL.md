@@ -168,6 +168,12 @@ If user wants condensed output, combine all 5 steps into:
 
 ---
 
+## Step 6: Re-index
+
+Run `qmd update && qmd embed` to reindex any notes, retrospectives, or archive files written during this session.
+
+---
+
 ## Best Practices
 
 - Emphasize goal alignment over task quantity
