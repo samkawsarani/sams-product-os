@@ -47,15 +47,6 @@ Thumbs.db
 *.log
 logs/
 
-# Build artifacts (if using MCP servers)
-*.pyc
-__pycache__/
-.pytest_cache/
-
-# Integration caches (workspace-specific data)
-tools/integrations/slack/mappings.json
-
-
 # Temp drop zone (files in transit, scratch work)
 _temp/*
 !_temp/.gitkeep
@@ -72,10 +63,6 @@ GOALS.md
 
 # Personal voice guide (writing style preferences)
 VOICE-GUIDE.md
-
-# Evals (test results and backups)
-evals/results/
-*.backup
 
 # Project todos
 TODO.md
