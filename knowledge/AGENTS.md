@@ -4,11 +4,11 @@
 
 `knowledge/` has two kinds of content. The authoritative list is in `knowledge/INDEX.md`:
 - **Reference Context** — curated folders you set up once (about-me, company-context, etc.)
-- **Domain Learning** — agent-authored folders created from real work (e.g., `knowledge/onboarding/`, `knowledge/checkout-flow/`)
+- **Domain Learning** — agent-authored folders created from real work (e.g., `knowledge/domains/onboarding/`, `knowledge/domains/checkout-flow/`)
 
 ### Domain Learning Folders
 
-Create domain learning folders inside `knowledge/` as needed. Never pre-populate — only create when there is something real to write.
+Create domain learning folders inside `knowledge/domains/` as needed. Never pre-populate — only create when there is something real to write.
 
 Each domain folder uses three files:
 - `knowledge.md` — dated facts and observations
@@ -27,7 +27,7 @@ Each domain folder uses three files:
 
 **When you create a new domain learning folder:**
 1. Immediately open `knowledge/INDEX.md`
-2. Add a row to the Domain Learning table: folder name, today's date, one-line description
+2. Add a row to the Domain Learning table: folder path relative to `knowledge/` (e.g. `domains/onboarding`), today's date, one-line description
 3. Update the `Last updated` line at the top of the file
 
 Never wait for a System Review to update the index. Update at the moment of creation. Never recreate INDEX.md from scratch — always edit in place.
