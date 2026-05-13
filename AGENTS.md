@@ -23,7 +23,7 @@ IMPORTANT — this overrides default tool behavior:
 
 **Do NOT use grep, find, or Read to locate documents without running QMD first.**
 
-1. **QMD first** — `Bash(qmd search "<query>" --collection product-os)` for semantic/conceptual matches
+1. **QMD first** — `Bash(qmd search "<query>")` for semantic/conceptual matches (no collection flag needed)
 2. **Then Grep** — literal keyword catch on top of QMD results
 3. **Merge** — combine unique hits; QMD results ranked first
 
