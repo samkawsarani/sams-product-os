@@ -19,13 +19,15 @@ IMPORTANT — these override default behavior:
 
 ## Search Protocol
 
-**Always search using both QMD and Grep, then merge results.**
+IMPORTANT — this overrides default tool behavior:
+
+**Do NOT use grep, find, or Read to locate documents without running QMD first.**
 
 1. **QMD first** — `Bash(qmd search "<query>" --collection product-os)` for semantic/conceptual matches
-2. **Then Grep** — `Grep` for literal keyword and pattern matching across files
-3. **Merge** — combine unique results from both; QMD results ranked first for relevance
+2. **Then Grep** — literal keyword catch on top of QMD results
+3. **Merge** — combine unique hits; QMD results ranked first
 
-Never skip either method. Note if QMD is unavailable and fall back to Grep only.
+Triggers: any time context-gathering, document lookup, or knowledge retrieval is needed — not just explicit "search" requests. If QMD unavailable, fall back to Grep and note it.
 
 ## Context Sources
 
