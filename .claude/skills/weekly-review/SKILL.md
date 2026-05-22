@@ -181,3 +181,9 @@ Run `qmd update && qmd embed` to reindex any notes, retrospectives, or archive f
 - Make tradeoffs explicit (what are we NOT doing?)
 - Aim for 10-15 minutes reflection time (full version) or 2-3 minutes (quick)
 - Use the archive file as a record — it feeds future weekly recaps and retrospectives
+
+---
+
+## Final Step: Wrap-Up
+
+After completing this review, invoke the `wrap-up` skill. It scans the week's work for hypothesis confirmations, new domain knowledge, and corrections — and persists them before the session closes.

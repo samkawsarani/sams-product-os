@@ -10,16 +10,42 @@
 
 Create domain learning folders inside `knowledge/domains/` as needed. Never pre-populate — only create when there is something real to write.
 
-Each domain folder uses three files:
-- `knowledge.md` — dated facts and observations
+Each domain folder uses two files:
+- `knowledge.md` — all confirmed knowledge: facts, observations, and confirmed rules (apply by default)
 - `hypotheses.md` — unconfirmed patterns; track confirmation count toward 3
-- `rules.md` — confirmed patterns; apply these by default
 
 **At the start of a task:** if these files exist for the relevant domain, read them first.
-**At the end of each task:** extract insights and write them to the relevant domain folder.
+**At the end of each task:** run the `wrap-up` skill to capture learnings.
 
-**Promotion:** Hypothesis confirmed 3+ times → move entry to `rules.md` (note date and source).
-**Demotion:** Rule contradicted by new data → move back to `hypotheses.md`.
+**Promotion:** Hypothesis confirmed 3+ times → propose moving entry to `knowledge.md` (needss approval). Never auto-promote.
+**Demotion:** Confirmed rule contradicted by new data → move back to `hypotheses.md`.
+
+### `knowledge.md` Structure
+
+```
+## What we know (facts)
+[dated facts and observations]
+
+## Rules (apply by default)
+### R1: [Rule name]
+[content]
+**Confirmed by:** [sources]
+**Apply when:** [context]
+```
+
+For cross-domain rules, reference shared rules: `→ See knowledge/domains/shared.md SR1` instead of duplicating.
+
+### `hypotheses.md` Structure
+
+```
+## H1: [Hypothesis name]
+[content]
+**Confirmations:** N — *(YYYY-MM-DD: source)*
+**Contradictions:** N
+
+## H2: [RETIRED] [Hypothesis name]
+**Retired:** [reason and date]
+```
 
 ### INDEX.md — Auto-Maintenance
 
@@ -75,10 +101,14 @@ If no prior decision exists — or you're replacing one — log it:
 ## Supersedes: {link to prior decision, if replacing}
 ```
 
+## Shared Rules
+
+Cross-domain rules live in `knowledge/domains/shared.md` (gitignored). Domain `knowledge.md` files reference them by SR-number. Do not add company-specific rule content to this file.
+
 ## System Review Protocol
 
 When a system review runs (user-triggered — never automatic):
-- **Knowledge hygiene:** For each domain folder — promote any hypothesis confirmed 3+ times to `rules.md`, discard any with 3+ contradictions, prune rules not applied in 30+ days
+- **Knowledge hygiene:** For each domain folder — scan `hypotheses.md` for any with 3+ confirmations (surface for promotion to `knowledge.md`), flag any with 3+ contradictions for retirement
 - **Decisions audit:** Scan `knowledge/decisions/` — did recent trade-offs play out as expected? Flag any needing a follow-up decision
 - **Goals alignment:** Are active tasks still tied to current goals in `GOALS.md`? Flag stale projects or backlog items
 - **Index hygiene:** Verify every domain folder has a row in `knowledge/INDEX.md`; fill gaps; update `Last updated`

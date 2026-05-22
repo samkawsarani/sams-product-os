@@ -108,3 +108,9 @@ If approved, save to `knowledge/references/stakeholder-updates/YYYY-MM-DD.md` fo
 - **Don't hide problems** — blockers go in the body, not a footnote
 - **OKR-connected** — every priority should tie back to a goal from `GOALS.md`
 - **Under 500 words** — leadership skims
+
+---
+
+## Final Step: Wrap-Up
+
+After the update is approved and saved, invoke the `wrap-up` skill. It checks whether anything from this week confirms a domain hypothesis or surfaces new knowledge worth capturing.

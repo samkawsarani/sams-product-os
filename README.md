@@ -15,7 +15,7 @@
 Sams Product OS is an AI-powered personal operating system to organize my PM workspace
 
 - **Three-Bucket Workflow** - Backlog → Active → Archive keeps you focused
-- **Backlog Processing** - Brain dump → Organized tasks/opportunities/references
+- **Weekly Focus** - Brain dump → Prioritized weekly plan in `tasks/ACTIVE.md`
 - **Document Generation** - Specs, briefs, PRDs from conversation
 - **Research Synthesis** - Transform interviews into insights
 - **Voice Training** - Match your writing style
@@ -62,14 +62,7 @@ Creates your workspace, sets up knowledge base directories, seeds starter files,
 /process-backlog
 ```
 
-AI categorizes into:
-- **Tasks** → stay in `tasks/BACKLOG.md` (organized under topic headers)
-- **Opportunities** → `knowledge/opportunities/` (observed problems and ideas to explore)
-- **References** → `knowledge/references/` (useful context)
-
-**Plan your week:**
-
-Move items from `tasks/BACKLOG.md` into `tasks/ACTIVE.md`:
+AI reads your backlog + goals, recommends top 3–5 priorities with one-line rationale, confirms with you, then writes `tasks/ACTIVE.md`:
 - **In Progress** — working on now
 - **Up Next** — committed this week
 - **Waiting On** — blocked on someone else
@@ -123,7 +116,7 @@ Reference files explicitly with `@knowledge/product-strategy/current-strategy.md
 
 ### Domain Learning (maintained by your agent)
 
-As you work, your agent builds up learned knowledge in domain-specific folders (e.g., `knowledge/payments/`, `knowledge/checkout-flow/`). Each domain folder holds three files: `knowledge.md` (facts), `hypotheses.md` (patterns under observation), and `rules.md` (confirmed — applied by default). The agent creates these automatically; you never pre-populate them. See `knowledge/AGENTS.md` for the full knowledge architecture and maintenance rules.
+As you work, your agent builds up learned knowledge in domain-specific folders (e.g., `knowledge/payments/`, `knowledge/checkout-flow/`). Each domain folder holds two files: `knowledge.md` (confirmed facts and rules — applied by default) and `hypotheses.md` (patterns under observation, tracked toward confirmation). Cross-domain rules live in `knowledge/domains/shared.md` (gitignored). The agent creates these automatically; you never pre-populate them. See `knowledge/AGENTS.md` for the full knowledge architecture and maintenance rules.
 
 See `knowledge/INDEX.md` for a directory of what's in your knowledge folder.
 
@@ -145,13 +138,12 @@ See `knowledge/INDEX.md` for a directory of what's in your knowledge folder.
 ## Core Workflow
 
 ```
-tasks/BACKLOG.md → /process-backlog → Tasks (stay in backlog) / Opportunities / References
-                 → weekly planning → tasks/ACTIVE.md → tasks/_archived/YYYY-MM.md
+tasks/BACKLOG.md → /process-backlog → tasks/ACTIVE.md → tasks/_archived/YYYY-MM.md
 ```
 
 1. **Brain dump** to `tasks/BACKLOG.md` throughout the day
-2. **Process** with `/process-backlog` — AI classifies items, creates opportunity and reference files
-3. **Plan** — Move items into `tasks/ACTIVE.md` for the week: In Progress, Up Next, Waiting On
+2. **Process** with `/process-backlog` — AI picks top 3–5 priorities aligned to your goals, writes `tasks/ACTIVE.md`
+3. **Work** — In Progress, Up Next, Waiting On tracked in `tasks/ACTIVE.md`
 4. **Archive** — Log completed work to `tasks/_archived/YYYY-MM.md` during weekly review
 
 ---
@@ -254,8 +246,8 @@ This is the base project with core skills built in. Install additional skills fr
 ### Built-in Skills
 
 **Process Backlog (`/process-backlog`):**
-- Process `tasks/BACKLOG.md` into organized tasks, opportunities, references
-- Deduplication and goal-alignment checks
+- Reads backlog + goals, recommends top 3–5 priorities for the week
+- Confirms with you, then writes `tasks/ACTIVE.md`
 
 **Daily Pulse (`/daily-pulse`):**
 - Morning briefing — calendar + active task priorities

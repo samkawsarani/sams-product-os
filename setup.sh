@@ -326,7 +326,7 @@ Last updated: $(date +%Y-%m-%d)
 ---
 
 ## Domain Learning
-*Agent-authored. Grows from real work over time. Each folder contains `knowledge.md`, `hypotheses.md`, `rules.md`.*
+*Agent-authored. Grows from real work over time. Each folder contains `knowledge.md` (confirmed facts + rules) and `hypotheses.md` (unconfirmed patterns). Cross-domain rules live in `knowledge/domains/shared.md` (gitignored).*
 
 | Domain Folder | Created | Description |
 |---------------|---------|-------------|

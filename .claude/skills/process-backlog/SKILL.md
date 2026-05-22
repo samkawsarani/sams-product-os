@@ -1,80 +1,77 @@
 ---
 name: process-backlog
 model: sonnet
-description: Processes tasks/BACKLOG.md into organized tasks, opportunities, and references. Presents findings for review before creating anything. Invoked via /process-backlog or "triage the backlog", "clean up the backlog", or "organize my brain dump".
-allowed-tools: Glob, Read, Write, Bash(qmd *)
+description: Picks this week's priorities from the backlog. Reads BACKLOG.md + GOALS.md, recommends top 3–5 items with goal-alignment rationale, confirms with user, then writes ACTIVE.md. Invoked via /process-backlog or "triage the backlog", "what should I work on this week", "plan my week", or "organize my brain dump".
+allowed-tools: Read, Write, Bash(qmd *)
 argument-hint:
 ---
 
 ## Context
 
 - Backlog: `tasks/BACKLOG.md`
+- Active: `tasks/ACTIVE.md`
+- Goals: `GOALS.md`
 - Today's date: $TODAY
 
 ## Workflow
 
-**Always present findings for user review before creating anything.**
+### Step 1: Read
 
-### Step 1: Analyze Backlog
+Read `tasks/BACKLOG.md`, `GOALS.md`, and `tasks/ACTIVE.md` in parallel.
 
-Read `tasks/BACKLOG.md` and categorize each item:
+### Step 2: Score and recommend
 
-| Category | Destination | Examples |
-|----------|-------------|----------|
-| **Tasks** | Stay in `tasks/BACKLOG.md` | "Email Sarah about Q4", "Review PRD draft" — clear action, stays until moved to ACTIVE.md |
-| **Opportunities** | `knowledge/opportunities/` | "Mobile perf issues", "Enterprise SSO pattern" — things observed worth exploring |
-| **References** | `knowledge/references/` | Articles, competitor info, research — context to save |
-| **Notes** | Discard (summary only) | Meeting notes, incomplete thoughts |
+For each backlog item, assess:
+- **Goal alignment** — does it map to a current goal in `GOALS.md`? (strongest signal)
+- **Urgency** — is there a deadline, blocker, or stakeholder waiting?
+- **Known blockers** — is it waiting on someone else? (deprioritize)
 
-Read `tasks/BACKLOG.md` directly.
+Pick top 3–5 items. Flag any item with no clear goal alignment — surface it but don't block on it.
 
-### Step 2: Check for Duplicates
+### Step 3: Present
 
-Compare proposed items against existing content in `tasks/BACKLOG.md`, `tasks/ACTIVE.md`, and `knowledge/opportunities/`.
+Show recommendations in a simple table:
 
-Scan `tasks/BACKLOG.md`, `tasks/ACTIVE.md`, and `knowledge/opportunities/` directly.
+| # | Item | Goal | Why now |
+|---|------|------|---------|
+| 1 | ... | ... | ... |
 
-### Step 3: Present Findings
+Include any flagged items below with a note: "No clear goal match — worth doing anyway?"
 
-Show user a summary with:
-- **Tasks** (staying in backlog): Bullet list with title
-- **Opportunities**: Bullet list with name + description
-- **References**: Bullet list
-- **Ambiguous items**: Items needing clarification
-- **Possible duplicates**: Similar existing items
-- **Notes**: Remaining content (will be discarded)
+Ask: "Does this work for the week, or do you want to swap anything?"
 
-### Step 4: Get Confirmation
+**Wait for confirmation before writing.**
 
-Ask: "How would you like to proceed?"
+### Step 4: Write ACTIVE.md
 
-**Wait for user response before creating anything.**
+Update `tasks/ACTIVE.md` with confirmed items:
 
-### Step 5: Resolve Ambiguities
+```markdown
+# Active — Week of [DATE]
+**Focus:** [one-line theme for the week]
 
-For vague items, ask:
-- What specific action should be taken?
-- When does this need to be done?
-- Why does this matter?
+## In Progress
 
-### Step 6: Create Approved Items
+## Up Next
+- [ ] [item 1]
+- [ ] [item 2]
+...
 
-**Tasks**: Tasks stay as lines in `tasks/BACKLOG.md` — no individual files. Organize them under the appropriate topic header. Verify each task connects to a goal from `GOALS.md`. If no goal fits, flag it and ask user to clarify why it matters before adding.
+## Waiting On
 
-**Opportunities**: Create in `knowledge/opportunities/` using `templates/opportunity-template.md`. Fill in what was observed and why it might matter.
+| Who | What | Since | Next step |
+|-----|------|-------|-----------|
+```
 
-**References**: Save in `knowledge/references/`.
+Move confirmed items under **Up Next** unless the user specified one as In Progress.
 
-### Step 7: Re-index
+### Step 5: Wrap-up
 
-Run `qmd update && qmd embed` (via Bash) to re-index collections with new content.
-Summarize what was organized: tasks kept (by topic), opportunities created, references saved.
+Invoke the `wrap-up` skill. Announce it: "Running wrap-up."
+
+---
 
 ## Key Reminders
 
-- **Never auto-create** — Always present findings first
-- **Ask for clarification** on ambiguous items before creating
-- **Link to goals** — If no goal fits, ask user to clarify why it matters
-- **Tasks stay in the backlog** — they move to ACTIVE.md during weekly planning, not into individual files
-- **Opportunities ≠ Projects** — opportunities go to `knowledge/opportunities/`, projects are created separately when you commit
-- Fewer clear items > many vague ones
+- **Only `tasks/ACTIVE.md` gets written** — no other files created
+- **Goal-linking is a signal, not a gate** — flag mismatches, don't block
