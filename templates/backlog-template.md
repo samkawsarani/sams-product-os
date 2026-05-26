@@ -1,17 +1,23 @@
 # Backlog
 
 Brain dump inbox. Not prioritized, not committed — just captured.
-Run /process-backlog to classify and clean. Move items to ACTIVE.md during weekly planning.
+## How to Use
+- Add tasks with `- [ ]` checkbox syntax
+- Include context: deadline, project, priority
+- Move to `active.md` when you start working on something
+- Archive completed tasks to `archive/`
 
-## Product
+## Product / Feature Work
 
-## Strategy
+## Process / Operations
 
-## Admin
-
-## Follow-ups
+## Stakeholder / Communication
 
 ## Team
+
+## Learning / Growth
+
+## Parking Lot _(do not prioritize)_
 
 ---
 Last reviewed:
