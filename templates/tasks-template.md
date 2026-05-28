@@ -1,5 +1,7 @@
+---
+last_reviewed: [DATE]
+---
 # Tasks
-
 ## Active — Week of [DATE]
 **Focus:**
 
@@ -15,27 +17,17 @@
 |-----|------|-------|-----------|
 
 ---
-
 ## Backlog
+### Product / Feature Work
 
-Brain dump inbox. Not prioritized, not committed — just captured.
-### How to Use
-- Add tasks with `- [ ]` checkbox syntax
-- Include context: deadline, project, priority
-- Move to In Progress when you start working on something
-- Archive completed tasks to `tasks/_archived/`
+### Process / Operations
 
-## Product / Feature Work
+### Stakeholder / Communication
 
-## Process / Operations
+### Team
 
-## Stakeholder / Communication
+### Learning / Growth
 
-## Team
-
-## Learning / Growth
-
-## Parking Lot _(do not prioritize)_
+### Parking Lot _(do not prioritize)_
 
 ---
-Last reviewed:
