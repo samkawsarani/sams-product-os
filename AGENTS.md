@@ -37,8 +37,7 @@ Triggers: any time context-gathering, document lookup, or knowledge retrieval is
 | `knowledge/` | Reference context (about you, company, strategy, people, decisions, opportunities). Agent-learned domain context lives in `knowledge/domains/`. See `knowledge/INDEX.md`. |
 | `projects/` | Committed discrete work — one file per project with objective, research, and outputs |
 | `meetings/` | Meeting transcripts and notes |
-| `tasks/ACTIVE.md` | This week's focus: In Progress, Up Next, Waiting On |
-| `tasks/BACKLOG.md` | Brain dump inbox — topic-organized, not yet committed |
+| `tasks/TASKS.md` | This week's focus (Active section) + brain dump inbox (Backlog section) |
 | `tasks/_archived/` | Monthly retrospective logs (`YYYY-MM.md`) |
 | `GOALS.md` | Ownership areas and quarterly goals |
 | `_temp/` | Files in transit or scratch work |

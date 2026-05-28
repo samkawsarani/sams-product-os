@@ -35,7 +35,7 @@ Calculate the reporting period:
 ## Step 1: Review Completed Work
 
 **Actions:**
-1. Read `tasks/ACTIVE.md`
+1. Read `tasks/TASKS.md` — focus on the Active section
 2. Find all checkboxes marked done: `- [x]`
    - Format varies — a task might be a heading with checkboxes under it, a standalone checkbox, or a mix
    - Use context to determine what "done" means for each item; don't rely on nesting structure
@@ -59,7 +59,7 @@ Calculate the reporting period:
 - [Concerning pattern or gap, if any]
 ```
 
-- If nothing is checked off in ACTIVE.md, say so and ask the user to call out what got done before proceeding
+- If nothing is checked off in the Active section, say so and ask the user to call out what got done before proceeding
 - Distinguish Shipped (external delivery) from Completed (internal) based on task context
 
 ---
@@ -91,7 +91,7 @@ Calculate the reporting period:
 ## Step 3: Identify Blockers and Stalled Work
 
 **Actions:**
-1. Read `tasks/ACTIVE.md` Waiting On table
+1. Read the Waiting On table in the Active section of `tasks/TASKS.md`
 2. Flag any items that have been waiting more than 7 days (compare "Since" date to today)
 3. Flag any In Progress items that seem stale (check if they've been in the list for a while without movement — ask user if unclear)
 
@@ -116,9 +116,8 @@ Calculate the reporting period:
 ## Step 4: Plan Next Week
 
 **Actions:**
-1. Read `tasks/BACKLOG.md` — present items by topic header
-2. Read `tasks/ACTIVE.md` — show what's already in Up Next
-3. Consider goal alignment and any carryover from this week
+1. Read `tasks/TASKS.md` — show the Active section for carryover, then present Backlog items by topic header for new picks
+2. Consider goal alignment and any carryover from this week
 
 **Output format:**
 ```
@@ -128,7 +127,7 @@ Calculate the reporting period:
 - [In Progress items that will continue]
 
 ### From Backlog — Pick Your Focus
-[Show backlog items by topic header, so user can choose what to pull into ACTIVE.md]
+[Show backlog items by topic header, so user can choose what to pull into the Active section]
 
 **Capacity check:** [Realistic / Overloaded / Light week based on calendar if available]
 
@@ -146,7 +145,7 @@ Calculate the reporting period:
 2. If yes, write a new week section to the archive file:
    - Create the file if it doesn't exist (use `templates/archive-template.md` as a starting point)
    - Add "Week of [Date Range]" with Shipped and Completed items from Step 1
-3. After archiving: ask whether to clear completed items from ACTIVE.md and reset for next week using `templates/active-template.md`
+3. After archiving: ask whether to reset the Active section in TASKS.md — blank out In Progress, Up Next, and Waiting On
 
 **Never auto-archive without confirmation.**
 

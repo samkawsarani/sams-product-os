@@ -23,8 +23,7 @@
 # │        templates/company-overview-template.md                           │
 # │                          → knowledge/company-context/company-overview.md│
 # │        templates/goals-template.md     → GOALS.md                      │
-# │        templates/backlog-template.md   → tasks/BACKLOG.md              │
-# │        templates/active-template.md    → tasks/ACTIVE.md               │
+# │        templates/tasks-template.md     → tasks/TASKS.md                │
 # │                                                                         │
 # │ 2. ASK THE USER THESE QUESTIONS ONE AT A TIME:                          │
 # │    Q1: "What's your current role?"                                      │
@@ -40,7 +39,7 @@
 # │ 4. SUMMARIZE                                                            │
 # │    Tell the user what was created and suggest next steps:               │
 # │    - Fill in knowledge/about-me/about-me.md with your background        │
-# │    - Brain dump into tasks/BACKLOG.md                                   │
+# │    - Brain dump into tasks/TASKS.md                                     │
 # │    - Run /process-backlog to triage                                     │
 # └─────────────────────────────────────────────────────────────────────────┘
 set -euo pipefail
@@ -278,14 +277,9 @@ step_template_files() {
     "GOALS.md"
 
   copy_template \
-    "templates/backlog-template.md" \
-    "tasks/BACKLOG.md" \
-    "tasks/BACKLOG.md"
-
-  copy_template \
-    "templates/active-template.md" \
-    "tasks/ACTIVE.md" \
-    "tasks/ACTIVE.md"
+    "templates/tasks-template.md" \
+    "tasks/TASKS.md" \
+    "tasks/TASKS.md"
 
   # projects/ — committed discrete work
   mkdir -p "$REPO_DIR/projects"
@@ -461,8 +455,7 @@ step_verification() {
     "knowledge/about-me/about-me.md"
     "knowledge/company-context/company-overview.md"
     "GOALS.md"
-    "tasks/BACKLOG.md"
-    "tasks/ACTIVE.md"
+    "tasks/TASKS.md"
   )
   for tmpl in "${templates[@]}"; do
     if [[ -f "$REPO_DIR/$tmpl" ]]; then
@@ -509,7 +502,7 @@ print_next_steps() {
   echo ""
   echo -e "  ${BOLD}3.${RESET} Define your quarterly goals in GOALS.md"
   echo ""
-  echo -e "  ${BOLD}4.${RESET} Start brain-dumping to tasks/BACKLOG.md"
+  echo -e "  ${BOLD}4.${RESET} Start brain-dumping to tasks/TASKS.md"
   echo ""
   echo -e "  ${BOLD}5.${RESET} Say ${GREEN}/process-backlog${RESET} when you're ready to organize"
   echo ""

@@ -14,8 +14,8 @@
 
 Sams Product OS is an AI-powered personal operating system to organize my PM workspace
 
-- **Three-Bucket Workflow** - Backlog → Active → Archive keeps you focused
-- **Weekly Focus** - Brain dump → Prioritized weekly plan in `tasks/ACTIVE.md`
+- **Two-Section Workflow** - Backlog → Active → Archive keeps you focused
+- **Weekly Focus** - Brain dump → Prioritized weekly plan in `tasks/TASKS.md`
 - **Document Generation** - Specs, briefs, PRDs from conversation
 - **Research Synthesis** - Transform interviews into insights
 - **Voice Training** - Match your writing style
@@ -46,7 +46,7 @@ Creates your workspace, sets up knowledge base directories, seeds starter files,
 
 ### 4. Start Using It
 
-**Brain dump to `tasks/BACKLOG.md`:**
+**Brain dump to `tasks/TASKS.md`:**
 ```markdown
 ## Product
 - Follow up with Sarah about Q4 goals
@@ -62,12 +62,12 @@ Creates your workspace, sets up knowledge base directories, seeds starter files,
 /process-backlog
 ```
 
-AI reads your backlog + goals, recommends top 3–5 priorities with one-line rationale, confirms with you, then writes `tasks/ACTIVE.md`:
+AI reads your backlog + goals, recommends top 3–5 priorities with one-line rationale, confirms with you, then updates the Active section of `tasks/TASKS.md`:
 - **In Progress** — working on now
 - **Up Next** — committed this week
 - **Waiting On** — blocked on someone else
 
-> **Start here, build as you go.** `GOALS.md` and `tasks/BACKLOG.md` are the core — fill those in first. Add a few files to `knowledge/` about your role, company, and strategy; the agent gets meaningfully smarter with even basic context, and you can add more over time. Voice training and plugins are optional — add them when you feel the friction of not having them.
+> **Start here, build as you go.** `GOALS.md` and `tasks/TASKS.md` are the core — fill those in first. Add a few files to `knowledge/` about your role, company, and strategy; the agent gets meaningfully smarter with even basic context, and you can add more over time. Voice training and plugins are optional — add them when you feel the friction of not having them.
 
 ---
 
@@ -138,46 +138,46 @@ See `knowledge/INDEX.md` for a directory of what's in your knowledge folder.
 ## Core Workflow
 
 ```
-tasks/BACKLOG.md → /process-backlog → tasks/ACTIVE.md → tasks/_archived/YYYY-MM.md
+tasks/TASKS.md (Backlog) → /process-backlog → tasks/TASKS.md (Active) → tasks/_archived/YYYY-MM.md
 ```
 
-1. **Brain dump** to `tasks/BACKLOG.md` throughout the day
-2. **Process** with `/process-backlog` — AI picks top 3–5 priorities aligned to your goals, writes `tasks/ACTIVE.md`
-3. **Work** — In Progress, Up Next, Waiting On tracked in `tasks/ACTIVE.md`
+1. **Brain dump** to `tasks/TASKS.md` (Backlog section) throughout the day
+2. **Process** with `/process-backlog` — AI picks top 3–5 priorities aligned to your goals, updates the Active section of `tasks/TASKS.md`
+3. **Work** — In Progress, Up Next, Waiting On tracked in the Active section of `tasks/TASKS.md`
 4. **Archive** — Log completed work to `tasks/_archived/YYYY-MM.md` during weekly review
 
 ---
 
 ## Tasks
 
-### Three-Bucket System
+### Two-Section System
 
-Tasks live in three files.
+Tasks live in `tasks/TASKS.md` — one file with two sections.
 
-**`tasks/BACKLOG.md`** — Brain dump inbox. Bullets organized by topic header. Not committed work yet.
+**Active section** — This week's focus.
+```markdown
+## Active — Week of Apr 7–11
+**Focus:** Ship the pricing experiment
+
+### In Progress
+- [ ] Review PRD draft with eng lead
+
+### Up Next
+- [ ] Schedule merchant feedback call
+
+### Waiting On
+| Who | What | Since | Next step |
+|-----|------|-------|-----------|
+| Legal | Contract review | Apr 8 | Follow up if no word by Apr 10 |
+```
+
+**Backlog section** — Brain dump inbox. Bullets organized by topic header. Not committed work yet.
 ```markdown
 ## Product
 - Follow up with Sarah about Q4 goals
 
 ## Strategy
 - Research competitive pricing changes
-```
-
-**`tasks/ACTIVE.md`** — This week's focus. Three sections:
-```markdown
-# Active — Week of Apr 7–11
-**Focus:** Ship the pricing experiment
-
-## In Progress
-- [ ] Review PRD draft with eng lead
-
-## Up Next
-- [ ] Schedule merchant feedback call
-
-## Waiting On
-| Who | What | Since | Next step |
-|-----|------|-------|-----------|
-| Legal | Contract review | Apr 8 | Follow up if no word by Apr 10 |
 ```
 
 **`tasks/_archived/YYYY-MM.md`** — Monthly retrospective. Logged at week-end.
@@ -195,9 +195,9 @@ Tasks live in three files.
 
 **Daily:**
 - `/daily-pulse` — morning briefing with calendar + active tasks
-- "What am I working on?" — agent reads `tasks/ACTIVE.md`
-- "Show my backlog" — agent reads `tasks/BACKLOG.md`
-- Brain dump into `tasks/BACKLOG.md`
+- "What am I working on?" — agent reads Active section of `tasks/TASKS.md`
+- "Show my backlog" — agent reads Backlog section of `tasks/TASKS.md`
+- Brain dump into `tasks/TASKS.md`
 
 **Weekly:**
 - `/process-backlog` — classify and clean the backlog
@@ -235,7 +235,7 @@ Each project brief has:
 ## Updates
 ```
 
-Active projects generate tasks — reference the project folder when adding related items to `tasks/ACTIVE.md` or `tasks/BACKLOG.md`.
+Active projects generate tasks — reference the project folder when adding related items to `tasks/TASKS.md`.
 
 ---
 
@@ -247,7 +247,7 @@ This is the base project with core skills built in. Install additional skills fr
 
 **Process Backlog (`/process-backlog`):**
 - Reads backlog + goals, recommends top 3–5 priorities for the week
-- Confirms with you, then writes `tasks/ACTIVE.md`
+- Confirms with you, then updates the Active section of `tasks/TASKS.md`
 
 **Daily Pulse (`/daily-pulse`):**
 - Morning briefing — calendar + active task priorities
@@ -260,7 +260,7 @@ This is the base project with core skills built in. Install additional skills fr
 
 **Weekly Update (`/weekly-update`):**
 - Draft a stakeholder update email
-- Uses Linear projects and initiatives if MCP is connected, falls back to `tasks/ACTIVE.md`
+- Uses Linear projects and initiatives if MCP is connected, falls back to `tasks/TASKS.md`
 - Reads `knowledge/people/` for stakeholder preferences
 
 ### Plugin Marketplace
@@ -399,13 +399,13 @@ What patterns have changed? What's new?
 ## Best Practices
 
 **Daily:**
-- Brain dump to `tasks/BACKLOG.md` throughout the day
+- Brain dump to `tasks/TASKS.md` throughout the day
 - Ask "what am I working on?" to check active tasks
 
 **Weekly:**
 - `/process-backlog` to classify and clean
 - `/weekly-review` to reflect, plan, and archive
-- Update `tasks/ACTIVE.md` at the start of each week
+- Update the Active section of `tasks/TASKS.md` at the start of each week
 
 **Context:**
 - Start small — add context as you go
@@ -414,7 +414,7 @@ What patterns have changed? What's new?
 **Tips:**
 - Use @ mentions: `@knowledge/product-strategy/`
 - Process 3-5 backlog items at a time, not 50
-- Keep ACTIVE.md focused — if you can't finish it this week, it belongs in the backlog
+- Keep the Active section focused — if you can't finish it this week, it belongs in the Backlog section
 - Install additional skills from the plugin marketplace
 
 **Troubleshooting:**

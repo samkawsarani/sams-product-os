@@ -1,7 +1,7 @@
 ---
 name: weekly-update
 model: sonnet
-description: Drafts a stakeholder update email summarizing project progress, blockers, and next week's priorities. Combines Linear projects and initiatives (if MCP is connected) with tasks/ACTIVE.md, projects/, and GOALS.md. Invoked via /weekly-update or "draft stakeholder update", "write my Friday update", "weekly email".
+description: Drafts a stakeholder update email summarizing project progress, blockers, and next week's priorities. Combines Linear projects and initiatives (if MCP is connected) with tasks/TASKS.md, projects/, and GOALS.md. Invoked via /weekly-update or "draft stakeholder update", "write my Friday update", "weekly email".
 allowed-tools: Glob, Read, Write, Bash(qmd *), mcp__linear__*
 argument-hint: '[optional: name or role of recipient, e.g. "for CEO" or "for board"]'
 ---
@@ -35,7 +35,7 @@ Always read from all available sources and merge:
 - Note any projects that slipped, were completed, or changed status this week
 
 **From this repo** (always):
-- Read `tasks/ACTIVE.md` — completed (`- [x]`), in progress (`- [ ]`), and Waiting On items
+- Read `tasks/TASKS.md` — completed (`- [x]`), in progress (`- [ ]`), and Waiting On items from the Active section
 - Read `projects/` — scan active project briefs for context and current status
 - Read `GOALS.md` — map all progress to quarterly goals
 - Read `meetings/` — scan recent notes for decisions or outcomes worth surfacing

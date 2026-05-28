@@ -83,7 +83,7 @@ Omit section if nothing actionable.
 1. For each meeting on today's calendar, check:
    - Is there an agenda or prep doc? Search `projects/` and `meetings/` by event name.
    - Is a decision or output expected from this meeting?
-   - Are there open tasks in `ACTIVE.md` directly tied to this meeting's topic?
+   - Are there open tasks in `tasks/TASKS.md` directly tied to this meeting's topic?
 2. Flag meetings that look under-prepped (no agenda, decision-heavy, involves key stakeholders).
 3. For flagged meetings, offer a one-line prep suggestion.
 
@@ -99,8 +99,8 @@ Omit section if no meetings today or all look prepared.
 ### Step 5: Active Task Priorities
 
 **Actions:**
-1. Read `tasks/ACTIVE.md`
-2. Extract:
+1. Read `tasks/TASKS.md`
+2. Extract from the Active section:
    - Items in the **In Progress** section
    - Items in the **Up Next** section
    - Any items in the **Waiting On** table that look overdue (based on the "Since" date vs. today)
@@ -133,7 +133,7 @@ After the briefing, show the ready-to-start prompt block from `references/output
 2. Filter out multi-day all-day events.
 3. Present events as a **table** (same format as default pulse, with *(you're optional)* on optional events)
 4. Add **"A few things to note:"** section with bullets for free blocks, cancellations/declines, back-to-back stretches, and conflicts
-5. Read `tasks/ACTIVE.md` and show items in Up Next that might be worth tackling tomorrow
+5. Read `tasks/TASKS.md` and show items in Up Next that might be worth tackling tomorrow
 
 **Output:** Calendar table + notes + Up Next items relevant to tomorrow
 
@@ -145,7 +145,7 @@ After the briefing, show the ready-to-start prompt block from `references/output
 1. Fetch the next 7 days of calendar events using available calendar tools.
 2. Filter out multi-day all-day events.
 3. Summarize per-day: meeting count, total meeting time
-4. Read `tasks/ACTIVE.md` and show all In Progress + Up Next items
+4. Read `tasks/TASKS.md` and show all In Progress + Up Next items
 
 See `references/output-format.md` for the Week Overview output structure.
 
@@ -155,6 +155,6 @@ See `references/output-format.md` for the Week Overview output structure.
 
 - Keep this session under 2 minutes
 - Focus on outcomes, not activity
-- Update ACTIVE.md when you begin work on something
+- Update the Active section of TASKS.md when you begin work on something
 - If user seems stuck choosing, make a recommendation
 - Each data source is optional — if a source is unavailable, proceed with the rest and note what was skipped

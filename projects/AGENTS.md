@@ -23,7 +23,7 @@ Track status in the file header: **Active** | **On Hold** | **Complete**
 
 ## Relationship to Tasks
 
-Active projects generate tasks. Reference the project file when creating related tasks in `tasks/ACTIVE.md` or `tasks/BACKLOG.md` for context.
+Active projects generate tasks. Reference the project file when creating related tasks in `tasks/TASKS.md` for context.
 
 ## Goals Alignment
 

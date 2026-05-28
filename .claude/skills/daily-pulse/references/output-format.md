@@ -56,7 +56,7 @@ YOUR PLAN
 3. [Third action]
 
 Ready to start?
-- Say "start [task name]" to move it to In Progress in ACTIVE.md
+- Say "start [task name]" to move it to In Progress in TASKS.md
 - Say "prep [meeting name]" for a deep-dive meeting prep
 - Say "triage inbox" to go deeper on email
 - Say "clear slack" to walk through Slack items one by one

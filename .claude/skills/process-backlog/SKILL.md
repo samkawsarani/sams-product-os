@@ -1,15 +1,14 @@
 ---
 name: process-backlog
 model: sonnet
-description: Picks this week's priorities from the backlog. Reads BACKLOG.md + GOALS.md, recommends top 3–5 items with goal-alignment rationale, confirms with user, then writes ACTIVE.md. Invoked via /process-backlog or "triage the backlog", "what should I work on this week", "plan my week", or "organize my brain dump".
+description: Picks this week's priorities from the backlog. Reads TASKS.md + GOALS.md, recommends top 3–5 items with goal-alignment rationale, confirms with user, then updates the Active section of TASKS.md. Invoked via /process-backlog or "triage the backlog", "what should I work on this week", "plan my week", or "organize my brain dump".
 allowed-tools: Read, Write, Bash(qmd *)
 argument-hint:
 ---
 
 ## Context
 
-- Backlog: `tasks/BACKLOG.md`
-- Active: `tasks/ACTIVE.md`
+- Tasks: `tasks/TASKS.md`
 - Goals: `GOALS.md`
 - Today's date: $TODAY
 
@@ -17,7 +16,7 @@ argument-hint:
 
 ### Step 1: Read
 
-Read `tasks/BACKLOG.md`, `GOALS.md`, and `tasks/ACTIVE.md` in parallel.
+Read `tasks/TASKS.md` and `GOALS.md` in parallel.
 
 ### Step 2: Score and recommend
 
@@ -42,28 +41,28 @@ Ask: "Does this work for the week, or do you want to swap anything?"
 
 **Wait for confirmation before writing.**
 
-### Step 4: Write ACTIVE.md
+### Step 4: Update Active section in tasks/TASKS.md
 
-Update `tasks/ACTIVE.md` with confirmed items:
+Update the `## Active` section inside `tasks/TASKS.md` with confirmed items:
 
 ```markdown
-# Active — Week of [DATE]
+## Active — Week of [DATE]
 **Focus:** [one-line theme for the week]
 
-## In Progress
+### In Progress
 
-## Up Next
+### Up Next
 - [ ] [item 1]
 - [ ] [item 2]
 ...
 
-## Waiting On
+### Waiting On
 
 | Who | What | Since | Next step |
 |-----|------|-------|-----------|
 ```
 
-Move confirmed items under **Up Next** unless the user specified one as In Progress.
+Move confirmed items under **Up Next** unless the user specified one as In Progress. Only the `## Active` section is updated — leave the Backlog section below it unchanged.
 
 ### Step 5: Wrap-up
 
@@ -73,5 +72,5 @@ Invoke the `wrap-up` skill. Announce it: "Running wrap-up."
 
 ## Key Reminders
 
-- **Only `tasks/ACTIVE.md` gets written** — no other files created
+- **Only `tasks/TASKS.md` gets written — only the `## Active` section is updated** — no other files created
 - **Goal-linking is a signal, not a gate** — flag mismatches, don't block
