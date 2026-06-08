@@ -7,19 +7,9 @@ argument-hint: '[optional: "quick" for condensed version]'
 
 ## Context
 
-Find task and goal context.
 Today's date: $TODAY
 
-**Recommended timing:**
-- Friday afternoon (reflection while fresh)
-- Sunday evening (prep mode for Monday)
-- Monday morning (clarity before week starts)
-
-## Your Task
-
-Help the user reflect on the past week, track goal progress, identify blockers, and plan next week.
-
-If user says "quick" or wants condensed version → Combine all steps into brief summary (1-2 paragraphs per section).
+If user says "quick" → use Quick Version.
 
 ---
 
@@ -34,8 +24,7 @@ Calculate the reporting period:
 
 ## Step 1: Review Completed Work
 
-**Actions:**
-1. Read `tasks/TASKS.md` — focus on the Active section
+1. Read `tasks/TASKS.md`
 2. Find all checkboxes marked done: `- [x]`
    - Format varies — a task might be a heading with checkboxes under it, a standalone checkbox, or a mix
    - Use context to determine what "done" means for each item; don't rely on nesting structure
@@ -66,7 +55,6 @@ Calculate the reporting period:
 
 ## Step 2: Check Goal Progress
 
-**Actions:**
 1. Find and read `GOALS.md`
 2. For each goal, match completed and in-progress work from Step 1 to assess progress
 3. Flag goals with no activity this week
@@ -90,8 +78,7 @@ Calculate the reporting period:
 
 ## Step 3: Identify Blockers and Stalled Work
 
-**Actions:**
-1. Read the Waiting On table in the Active section of `tasks/TASKS.md`
+1. Read `tasks/TASKS.md` Waiting On table
 2. Flag any items that have been waiting more than 7 days (compare "Since" date to today)
 3. Flag any In Progress items that seem stale (check if they've been in the list for a while without movement — ask user if unclear)
 
@@ -115,8 +102,7 @@ Calculate the reporting period:
 
 ## Step 4: Plan Next Week
 
-**Actions:**
-1. Read `tasks/TASKS.md` — show the Active section for carryover, then present Backlog items by topic header for new picks
+1. Read `tasks/TASKS.md` — show Active section (Up Next/In Progress) for carryover, then present backlog items by topic header for new picks
 2. Consider goal alignment and any carryover from this week
 
 **Output format:**
@@ -140,14 +126,13 @@ Calculate the reporting period:
 
 ## Step 5: Archive This Week
 
-**Actions:**
-1. Ask the user: "Ready to log this week to the archive? I'll add a 'Week of [date range]' section to `tasks/_archived/YYYY-MM.md`."
-2. If yes, write a new week section to the archive file:
-   - Create the file if it doesn't exist (use `templates/archive-template.md` as a starting point)
-   - Add "Week of [Date Range]" with Shipped and Completed items from Step 1
-3. After archiving: ask whether to reset the Active section in TASKS.md — blank out In Progress, Up Next, and Waiting On
+1. Ask once: "Ready to archive this week? I'll log completed work and reset the Active section for next week."
+2. If yes, do both in one step:
+   - Write a new "Week of [Date Range]" section to `tasks/_archived/YYYY-MM.md` (create file if needed, using `templates/archive-template.md`)
+   - Clear all `[x]` completed items from `## Active` in TASKS.md and reset In Progress, Up Next, and Waiting On for next week
+3. Report what was archived and what the new Active section looks like.
 
-**Never auto-archive without confirmation.**
+**Never auto-archive without the single confirmation.**
 
 ---
 
@@ -178,11 +163,9 @@ Run `qmd update && qmd embed` to reindex any notes, retrospectives, or archive f
 - Emphasize goal alignment over task quantity
 - Flag capacity constraints proactively
 - Make tradeoffs explicit (what are we NOT doing?)
-- Aim for 10-15 minutes reflection time (full version) or 2-3 minutes (quick)
-- Use the archive file as a record — it feeds future weekly recaps and retrospectives
 
 ---
 
 ## Final Step: Wrap-Up
 
-After completing this review, invoke the `wrap-up` skill. It scans the week's work for hypothesis confirmations, new domain knowledge, and corrections — and persists them before the session closes.
+Invoke the `wrap-up` skill.

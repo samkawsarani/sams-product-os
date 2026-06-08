@@ -35,7 +35,7 @@ Always read from all available sources and merge:
 - Note any projects that slipped, were completed, or changed status this week
 
 **From this repo** (always):
-- Read `tasks/TASKS.md` — completed (`- [x]`), in progress (`- [ ]`), and Waiting On items from the Active section
+- Read `tasks/TASKS.md` — completed (`- [x]`), in progress (`- [ ]`), and Waiting On items
 - Read `projects/` — scan active project briefs for context and current status
 - Read `GOALS.md` — map all progress to quarterly goals
 - Read `meetings/` — scan recent notes for decisions or outcomes worth surfacing
@@ -113,4 +113,4 @@ If approved, save to `knowledge/references/stakeholder-updates/YYYY-MM-DD.md` fo
 
 ## Final Step: Wrap-Up
 
-After the update is approved and saved, invoke the `wrap-up` skill. It checks whether anything from this week confirms a domain hypothesis or surfaces new knowledge worth capturing.
+Invoke the `wrap-up` skill.

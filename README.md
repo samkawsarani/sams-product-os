@@ -14,7 +14,7 @@
 
 Sams Product OS is an AI-powered personal operating system to organize my PM workspace
 
-- **Two-Section Workflow** - Backlog → Active → Archive keeps you focused
+- **Two-Bucket Workflow** - Backlog (with Active section) → Archive keeps you focused
 - **Weekly Focus** - Brain dump → Prioritized weekly plan in `tasks/TASKS.md`
 - **Document Generation** - Specs, briefs, PRDs from conversation
 - **Research Synthesis** - Transform interviews into insights
@@ -62,7 +62,7 @@ Creates your workspace, sets up knowledge base directories, seeds starter files,
 /process-backlog
 ```
 
-AI reads your backlog + goals, recommends top 3–5 priorities with one-line rationale, confirms with you, then updates the Active section of `tasks/TASKS.md`:
+AI reads your backlog + goals, recommends top 3–5 priorities with one-line rationale, confirms with you, then updates the Active section at the top of `tasks/TASKS.md`:
 - **In Progress** — working on now
 - **Up Next** — committed this week
 - **Waiting On** — blocked on someone else
@@ -116,7 +116,7 @@ Reference files explicitly with `@knowledge/product-strategy/current-strategy.md
 
 ### Domain Learning (maintained by your agent)
 
-As you work, your agent builds up learned knowledge in domain-specific folders (e.g., `knowledge/payments/`, `knowledge/checkout-flow/`). Each domain folder holds two files: `knowledge.md` (confirmed facts and rules — applied by default) and `hypotheses.md` (patterns under observation, tracked toward confirmation). Cross-domain rules live in `knowledge/domains/shared.md` (gitignored). The agent creates these automatically; you never pre-populate them. See `knowledge/AGENTS.md` for the full knowledge architecture and maintenance rules.
+As you work, your agent builds up learned knowledge in domain-specific folders under `knowledge/domains/` (e.g., `knowledge/domains/payments/`, `knowledge/domains/checkout-flow/`). Each domain folder holds two files: `knowledge.md` (confirmed facts and rules — applied by default) and `hypotheses.md` (patterns under observation, tracked toward confirmation). Cross-domain rules live in `knowledge/domains/shared.md` (gitignored). The agent creates these automatically; you never pre-populate them. See `knowledge/AGENTS.md` for the full knowledge architecture and maintenance rules.
 
 See `knowledge/INDEX.md` for a directory of what's in your knowledge folder.
 
@@ -138,23 +138,23 @@ See `knowledge/INDEX.md` for a directory of what's in your knowledge folder.
 ## Core Workflow
 
 ```
-tasks/TASKS.md (Backlog) → /process-backlog → tasks/TASKS.md (Active) → tasks/_archived/YYYY-MM.md
+tasks/TASKS.md (## Active section) → /process-backlog → tasks/_archived/YYYY-MM.md
 ```
 
-1. **Brain dump** to `tasks/TASKS.md` (Backlog section) throughout the day
-2. **Process** with `/process-backlog` — AI picks top 3–5 priorities aligned to your goals, updates the Active section of `tasks/TASKS.md`
-3. **Work** — In Progress, Up Next, Waiting On tracked in the Active section of `tasks/TASKS.md`
+1. **Brain dump** to `tasks/TASKS.md` throughout the day
+2. **Process** with `/process-backlog` — AI picks top 3–5 priorities aligned to your goals, updates `## Active` in `tasks/TASKS.md`
+3. **Work** — In Progress, Up Next, Waiting On tracked in the `## Active` section
 4. **Archive** — Log completed work to `tasks/_archived/YYYY-MM.md` during weekly review
 
 ---
 
 ## Tasks
 
-### Two-Section System
+### Two-Bucket System
 
-Tasks live in `tasks/TASKS.md` — one file with two sections.
+Tasks live in two files.
 
-**Active section** — This week's focus.
+**`tasks/TASKS.md`** — Active section at top, brain dump below. One file.
 ```markdown
 ## Active — Week of Apr 7–11
 **Focus:** Ship the pricing experiment
@@ -169,10 +169,9 @@ Tasks live in `tasks/TASKS.md` — one file with two sections.
 | Who | What | Since | Next step |
 |-----|------|-------|-----------|
 | Legal | Contract review | Apr 8 | Follow up if no word by Apr 10 |
-```
 
-**Backlog section** — Brain dump inbox. Bullets organized by topic header. Not committed work yet.
-```markdown
+---
+
 ## Product
 - Follow up with Sarah about Q4 goals
 
@@ -194,9 +193,9 @@ Tasks live in `tasks/TASKS.md` — one file with two sections.
 ### Managing Tasks
 
 **Daily:**
-- `/daily-pulse` — morning briefing with calendar + active tasks
-- "What am I working on?" — agent reads Active section of `tasks/TASKS.md`
-- "Show my backlog" — agent reads Backlog section of `tasks/TASKS.md`
+- `/start-my-day` — morning briefing with calendar, focus-time check, inbox/Slack triage, meeting prep, active tasks
+- "What am I working on?" — agent reads `## Active` in `tasks/TASKS.md`
+- "Show my backlog" — agent reads `tasks/TASKS.md`
 - Brain dump into `tasks/TASKS.md`
 
 **Weekly:**
@@ -247,12 +246,16 @@ This is the base project with core skills built in. Install additional skills fr
 
 **Process Backlog (`/process-backlog`):**
 - Reads backlog + goals, recommends top 3–5 priorities for the week
-- Confirms with you, then updates the Active section of `tasks/TASKS.md`
+- Confirms with you, then updates the `## Active` section in `tasks/TASKS.md`
 
-**Daily Pulse (`/daily-pulse`):**
-- Morning briefing — calendar + active task priorities
-- `/daily-pulse tomorrow`: tomorrow look-ahead
-- `/daily-pulse week`: week overview
+**Start My Day (`/start-my-day`):**
+- Morning briefing — calendar, focus-time check, inbox/Slack triage, meeting prep, active task priorities
+- `/start-my-day week`: week overview with focus-hour totals
+- Aliases: `/daily-pulse`, "morning pulse", "what's my day look like"
+
+**End My Day (`/end-my-day`):**
+- End-of-day review — rest-of-week focus protection, tomorrow preview, action items from meeting notes, insights
+- Aliases: "end my day", "wrap up my day", "what's happening tomorrow"
 
 **Weekly Review (`/weekly-review`):**
 - Reflect on past week, plan next week, log to archive
@@ -405,7 +408,7 @@ What patterns have changed? What's new?
 **Weekly:**
 - `/process-backlog` to classify and clean
 - `/weekly-review` to reflect, plan, and archive
-- Update the Active section of `tasks/TASKS.md` at the start of each week
+- Update `## Active` in `tasks/TASKS.md` at the start of each week
 
 **Context:**
 - Start small — add context as you go
@@ -414,7 +417,7 @@ What patterns have changed? What's new?
 **Tips:**
 - Use @ mentions: `@knowledge/product-strategy/`
 - Process 3-5 backlog items at a time, not 50
-- Keep the Active section focused — if you can't finish it this week, it belongs in the Backlog section
+- Keep the Active section focused — if you can't finish it this week, it belongs below in the backlog
 - Install additional skills from the plugin marketplace
 
 **Troubleshooting:**

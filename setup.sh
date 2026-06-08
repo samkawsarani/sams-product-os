@@ -23,7 +23,8 @@
 # │        templates/company-overview-template.md                           │
 # │                          → knowledge/company-context/company-overview.md│
 # │        templates/goals-template.md     → GOALS.md                      │
-# │        templates/tasks-template.md     → tasks/TASKS.md                │
+# │        templates/tasks-template.md   → tasks/TASKS.md              │
+# │        (Active section is part of tasks/TASKS.md — no separate file)  │
 # │                                                                         │
 # │ 2. ASK THE USER THESE QUESTIONS ONE AT A TIME:                          │
 # │    Q1: "What's your current role?"                                      │
@@ -39,7 +40,7 @@
 # │ 4. SUMMARIZE                                                            │
 # │    Tell the user what was created and suggest next steps:               │
 # │    - Fill in knowledge/about-me/about-me.md with your background        │
-# │    - Brain dump into tasks/TASKS.md                                     │
+# │    - Brain dump into tasks/TASKS.md                                   │
 # │    - Run /process-backlog to triage                                     │
 # └─────────────────────────────────────────────────────────────────────────┘
 set -euo pipefail
@@ -382,7 +383,7 @@ step_plugins() {
       done
     else
       echo -e "  ${DIM}Installing write-doc and write-comms via npx...${RESET}"
-      if npx skills add "$MARKETPLACE_REPO" --skill write-doc write-comms --yes--global 2>&1 \
+      if npx skills add "$MARKETPLACE_REPO" --skill write-doc write-comms --yes --global 2>&1 \
           | while IFS= read -r line; do echo -e "  ${DIM}${line}${RESET}"; done; then
         print_success "write-doc and write-comms installed"
       else
