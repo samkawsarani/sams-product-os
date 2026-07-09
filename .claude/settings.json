@@ -1,0 +1,16 @@
+{
+    "hooks": {
+      "SessionStart": [
+        {
+          "hooks": [
+            {
+              "type": "command",
+              "command": "f=\"$CLAUDE_PROJECT_DIR/AGENTS.md\"; [ -f \"$f\" ] || exit 0; d=$(grep -m1 \"Last system review:\" \"$f\" | grep -oE \"[0-9]{4}-[0-9]{2}-[0-9]{2}\"); [ -z \"$d\" ] && exit 0; re=$(date -j -f \"%Y-%m-%d\" \"$d\" \"+%s\" 2>/dev/null); [ -z \"$re\" ] && exit 0; now=$(date \"+%s\"); days=$(( (now - re) / 86400 )); [ \"$days\" -ge 28 ] && printf '{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"System review last run %s (%d days ago, threshold 28 days). Per AGENTS.md, suggest a system review before the next task. User decides — do not auto-run.\"}}' \"$d\" \"$days\"; exit 0",
+              "timeout": 10
+            }
+          ]
+        }
+      ]
+    }
+  }
+  
