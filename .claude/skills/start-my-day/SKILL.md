@@ -18,7 +18,7 @@ If `$ARGUMENTS` == "week" → use Week Overview variation.
 
 ### Step 0: Refresh Index
 
-Run `qmd update && qmd embed` to ensure semantic search reflects any content added since last session.
+If qmd is installed, run `qmd update && qmd embed` to ensure semantic search reflects any content added since last session. If qmd is unavailable, skip this step and note it.
 
 ### Step 1: Calendar Agenda
 
