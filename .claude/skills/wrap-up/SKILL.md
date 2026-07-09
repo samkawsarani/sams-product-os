@@ -1,7 +1,7 @@
 ---
 name: wrap-up
 model: sonnet
-description: Runs the session wrap-up — captures domain learnings, updates hypothesis tracking, and ensures knowledge persists across sessions. Invoked when Sam says "done", "wrap up", or "that's it for now". Also wired as the final step in weekly-review, process-backlog, and weekly-update.
+description: Runs the session wrap-up — captures domain learnings, updates hypothesis tracking, and ensures knowledge persists across sessions. Runs automatically when a substantive task completes (see AGENTS.md), or when Sam says "done", "wrap up", or "that's it for now". Also wired as the final step in weekly-review, process-backlog, and weekly-update.
 allowed-tools: Read, Edit, Write, Bash
 ---
 

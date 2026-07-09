@@ -17,7 +17,7 @@ Each domain folder uses two files:
 **At the start of a task:** if these files exist for the relevant domain, read them first.
 **At the end of each task:** run the `wrap-up` skill to capture learnings.
 
-**Promotion:** Hypothesis confirmed 3+ times → propose moving entry to `knowledge.md` (needss approval). Never auto-promote.
+**Promotion:** Hypothesis confirmed 3+ times → propose moving entry to `knowledge.md` (needs approval). Never auto-promote.
 **Demotion:** Confirmed rule contradicted by new data → move back to `hypotheses.md`.
 
 ### `knowledge.md` Structure
