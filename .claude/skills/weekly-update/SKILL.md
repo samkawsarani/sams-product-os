@@ -113,4 +113,4 @@ If approved, save to `knowledge/references/stakeholder-updates/YYYY-MM-DD.md` fo
 
 ## Final Step: Wrap-Up
 
-Invoke the `wrap-up` skill.
+Invoke the `wrap-up` skill. Announce it: "Running wrap-up."
