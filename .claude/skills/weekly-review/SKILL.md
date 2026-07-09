@@ -152,12 +152,6 @@ If user wants condensed output, combine all 5 steps into:
 
 ---
 
-## Step 6: Re-index
-
-If qmd is installed, run `qmd update && qmd embed` to reindex any notes, retrospectives, or archive files written during this session. If qmd is unavailable, skip this step and note it.
-
----
-
 ## Best Practices
 
 - Emphasize goal alignment over task quantity
@@ -168,4 +162,4 @@ If qmd is installed, run `qmd update && qmd embed` to reindex any notes, retrosp
 
 ## Final Step: Wrap-Up
 
-Invoke the `wrap-up` skill.
+Invoke the `wrap-up` skill. Announce it: "Running wrap-up."

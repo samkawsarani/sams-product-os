@@ -57,6 +57,7 @@ Did Sam correct the agent on anything this session?
 
 - Update `*Last updated: YYYY-MM-DD*` header on any modified files
 - Flag (don't fix) any domain where `*Last updated:*` is older than 90 days: "Note: [domain]/knowledge.md last updated YYYY-MM-DD — may be worth a review"
+- If any files were written or edited this session and qmd is installed, run `qmd update && qmd embed` to refresh semantic search. If qmd is unavailable, skip and note it.
 
 ---
 
