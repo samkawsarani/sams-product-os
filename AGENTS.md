@@ -58,3 +58,28 @@ If 4+ weeks have passed since the last review, suggest one before starting the n
 ## Voice
 
 See `VOICE-GUIDE.md` if present; otherwise draw tone from `knowledge/voice-samples/`. (`VOICE-GUIDE.md` is generated from your samples via the Voice Training flow in the README.)
+
+## Delegation
+
+The higher your tier, the more you delegate. Push the work down and keep your own context for judgment. Brief every child with the context, the why, and what done looks like. It starts with a fresh context and inherits nothing from you.
+
+| Model    | Best for             | Delegate?        | Effort |
+|----------|----------------------|------------------|--------|
+| Haiku    | bulk mechanical      | never            | low    |
+| Sonnet   | scoped research      | when it helps    | medium |
+| Opus 4.8 | multi-step reasoning | on clear benefit | xhigh  |
+| Fable 5  | judgment, taste      | by default       | medium |
+
+Effort rides the tier. Fable goes xhigh only for the hardest calls (deep architecture, security, cross-file reasoning). Skip high.
+
+Spawn subagents (Task tool) for the work. Use workflows (claude -p in a script, or a generated orchestrator) for recurring or multi-hour jobs. Batch related work into one subagent rather than fanning out.
+
+## Escalation
+
+The parent doesn't have to be the top model. An Opus parent spawns a Fable child for the one hard call (the architecture decision, the final review, the taste call) and stays Opus for the rest. The child answers and returns. It never escalates on its own.
+
+Work above your tier? Return it to the parent, don't burn tokens on it. The parent re-runs that step one tier up.
+
+## Depth
+
+Prefer a flat fan-out (depth 2) over a deep org chart (depth 5). Nest only for two reasons: the next level can't be planned until the one above finishes, or a branch needs its own clean context.
