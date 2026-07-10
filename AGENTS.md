@@ -10,6 +10,7 @@ IMPORTANT — these override default behavior:
 - **Check context first.** Before starting a task, check the relevant domain folder under `knowledge/domains/` for `knowledge.md` (facts + confirmed rules — apply by default) and `hypotheses.md` (observe or test). For broad work, also read `product-strategy/` and `company-context/`.
 - **Ask before creating.** If an item lacks context, priority, or a clear next step, STOP and ask for clarification before creating the task.
 - **Flag assumptions.** Say "I'm assuming X, is that right?" rather than guessing silently.
+- **No em dashes.** Never use `—` in prose. Rewrite with a colon, parentheses, a comma, or two sentences.
 - **Match voice.** Use `VOICE-GUIDE.md` (if present) or `knowledge/voice-samples/` for tone.
 - **Check templates first.** Look in `templates/` before creating new doc types.
 - **Never delete or rewrite user notes** outside the defined flow.
