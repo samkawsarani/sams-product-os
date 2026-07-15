@@ -22,12 +22,13 @@ If qmd is installed, run `qmd update && qmd embed` to ensure semantic search ref
 
 ### Step 1: Calendar Agenda
 
-1. Fetch today's calendar agenda using available calendar tools.
-2. Filter out **multi-day all-day events**. Single-day all-day events can be shown as context above the table.
-3. Present as a **table** with columns: Time, Event
+1. Fetch today's events. Use `gws calendar events list --params '{"calendarId":"primary","timeMin":"<start>","timeMax":"<end>","singleEvents":true,"orderBy":"startTime"}'` so the response includes `attendees[].responseStatus` — the `+agenda` helper does NOT expose it. Prefix-strip any keyring line before parsing JSON.
+2. **Exclude meetings you declined.** Drop any event where your own attendee entry (`attendees[]` with `self: true`) has `responseStatus == "declined"`. Excluded declined meetings must NOT appear in the table and must NOT count toward conflicts, density, or focus math (Step 2). Note them only as a one-line aside if useful (e.g. "Hid 2 declined meetings").
+3. Filter out **multi-day all-day events**. Single-day all-day events can be shown as context above the table.
+4. Present as a **table** with columns: Time, Event
    - For events where you are marked as **optional**, append `*(you're optional)*` to the event name in italics
-4. After the table, add a single **"A few things to note:"** section with bullets covering:
-   - Any **cancelled or declined** meetings (include who declined and their reason/proposed new time if available)
+5. After the table, add a single **"A few things to note:"** section with bullets covering:
+   - Any **cancelled** meetings (include who cancelled and their reason/proposed new time if available). Declined-by-you meetings are already excluded per step 2.
    - **Free blocks** — gaps of 30+ minutes between meetings within 9am–5pm (mention duration)
    - **Density observations** — if there's a packed stretch of back-to-back meetings, call it out (e.g. "Your morning is fairly packed back-to-back from 9:30 to 11:30")
    - Any **scheduling conflicts** (overlapping events)
