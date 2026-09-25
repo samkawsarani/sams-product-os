@@ -1,13 +1,13 @@
 ---
 name: wrap-up
 model: sonnet
-description: Runs the session wrap-up — captures domain learnings, updates hypothesis tracking, and ensures knowledge persists across sessions. Runs automatically when a substantive task completes (see AGENTS.md), or when Sam says "done", "wrap up", or "that's it for now". Also wired as the final step in weekly-review, process-backlog, and weekly-update.
+description: Runs the session wrap-up — captures domain learnings, updates hypothesis tracking, and ensures knowledge persists across sessions. Runs automatically when a substantive task completes (see AGENTS.md), or when the user says "done", "wrap up", or "that's it for now". Also wired as the final step in weekly-review.
 allowed-tools: Read, Edit, Write, Bash
 ---
 
 ## Your Task
 
-Run the session wrap-up for this product OS workspace. Takes 2-3 minutes. Ensures learnings persist.
+Run the session wrap-up for this product OS workspace. Ensures learnings persist.
 
 Announce at start: **"Running wrap-up."**
 
@@ -25,9 +25,9 @@ For each touched domain, read `hypotheses.md`. For each non-retired hypothesis:
 
 - **Confirming evidence this session?** → Increment `Confirmations` count, add inline dated note: `*(YYYY-MM-DD: [source/reason])*`
 - **Contradicting evidence?** → Increment `Contradictions` count, add inline dated note
-- **3+ confirmations?** → Surface to Sam: "H[N] in [domain] has 3 confirmations. Proposed move to `knowledge.md`: [draft text]. Approve?"
+- **3+ confirmations?** → Surface to the user: "H[N] in [domain] has 3 confirmations. Proposed move to `knowledge.md`: [draft text]. Approve?"
 
-**Never auto-promote.** Sam approves all promotions.
+**Never auto-promote.** The user approves all promotions.
 
 ---
 
@@ -45,11 +45,11 @@ Did this session surface new confirmed facts or rules not already in `knowledge.
 
 ## Step 4: Corrections
 
-Did Sam correct the agent on anything this session?
+Did the user correct the agent on anything this session?
 
 - **Agent behavior correction** → update relevant `AGENTS.md` (root or `knowledge/`) with the corrected behavior
 - **Domain fact correction** → update the relevant `knowledge.md` entry
-- **Fact about Sam** → update `knowledge/about-me/about-me.md`
+- **Fact about the user** → update `knowledge/about-me/about-me.md`
 
 ---
 
