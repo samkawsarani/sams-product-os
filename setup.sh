@@ -41,7 +41,8 @@
 # │    Tell the user what was created and suggest next steps:               │
 # │    - Fill in knowledge/about-me/about-me.md with your background        │
 # │    - Brain dump into tasks/TASKS.md                                   │
-# │    - Run /process-backlog to triage                                     │
+# │    - Run /start-my-day for a morning briefing, /weekly-review on        │
+# │      Friday to triage the brain dump into ## Active                    │
 # └─────────────────────────────────────────────────────────────────────────┘
 set -euo pipefail
 
@@ -505,7 +506,7 @@ print_next_steps() {
   echo ""
   echo -e "  ${BOLD}4.${RESET} Start brain-dumping to tasks/TASKS.md"
   echo ""
-  echo -e "  ${BOLD}5.${RESET} Say ${GREEN}/process-backlog${RESET} when you're ready to organize"
+  echo -e "  ${BOLD}5.${RESET} Say ${GREEN}/start-my-day${RESET} for a morning briefing, or ${GREEN}/weekly-review${RESET} on Friday to promote backlog items into ${DIM}## Active${RESET}"
   echo ""
   echo -e "  ${BOLD}6.${RESET} Add more skills anytime:"
   echo -e "     Via marketplace:  ${GREEN}claude plugin install <name>@sams-product-plugins${RESET}"
