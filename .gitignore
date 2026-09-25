@@ -68,3 +68,11 @@ VOICE-GUIDE.md
 TODO.md
 
 .mcp.json
+# Generated thinking log. The dated briefs and reviews are machine output and
+# stay local. thinking/AGENTS.md is re-included so the folder documents itself.
+thinking/*
+!thinking/AGENTS.md
+
+# Python bytecode
+__pycache__/
+*.pyc
