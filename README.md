@@ -60,10 +60,10 @@ Creates your workspace, sets up knowledge base directories, seeds starter files,
 
 **Process your backlog:**
 ```
-/process-backlog
+/weekly-review
 ```
 
-AI reads your backlog + goals, recommends top 3–5 priorities with one-line rationale, confirms with you, then updates the Active section at the top of `tasks/TASKS.md`:
+Friday's `/weekly-review` reads your backlog + goals, recommends top 3–5 priorities with one-line rationale, confirms with you, then updates the Active section at the top of `tasks/TASKS.md`:
 - **In Progress** — working on now
 - **Up Next** — committed this week
 - **Waiting On** — blocked on someone else
@@ -77,9 +77,10 @@ AI reads your backlog + goals, recommends top 3–5 priorities with one-line rat
 ```
 sams-product-os/
 ├── tasks/          # Simple backlog → active → archive flow
-├── knowledge/      # Persistent reference material & agent-learned context
-├── projects/       # Discrete work with its own context, research, and outputs
+├── knowledge/      # Persistent reference material & agent-learned context (own AGENTS.md)
+├── projects/       # Discrete work with its own context, research, and outputs (own AGENTS.md)
 ├── meetings/       # Meeting notes and transcripts
+├── thinking/       # Generated daily briefs and weekly reviews, local only (own AGENTS.md)
 ├── templates/      # Document structures for consistent outputs
 ├── _temp/          # Scratch work and files in transit
 ├── tools/          # API integrations and custom tooling
@@ -127,23 +128,23 @@ See `knowledge/INDEX.md` for a directory of what's in your knowledge folder.
 
 **Committed (shared structure):**
 - Directory structure, templates, `.claude/skills/`
-- `AGENTS.md` and subdirectory `AGENTS.md` + `CLAUDE.md` files (agent instructions for each folder)
+- `AGENTS.md` at root and in `projects/`, `knowledge/`, `thinking/` (agent instructions per folder)
 
 **Gitignored (your data):**
 - `GOALS.md`, `VOICE-GUIDE.md`
-- Content in `tasks/`, `knowledge/`, `projects/`, `meetings/`, `_temp/`
-- Note: `AGENTS.md` and `CLAUDE.md` inside any folder are always tracked
+- Content in `tasks/`, `knowledge/`, `projects/`, `meetings/`, `thinking/`, `_temp/`
+- Note: `AGENTS.md` inside any folder is always tracked
 
 ---
 
 ## Core Workflow
 
 ```
-tasks/TASKS.md (## Active section) → /process-backlog → tasks/_archived/YYYY-MM.md
+tasks/TASKS.md (## Active section) → /weekly-review → tasks/_archived/YYYY-MM.md
 ```
 
 1. **Brain dump** to `tasks/TASKS.md` throughout the day
-2. **Process** with `/process-backlog` — AI picks top 3–5 priorities aligned to your goals, updates `## Active` in `tasks/TASKS.md`
+2. **Process** with `/weekly-review` on Friday — AI picks top 3–5 priorities aligned to your goals, updates `## Active` in `tasks/TASKS.md`
 3. **Work** — In Progress, Up Next, Waiting On tracked in the `## Active` section
 4. **Archive** — Log completed work to `tasks/_archived/YYYY-MM.md` during weekly review
 
@@ -194,14 +195,14 @@ Tasks live in two files.
 ### Managing Tasks
 
 **Daily:**
-- `/start-my-day` — morning briefing with calendar, focus-time check, inbox/Slack triage, meeting prep, active tasks
+- `/start-my-day` — morning briefing in the terminal: calendar, focus-time check, inbox/Slack triage, meeting prep, active tasks
+- `/daily-brief` — the same morning read as a dated HTML page (`thinking/daily-briefs/`), runs automatically weekdays at 8:30am (macOS)
 - "What am I working on?" — agent reads `## Active` in `tasks/TASKS.md`
 - "Show my backlog" — agent reads `tasks/TASKS.md`
 - Brain dump into `tasks/TASKS.md`
 
 **Weekly:**
-- `/process-backlog` — classify and clean the backlog
-- `/weekly-review` — review progress, plan next week, log to archive
+- `/weekly-review` — review progress, plan next week (classifies and cleans the backlog into `## Active`), send the stakeholder update, log to archive
 
 ---
 
@@ -245,27 +246,48 @@ This is the base project with core skills built in. Install additional skills fr
 
 ### Built-in Skills
 
-**Process Backlog (`/process-backlog`):**
-- Reads backlog + goals, recommends top 3–5 priorities for the week
-- Confirms with you, then updates the `## Active` section in `tasks/TASKS.md`
-
 **Start My Day (`/start-my-day`):**
-- Morning briefing — calendar, focus-time check, inbox/Slack triage, meeting prep, active task priorities
+- Morning briefing in the terminal — calendar, focus-time check, inbox/Slack triage, meeting prep,
+  active task priorities
+- Tags untagged tasks in `tasks/TASKS.md` with `#block` / `#meeting` / `#quick` (append-only, never
+  rewrites your text) and flags block debt: more `#block` items than focus blocks on the calendar
 - `/start-my-day week`: week overview with focus-hour totals
-- Aliases: `/daily-pulse`, "morning pulse", "what's my day look like"
+- Aliases: "morning pulse", "daily pulse", "what's my day look like"
+
+**Daily Brief (`/daily-brief`):**
+- Writes a dated briefing page to `thinking/daily-briefs/daily-brief-YYYY-MM-DD.html`, plus a
+  generated `thinking/daily-briefs/index.html` (sidebar of dates + iframe, newest by default).
+  Both are gitignored; briefs are pruned after 30 days. Keep `index.html` open in a tab and reload it.
+- Sections: calendar agenda + focus-time protection, email and Slack triage, meeting prep, Linear
+  initiative movement, follow-ups and comms owed, active task priorities
+- Proposes calendar fixes but never moves an event. Its only writes are task effort tags in
+  `tasks/TASKS.md` and archiving meeting-invite receipts that need no answer (`BRIEFING_NO_MUTATE=1`
+  makes it read-only)
+- Runs weekdays at 8:30am via launchd (macOS, needs `python3`, `gws`, and the `claude` CLI). Install
+  with `.claude/skills/daily-brief/scripts/run.sh --install` (`--uninstall` to remove). A manual run
+  any day still works. Logs go to `~/Library/Logs/com.<user>.daily-brief/`.
+- Headless runs cannot answer permission prompts, so `run.sh` pre-allows `mcp__linear-server` and
+  `mcp__slack` by default. Renamed your MCP servers? Set `BRIEFING_ALLOWED_TOOLS`.
+- Aliases: "daily brief", "write my brief", "regenerate my brief"
 
 **End My Day (`/end-my-day`):**
-- End-of-day review — rest-of-week focus protection, tomorrow preview, action items from meeting notes, insights
+- End-of-day review — rest-of-week focus protection, tomorrow preview, action items from meeting
+  notes, insights
+- The action-item pass reads today's `meetings/` notes, keeps what you own, and appends approved
+  items to the backlog in `tasks/TASKS.md`. This is where meeting follow-ups get filed.
 - Aliases: "end my day", "wrap up my day", "what's happening tomorrow"
 
 **Weekly Review (`/weekly-review`):**
 - Reflect on past week, plan next week, log to archive
+- Plans next week by giving every backlog item a verdict (promote, keep, or kill), recommends the
+  top 3–5 aligned to your goals, confirms with you, then updates `## Active` in `tasks/TASKS.md`
+- Drafts the Friday stakeholder update by delegating to `write-comms` (installed by `setup.sh`);
+  the approved message is saved to `knowledge/references/stakeholder-updates/YYYY-MM-DD.md` and
+  embedded in the review file at `thinking/weekly-reviews/weekly-review-YYYY-MM-DD.md`
 - `/weekly-review quick`: condensed version
 
-**Weekly Update (`/weekly-update`):**
-- Draft a stakeholder update email
-- Uses Linear projects and initiatives if MCP is connected, falls back to `tasks/TASKS.md`
-- Reads `knowledge/people/` for stakeholder preferences
+For an ad-hoc or mid-week stakeholder update, use `write-comms` directly ("draft an email to
+leadership", "write a status update").
 
 ### Plugin Marketplace
 
@@ -407,8 +429,8 @@ What patterns have changed? What's new?
 - Ask "what am I working on?" to check active tasks
 
 **Weekly:**
-- `/process-backlog` to classify and clean
-- `/weekly-review` to reflect, plan, and archive
+- `/weekly-review` to reflect, plan (classifies and cleans the backlog into `## Active`), send the
+  stakeholder update, and archive
 - Update `## Active` in `tasks/TASKS.md` at the start of each week
 
 **Context:**
@@ -424,7 +446,7 @@ What patterns have changed? What's new?
 **Troubleshooting:**
 - Generic responses? Add more to `knowledge/`
 - AI not using context? Use @ mentions explicitly
-- Overwhelmed by backlog? `/process-backlog` to declutter
+- Overwhelmed by backlog? `/weekly-review` on Friday to declutter
 
 ---
 
