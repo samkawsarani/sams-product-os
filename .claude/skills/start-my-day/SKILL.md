@@ -12,6 +12,9 @@ Arguments: `$ARGUMENTS` (optional — see variations: week)
 
 If `$ARGUMENTS` == "week" → use Week Overview variation.
 
+This is the terminal briefing. For a dated HTML page that runs on a weekday schedule, use the
+`daily-brief` skill instead.
+
 ---
 
 ## Default: Full Morning Briefing
@@ -54,20 +57,32 @@ If qmd is installed, run `qmd update && qmd embed` to ensure semantic search ref
 
 ### Step 3: Gmail Triage
 
+0. **Addressed to the user only.** Mail that reached them through a group alias or distribution list
+   (`product@`, `eng-all@`, `everyone@`, any team alias) is broadcast, not a request. Enforce it in
+   the query with `(to:me OR cc:me)`: a list alias delivers to the alias, so `to:me` does not match
+   it. Do not use `deliveredto:` and do not widen this to `is:unread` alone. Exception: a thread the
+   user has already replied in stays even if list-addressed.
 1. Surface unread email needing a reply, time-sensitive items, emails from key people, action items, meeting threads.
 2. Ignore newsletters, automated notifications, FYI-only, read-only updates.
 3. **Exclude tool notifications** (Linear, Figma, GitHub, Notion, Slack digests, etc.) **unless you are directly tagged** — then surface it.
 4. **For emails with metrics/data**, extract key numbers inline rather than just listing the subject.
 5. Cap at 5 most actionable if >10 unread.
 
-Omit `INBOX` section if clear.
+If nothing needs a reply, say so in one line naming what was looked at (`2 unread addressed to you,
+neither needs a reply`) rather than omitting `INBOX`. A missing section cannot be told apart from a
+broken Gmail call.
 
 ### Step 4: Slack Triage
 
-1. Surface unanswered DMs, threads where you were mentioned but haven't replied, urgent key-channel items.
+0. **Directed at the user only.** Something qualifies on exactly three grounds: (a) a DM or group DM,
+   (b) an explicit `@` mention of the user (or a group they are in, where the message asks for
+   something), (c) a thread the user has already posted in and someone replied after them. Channel
+   chatter and `@here`/`@channel` broadcasts that name no action for them are skipped.
+1. Within those three, surface unanswered DMs, mentions not yet replied to, and thread replies awaiting them.
 2. Needs-response only — not just reading. Cap at 5.
 
-Omit `SLACK` section if nothing actionable.
+If clear, say so in one line naming the scope (`DMs, mentions, and your own threads clear`) rather
+than omitting `SLACK`.
 
 ### Step 5: Meeting Prep
 
@@ -80,6 +95,30 @@ Omit `SLACK` section if nothing actionable.
 
 Omit `MEETING PREP` section if no meetings or all look prepared.
 
+### Step 6a: Tag Untriaged Tasks (write-back)
+
+The user dumps tasks as plain text and never types tags. This step assigns them so the block-debt
+line in Step 6 is believable.
+
+Every checkbox item in `## Active` and `## Backlog` carries one effort tag:
+
+| Tag | Meaning |
+|-----|---------|
+| `#block` | Needs the user alone at a desk for 60min+ |
+| `#meeting` | Closes inside a meeting already on the calendar |
+| `#quick` | Under an hour, fits any gap |
+
+For each **untagged** item, classify it and write the tag back into `tasks/TASKS.md`, immediately
+after the `- [ ] ` and before the item text. Use the calendar from Step 1: an item naming people who
+appear on a meeting today or this week is `#meeting`, not `#block`.
+
+**Hard rules on the write-back. This edits the user's own notes, so it is append-only:**
+- Insert the tag. Never edit, reword, reorder, split, merge, or delete their prose.
+- Never overwrite or change a tag already present. A tag the user typed wins permanently.
+- Low confidence leaves the item untagged. Untagged is a legal state.
+- Never tag anything under `## Parking Lot`. That section is deliberately untriaged.
+- Never tick or untick a checkbox.
+
 ### Step 6: Active Task Priorities
 
 1. Read `tasks/TASKS.md`
@@ -88,6 +127,9 @@ Omit `MEETING PREP` section if no meetings or all look prepared.
    - Items in the **Up Next** section
    - Any items in the **Waiting On** table that look overdue (based on the "Since" date vs. today)
 3. Read `GOALS.md` for goal alignment context
+4. **Block debt:** count open `#block` items in `## Active` against the real focus blocks from
+   Step 2. When `#block` items outnumber blocks, say so plainly in YOUR PLAN: those are the items
+   that will not move today. Note how many items Step 6a left untagged, if any.
 
 ### Step 7: Synthesize
 
@@ -125,3 +167,5 @@ See `references/output-format.md` for the Week Overview output structure.
 
 - If user seems stuck choosing, make a recommendation
 - Each data source is optional — skip unavailable sources and note what was skipped
+- Say a source is unavailable only after a call actually failed, and quote the error. Never infer
+  that a tool is ungranted or a server is down without having tried
