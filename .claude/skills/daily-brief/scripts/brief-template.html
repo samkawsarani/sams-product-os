@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- Machine-readable stamp. briefing-window.py parses this to derive the next
+     run's window, so the ISO value must stay exactly here. -->
+<meta name="generated" content="{{GENERATED_ISO}}">
+<!-- Favicon is an inline SVG data URI, so the brief stays a single
+     self-contained file with no sidecar asset. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230f172a'/%3E%3Ccircle cx='16' cy='18' r='6' fill='%23fbbf24'/%3E%3Cg stroke='%23fbbf24' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M16 5v3'/%3E%3Cpath d='M6.5 8.5l2.1 2.1'/%3E%3Cpath d='M25.5 8.5l-2.1 2.1'/%3E%3C/g%3E%3Cpath d='M4 26h24' stroke='%2338bdf8' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>{{TITLE}}</title>
+<script>
+// Runs before the stylesheet paints, so a stored theme never flashes the
+// other one. localStorage throws on file:// in some browsers -- if it does,
+// the toggle still works for this view, it just will not survive a page load.
+try { var t = localStorage.getItem("brief-theme");
+      if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
+<style>
+:root{
+  --bg:#f6f7f9; --card:#fff; --ink:#14171a; --dim:#5b6470; --line:#e3e7ec;
+  --accent:#2f5fd0; --good:#0f7a45; --goodbg:#e6f5ec;
+  --warn:#8a5a00; --warnbg:#fdf3dc; --bad:#a8202b; --badbg:#fdeaec;
+  --mutedbg:#eef1f5;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1216; --card:#171b21; --ink:#e7ebf0; --dim:#9aa4b2; --line:#262c35;
+    --accent:#7aa2f7; --good:#5fd4a0; --goodbg:#123326;
+    --warn:#e8c27a; --warnbg:#33280f; --bad:#f08b95; --badbg:#3a1a1e;
+    --mutedbg:#222831;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --card:#171b21; --ink:#e7ebf0; --dim:#9aa4b2; --line:#262c35;
+  --accent:#7aa2f7; --good:#5fd4a0; --goodbg:#123326;
+  --warn:#e8c27a; --warnbg:#33280f; --bad:#f08b95; --badbg:#3a1a1e;
+  --mutedbg:#222831;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+ font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+ -webkit-font-smoothing:antialiased}
+header{position:sticky;top:0;z-index:5;background:var(--card);
+ border-bottom:1px solid var(--line);padding:14px 22px}
+h1{margin:0;font-size:19px;letter-spacing:-.01em;padding-right:34px}
+#theme{position:absolute;top:12px;right:18px;background:none;color:var(--dim);
+ border:1px solid var(--line);border-radius:999px;width:26px;height:26px;
+ font-size:13px;line-height:1;cursor:pointer;padding:0}
+#theme:hover{color:var(--accent);border-color:var(--accent)}
+.stamp{color:var(--dim);font-size:12.5px;margin-top:3px;
+ font-variant-numeric:tabular-nums}
+nav{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+nav a{font-size:11.5px;text-decoration:none;color:var(--dim);
+ border:1px solid var(--line);border-radius:999px;padding:3px 10px;
+ white-space:nowrap}
+nav a:hover{color:var(--accent);border-color:var(--accent)}
+main{max-width:1100px;margin:0 auto;padding:22px}
+/* Two halves of one question inside one card, divided rather than boxed
+   twice: meetings/focus, email/slack. */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}
+.split>div{min-width:0}
+.split>div+div{border-left:1px solid var(--line);padding-left:18px}
+.lbl{margin:0 0 .4em;font-size:11px;font-weight:650;letter-spacing:.06em;
+ text-transform:uppercase;color:var(--dim)}
+@media (max-width:760px){
+  .split{display:block}
+  .split>div+div{border-left:0;padding-left:0;margin-top:12px;
+   border-top:1px solid var(--line);padding-top:12px}
+}
+section{background:var(--card);border:1px solid var(--line);border-radius:10px;
+ margin-bottom:14px;overflow:hidden}
+h2{margin:0;padding:11px 16px;font-size:12.5px;font-weight:650;
+ letter-spacing:.07em;text-transform:uppercase;color:var(--dim);
+ border-bottom:1px solid var(--line);
+ background:linear-gradient(var(--bg),var(--card))}
+h2 .sub{float:right;font-weight:500;letter-spacing:0;text-transform:none;
+ font-size:12px}
+.body{padding:12px 16px}
+.body>:first-child{margin-top:0}
+.body>:last-child{margin-bottom:0}
+p{margin:.5em 0}
+ul,ol{margin:.45em 0;padding-left:1.35em}
+li{margin:.3em 0}
+.note{color:var(--dim);font-size:13.5px;margin:.15em 0 .5em 1.35em}
+blockquote{margin:.5em 0;padding:.45em .8em;border-left:3px solid var(--accent);
+ background:var(--bg);border-radius:0 6px 6px 0;color:var(--dim);font-style:italic}
+code{background:var(--mutedbg);padding:.1em .35em;border-radius:4px;
+ font:12.5px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace}
+a{color:var(--accent)}
+.scroll{overflow-x:auto;margin:.55em 0}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+/* Cells wrap. Horizontal scrolling inside a card is worse than a taller row,
+   so .scroll is now only a safety net for something genuinely too wide. */
+th,td{padding:6px 10px;text-align:left;border-bottom:1px solid var(--line);
+ white-space:normal;overflow-wrap:break-word;vertical-align:top}
+/* The label column: a name, a rail, a time range. Short, and breaking it
+   mid-range ("3pm-" / "4:30pm") reads badly. */
+td:first-child,th:first-child{white-space:nowrap}
+.nw{white-space:nowrap}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--dim);
+ font-weight:600}
+table tr:last-child td{border-bottom:0}
+td{font-variant-numeric:tabular-nums}
+tr.past td{opacity:.4}
+tr.next td{background:var(--mutedbg);font-weight:600}
+tr.next td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
+.b{border-radius:5px;padding:.05em .34em;font-weight:600;font-size:.94em}
+.b.good{background:var(--goodbg);color:var(--good)}
+.b.warn{background:var(--warnbg);color:var(--warn)}
+.b.bad{background:var(--badbg);color:var(--bad)}
+.b.muted{background:var(--mutedbg);color:var(--dim);font-weight:500}
+footer{max-width:1100px;margin:0 auto;padding:0 22px 30px;color:var(--dim);
+ font-size:11.5px}
+@media print{
+  :root,:root[data-theme="dark"]{--bg:#fff;--card:#fff;--ink:#000;--dim:#444;
+   --line:#ccc;--goodbg:#eee;--warnbg:#eee;--badbg:#eee;--mutedbg:#eee}
+  header{position:static}nav,#theme,footer{display:none}
+  .split{display:block}
+  body{background:#fff}section{break-inside:avoid;border-color:#ccc}
+  tr.past td{opacity:1}
+}
+</style>
+</head><body>
+<header>
+<button id="theme" type="button" title="Light / dark" aria-label="Toggle light and dark">&#9680;</button>
+<h1>{{TITLE}}</h1>
+<div class="stamp">{{GENERATED_LOCAL}}</div>
+<nav>{{NAV}}</nav>
+</header>
+<main>
+{{CONTENT}}
+</main>
+<footer>Regenerated by /daily-brief<br>
+Meeting rows dim against your clock as the day passes. Anything booked after the page was
+generated is not here &mdash; re-run the skill for that.</footer>
+<script>
+(function () {
+  var btn = document.getElementById("theme"), root = document.documentElement;
+  // Cycles auto -> light -> dark -> auto. "auto" stores nothing, so the page
+  // goes back to following the system setting.
+  var order = ["auto", "light", "dark"];
+  function label(mode) {
+    btn.title = mode === "auto" ? "Theme: auto (system)" : "Theme: " + mode;
+  }
+  label(root.dataset.theme || "auto");
+  btn.addEventListener("click", function () {
+    var cur = root.dataset.theme || "auto";
+    var next = order[(order.indexOf(cur) + 1) % order.length];
+    if (next === "auto") delete root.dataset.theme;
+    else root.dataset.theme = next;
+    try {
+      if (next === "auto") localStorage.removeItem("brief-theme");
+      else localStorage.setItem("brief-theme", next);
+    } catch (e) {}
+    label(next);
+  });
+})();
+
+// Re-render time-based emphasis from data already on the page. No fetching:
+// this only moves the "you are here" line through what the run captured.
+(function () {
+  var rows = document.querySelectorAll("#calendar tr[data-s]");
+  if (!rows.length) return;
+  function tick() {
+    var d = new Date(), now = d.getHours() * 60 + d.getMinutes(), marked = false;
+    rows.forEach(function (r) {
+      var past = +r.dataset.e <= now;
+      r.classList.toggle("past", past);
+      var next = !past && !marked;
+      r.classList.toggle("next", next);
+      if (next) marked = true;
+    });
+  }
+  tick();
+  setInterval(tick, 60000);
+})();
+</script>
+</body></html>

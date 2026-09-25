@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230f172a'/%3E%3Ccircle cx='16' cy='18' r='6' fill='%23fbbf24'/%3E%3Cg stroke='%23fbbf24' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M16 5v3'/%3E%3Cpath d='M6.5 8.5l2.1 2.1'/%3E%3Cpath d='M25.5 8.5l-2.1 2.1'/%3E%3C/g%3E%3Cpath d='M4 26h24' stroke='%2338bdf8' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>Daily Briefs</title>
+<script>
+// Before the stylesheet paints, so a stored theme never flashes the other one.
+// The key is shared with the briefs themselves, so the frame and its contents
+// agree. localStorage throws on file:// in some browsers; the shell still works.
+try { var t = localStorage.getItem("brief-theme");
+      if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
+<style>
+:root{
+  --bg:#f6f7f9; --card:#fff; --ink:#14171a; --dim:#5b6470; --line:#e3e7ec;
+  --accent:#2f5fd0; --mutedbg:#eef1f5;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1216; --card:#171b21; --ink:#e7ebf0; --dim:#9aa4b2; --line:#262c35;
+    --accent:#7aa2f7; --mutedbg:#222831;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --card:#171b21; --ink:#e7ebf0; --dim:#9aa4b2; --line:#262c35;
+  --accent:#7aa2f7; --mutedbg:#222831;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);display:flex;
+ font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+ -webkit-font-smoothing:antialiased}
+aside{width:210px;flex:0 0 210px;height:100vh;overflow-y:auto;
+ background:var(--card);border-right:1px solid var(--line);padding:14px 0 24px}
+.hd{padding:0 16px 12px;border-bottom:1px solid var(--line);margin-bottom:10px}
+.hd h1{margin:0;font-size:13px;font-weight:650;letter-spacing:.07em;
+ text-transform:uppercase;color:var(--dim)}
+.hd .n{color:var(--dim);font-size:11.5px;margin-top:3px;
+ font-variant-numeric:tabular-nums}
+.mo{padding:12px 16px 4px;font-size:10.5px;font-weight:650;letter-spacing:.07em;
+ text-transform:uppercase;color:var(--dim)}
+a.d{display:block;padding:5px 16px;font-size:13.5px;text-decoration:none;
+ color:var(--ink);border-left:3px solid transparent;
+ font-variant-numeric:tabular-nums}
+a.d:hover{background:var(--mutedbg);color:var(--accent)}
+/* :target does not fire for an iframe link, so "which one am I looking at" is
+   set by the click handler below and falls back to the newest on load. */
+a.d.on{border-left-color:var(--accent);background:var(--mutedbg);font-weight:600}
+a.d .day{color:var(--dim);font-weight:400;font-size:12px;margin-left:5px}
+iframe{flex:1;min-width:0;height:100vh;border:0;background:var(--bg)}
+#theme{position:fixed;bottom:14px;left:14px;background:var(--card);
+ color:var(--dim);border:1px solid var(--line);border-radius:999px;
+ width:26px;height:26px;font-size:13px;line-height:1;cursor:pointer;padding:0}
+#theme:hover{color:var(--accent);border-color:var(--accent)}
+.empty{padding:40px;color:var(--dim)}
+@media (max-width:760px){
+  body{display:block}
+  aside{width:auto;flex:none;height:auto;border-right:0;
+   border-bottom:1px solid var(--line)}
+  iframe{width:100%;height:78vh}
+}
+</style>
+</head><body>
+<aside>
+  <div class="hd">
+    <h1>Daily Briefs</h1>
+    <div class="n">{{COUNT}}</div>
+  </div>
+  {{ITEMS}}
+</aside>
+<iframe name="brief" id="brief" src="{{NEWEST}}" title="Daily brief"></iframe>
+<button id="theme" type="button" title="Light / dark" aria-label="Toggle light and dark">&#9680;</button>
+<script>
+// Sidebar links carry target="brief", so navigation works with scripting off.
+// This only moves the active marker; it never loads the brief itself.
+(function () {
+  var links = document.querySelectorAll("a.d");
+  if (links.length) links[0].classList.add("on");
+  document.querySelector("aside").addEventListener("click", function (e) {
+    var a = e.target.closest("a.d");
+    if (!a) return;
+    links.forEach(function (l) { l.classList.toggle("on", l === a); });
+  });
+})();
+
+(function () {
+  var btn = document.getElementById("theme"), root = document.documentElement;
+  var order = ["auto", "light", "dark"];
+  function label(mode) {
+    btn.title = mode === "auto" ? "Theme: auto (system)" : "Theme: " + mode;
+  }
+  label(root.dataset.theme || "auto");
+  btn.addEventListener("click", function () {
+    var cur = root.dataset.theme || "auto";
+    var next = order[(order.indexOf(cur) + 1) % order.length];
+    if (next === "auto") delete root.dataset.theme;
+    else root.dataset.theme = next;
+    try {
+      if (next === "auto") localStorage.removeItem("brief-theme");
+      else localStorage.setItem("brief-theme", next);
+    } catch (e) {}
+    label(next);
+    // Each brief is its own file:// origin, so the frame cannot be told from
+    // here. Reloading it makes it re-read the key we just wrote.
+    var f = document.getElementById("brief");
+    if (f) f.contentWindow.location.reload();
+  });
+})();
+</script>
+</body></html>
