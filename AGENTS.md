@@ -10,7 +10,10 @@ IMPORTANT — these override default behavior:
 - **Check context first.** Before starting a task, check the relevant domain folder under `knowledge/domains/` for `knowledge.md` (facts + confirmed rules — apply by default) and `hypotheses.md` (observe or test). For broad work, also read `product-strategy/` and `company-context/`.
 - **Ask before creating.** If an item lacks context, priority, or a clear next step, STOP and ask for clarification before creating the task.
 - **Flag assumptions.** Say "I'm assuming X, is that right?" rather than guessing silently.
-- **No em dashes.** Never use `—` in prose. Rewrite with a colon, parentheses, a comma, or two sentences.
+- **Never treat a truncated tool result as the full record.** If a response says truncated or points to a fuller call (e.g. `use get_project for full description`), fetch the full version before producing any deliverable from it.
+- **Never name someone from a transcript you have not read.** Capture quality varies: speaker labels are wrong or generic, voices merge, names garble. A name near the line is proximity, not attribution. This goes double for subagent output, which fills gaps with the nearest plausible person. When you do not know who, write the action and drop the names.
+- **Empty fields are not facts.** A missing cycle, assignee, due date, or milestone tag in a tracker (e.g. Linear) means the field is unset, not that the work is unscheduled or unowned. Say "not tagged in Linear" and ask, never "has no cycle assigned" as if it were status.
+- **No em dashes in what you write** (docs, messages, briefs, comms). Use a colon, parentheses, a comma, or two sentences. Instruction and reference files in this repo are not bound by it.
 - **Match voice.** Use `VOICE-GUIDE.md` (if present) or `knowledge/voice-samples/` for tone.
 - **Check templates first.** Look in `templates/` before creating new doc types.
 - **Never delete or rewrite user notes** outside the defined flow.
@@ -33,11 +36,12 @@ Triggers: any time context-gathering, document lookup, or knowledge retrieval is
 
 | Path | Contents |
 |------|----------|
-| `knowledge/` | Reference context (about you, company, strategy, people, decisions, opportunities). Agent-learned domain context lives in `knowledge/domains/`. See `knowledge/INDEX.md`. |
-| `projects/` | Committed discrete work — one file per project with objective, research, and outputs |
+| `knowledge/` | Reference context (about you, company, strategy, people, decisions, opportunities). Agent-learned domain context lives in `knowledge/domains/`. See `knowledge/INDEX.md` and `knowledge/AGENTS.md` |
+| `projects/` | Committed discrete work — one file per project with objective, research, and outputs. See `projects/AGENTS.md` |
 | `meetings/` | Meeting transcripts and notes |
 | `tasks/TASKS.md` | This week's focus (Active section) + brain dump inbox (Backlog section) |
 | `tasks/_archived/` | Monthly retrospective logs (`YYYY-MM.md`) |
+| `thinking/` | Generated output, never hand-edited. `weekly-reviews/` is durable context worth searching; `daily-briefs/` is stale by the afternoon and not indexed. See `thinking/AGENTS.md` |
 | `GOALS.md` | Ownership areas and quarterly goals |
 | `_temp/` | Files in transit or scratch work |
 
@@ -67,12 +71,13 @@ The higher your tier, the more you delegate. Push the work down and keep your ow
 |----------|----------------------|------------------|--------|
 | Haiku    | bulk mechanical      | never            | low    |
 | Sonnet   | scoped research      | when it helps    | medium |
-| Opus 4.8 | multi-step reasoning | on clear benefit | xhigh  |
-| Fable 5  | judgment, taste      | by default       | medium |
+| Opus     | multi-step reasoning | on clear benefit | xhigh  |
+| Fable    | judgment, taste      | by default       | medium |
 
+Tier names, not version pins: each resolves to the current generation of that tier.
 Effort rides the tier. Fable goes xhigh only for the hardest calls (deep architecture, security, cross-file reasoning). Skip high.
 
-Spawn subagents (Task tool) for the work. Use workflows (claude -p in a script, or a generated orchestrator) for recurring or multi-hour jobs. Batch related work into one subagent rather than fanning out.
+Spawn subagents (Agent tool) for the work. Use workflows (claude -p in a script, or a generated orchestrator) for recurring or multi-hour jobs. Batch related work into one subagent rather than fanning out.
 
 ## Escalation
 
