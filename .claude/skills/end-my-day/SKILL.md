@@ -69,7 +69,9 @@ If the folder is empty or missing: note it and suggest syncing/exporting meeting
 2. Deduplicate across meetings
 3. Present as a numbered list with the source meeting noted for each item
 4. Ask "Add all to TASKS.md, pick numbers, or skip?"
-5. On approval: append approved items to the brain-dump backlog section of `tasks/TASKS.md`
+5. On approval: append approved items to the `## Backlog` section of `tasks/TASKS.md` as plain
+   `- [ ] ` checkboxes. Do not add effort tags or dates: the morning briefing (`start-my-day` or
+   `daily-brief`) classifies them the next morning.
 
 ---
 
@@ -102,5 +104,4 @@ After the summary, show the ready-to-wrap prompt block.
 
 - Each data source is optional — if unavailable, proceed and note what was skipped
 - Don't surface meeting content that's clearly personal or sensitive (health, HR conversations)
-- Action-item extraction: 3 real items beats 10 noisy ones
 - If it's Friday, weekly focus total is final — note how the week landed vs. target
