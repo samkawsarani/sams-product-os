@@ -39,11 +39,13 @@ cd sams-product-os
 
 ### 3. Run Setup
 
-```bash
-./setup.sh
+Open Claude Code in the repo folder and run:
+
+```
+/setup-sams-product-os
 ```
 
-This starts Claude Code with the `/setup-sams-product-os` skill. You can also run that skill directly from any Claude Code session in this folder. It checks what already exists, asks a few questions (role, focus, quarterly goals, a few company terms), shows you the plan, then creates your workspace, seeds starter files, and optionally installs QMD and plugins. Re-run it any time; it only fills gaps.
+Using another agent? Point it at `.claude/skills/setup-sams-product-os/SKILL.md` and ask it to follow the steps. The skill checks what already exists, asks a few questions (role, focus, quarterly goals, a few company terms), shows you the plan, then creates your workspace, seeds starter files, and optionally installs QMD and plugins. Re-run it any time; it only fills gaps.
 
 ### 4. Start Using It
 
@@ -86,8 +88,7 @@ sams-product-os/
 ├── tools/          # API integrations and custom tooling
 ├── .claude/skills/ # Slash commands and agent capabilities
 ├── GOALS.md        # Quarterly goals and ownership areas
-├── AGENTS.md       # Agent instructions
-└── setup.sh        # Bootstrap: launches the setup skill
+└── AGENTS.md       # Agent instructions
 ```
 
 ---
