@@ -43,7 +43,7 @@ cd sams-product-os
 ./setup.sh
 ```
 
-Creates your workspace, sets up knowledge base directories, seeds starter files, and optionally installs QMD and plugins.
+This starts Claude Code with the `/setup-sams-product-os` skill. You can also run that skill directly from any Claude Code session in this folder. It checks what already exists, asks a few questions (role, focus, quarterly goals, a few company terms), shows you the plan, then creates your workspace, seeds starter files, and optionally installs QMD and plugins. Re-run it any time; it only fills gaps.
 
 ### 4. Start Using It
 
@@ -87,7 +87,7 @@ sams-product-os/
 ├── .claude/skills/ # Slash commands and agent capabilities
 ├── GOALS.md        # Quarterly goals and ownership areas
 ├── AGENTS.md       # Agent instructions
-└── setup.sh        # Interactive setup
+└── setup.sh        # Bootstrap: launches the setup skill
 ```
 
 ---
@@ -103,7 +103,7 @@ Files you create once and update as things change. The AI reads these to underst
 | Folder | What to put there |
 |--------|-------------------|
 | `about-me/` | Role, background, working style, strengths |
-| `company-context/` | Mission, products, team, org structure |
+| `company-context/` | Mission, products, team, org structure, `glossary.md` (codenames, acronyms, internal terms) |
 | `product-strategy/` | Vision, strategic pillars, roadmap, OKRs |
 | `processes/` | How your team works, sprint cadence, decision-making |
 | `references/` | Competitive research, articles, open requests |
@@ -134,6 +134,8 @@ See `knowledge/INDEX.md` for a directory of what's in your knowledge folder.
 - `GOALS.md`, `VOICE-GUIDE.md`
 - Content in `tasks/`, `knowledge/`, `projects/`, `meetings/`, `thinking/`, `_temp/`
 - Note: `AGENTS.md` inside any folder is always tracked
+
+**Back up your data yourself.** Git doesn't save anything in the gitignored list, so a lost laptop takes it with it. Use Time Machine or whatever backup you already run.
 
 ---
 
@@ -281,7 +283,7 @@ This is the base project with core skills built in. Install additional skills fr
 - Reflect on past week, plan next week, log to archive
 - Plans next week by giving every backlog item a verdict (promote, keep, or kill), recommends the
   top 3–5 aligned to your goals, confirms with you, then updates `## Active` in `tasks/TASKS.md`
-- Drafts the Friday stakeholder update by delegating to `write-comms` (installed by `setup.sh`);
+- Drafts the Friday stakeholder update by delegating to `write-comms` (installed by `/setup-sams-product-os`);
   the approved message is saved to `knowledge/references/stakeholder-updates/YYYY-MM-DD.md` and
   embedded in the review file at `thinking/weekly-reviews/weekly-review-YYYY-MM-DD.md`
 - `/weekly-review quick`: condensed version
