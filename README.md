@@ -72,6 +72,25 @@ Friday's `/weekly-review` reads your backlog + goals, recommends top 3–5 prior
 
 > **Start here, build as you go.** `GOALS.md` and `tasks/TASKS.md` are the core — fill those in first. Add a few files to `knowledge/` about your role, company, and strategy; the agent gets meaningfully smarter with even basic context, and you can add more over time. Voice training and plugins are optional — add them when you feel the friction of not having them.
 
+### 5. Updating to a New Release
+
+```bash
+git pull
+```
+
+Then, in Claude Code, run setup again:
+
+```
+/setup-sams-product-os
+```
+
+Your data is gitignored, so pulling never touches it. Setup sees what's already there and only adds what the new release brings: new folders, new starter files (like `knowledge/company-context/glossary.md`), new plugins. It skips questions you've already answered and never overwrites an existing file.
+
+**Filling the glossary after an update.** Setup asks for 3 to 5 company terms when it creates the file. Say skip if you'd rather add them later. After that, you can:
+- edit the table directly, one row per term
+- tell the agent "add Nimbus to the glossary, it's our new billing service, transcripts hear it as nimble us"
+- let `wrap-up` propose terms as they come up in your work, for you to approve
+
 ---
 
 ## Directory Structure
