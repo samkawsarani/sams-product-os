@@ -25,9 +25,10 @@ Rules for the whole run:
 Gather the current state. Run checks in parallel where you can.
 
 **Tooling**
-- `command -v claude`, `command -v npm`, `command -v qmd`
+- `command -v npm`, `command -v qmd`
+- `command -v claude`, used only to pick the plugin install route. Don't report it: the user is already in an agent.
 - If qmd exists: `qmd collection list` and look for `product-os`
-- If claude exists: `claude plugin marketplace list` and `claude plugin list`, and look for `sams-product-plugins`, `write-doc`, `write-comms`. If a command fails, record "unknown" and move on.
+- Plugins: if `claude` exists, run `claude plugin marketplace list` and `claude plugin list`, and look for `sams-product-plugins`, `write-doc`, `write-comms`. Otherwise, or if a command fails, record "unknown" and move on.
 
 **Folders.** Expected:
 - `knowledge/` subfolders: `about-me`, `company-context`, `product-strategy`, `processes`, `product-analytics`, `references`, `voice-samples`, `decisions`, `people`, `opportunities`, `domains`
@@ -61,7 +62,7 @@ One question per message. Give an example with each. Skip a question when Step 1
 3. **Goals.** "What are your 2 to 4 goals this quarter? A line each is fine." Skip if `GOALS.md` exists and is not a raw template. For each goal, ask nothing more: fill what you can and leave the rest blank for the user.
 4. **Glossary (optional).** "Any codenames, acronyms, or internal terms you use daily? Give me 3 to 5 with a short meaning, or say skip." Skip if `glossary.md` already has rows.
 5. **QMD.** Only if npm exists and qmd or its collection is missing: "Install QMD semantic search? It speeds up context lookup. The agent falls back to Grep without it." Default yes. If yes, also ask: "Generate embeddings now? Takes a few minutes on a large knowledge base." Default no.
-6. **Plugins.** Only if claude exists and the marketplace or the two skills are missing: "Install the Sams Product Plugins marketplace plus `write-doc` and `write-comms`? `weekly-review` uses `write-comms` for the Friday update." Default yes.
+6. **Plugins.** Only if the two skills are missing or unknown: "Install the Sams Product Plugins marketplace plus `write-doc` and `write-comms`? `weekly-review` uses `write-comms` for the Friday update." Default yes.
 7. **Cleanup.** Only if `.gitkeep` files were found under data folders: "Remove the `.gitkeep` placeholders? They're only there so git keeps empty folders." Default yes.
 
 ---
@@ -98,9 +99,8 @@ Do the work in this order. Report each item as done, skipped, or failed. A failu
    - `qmd collection add "<repo root>" --name product-os`, then `qmd context add qmd://product-os "Personal PM operating system: tasks, projects, knowledge base, meetings, and references"`
    - `qmd embed` only if the user said yes to embeddings
 5. **Plugins** (if approved):
-   - `claude plugin marketplace add samkawsarani/sams-product-plugins`
-   - `claude plugin install write-doc@sams-product-plugins` and `claude plugin install write-comms@sams-product-plugins`
-   - If the marketplace route fails: `npx skills add samkawsarani/sams-product-plugins --skill write-doc write-comms --yes --global`
+   - If `claude` exists: `claude plugin marketplace add samkawsarani/sams-product-plugins`, then `claude plugin install write-doc@sams-product-plugins` and `claude plugin install write-comms@sams-product-plugins`
+   - If `claude` is missing, or the marketplace route fails: `npx skills add samkawsarani/sams-product-plugins --skill write-doc write-comms --yes --global`
    - On failure, print the manual command and continue.
 6. **Cleanup** (if approved): delete the listed `.gitkeep` files. Nothing else.
 
@@ -109,7 +109,7 @@ Do the work in this order. Report each item as done, skipped, or failed. A failu
 ## Step 5: Verify
 
 Re-run the Step 1 checks and print a pass/fail table:
-- claude CLI (required), npm (optional), qmd (optional)
+- npm (optional), qmd (optional)
 - every expected folder
 - every seed file
 - `.claude/skills/` present
