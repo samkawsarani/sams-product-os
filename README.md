@@ -39,11 +39,13 @@ cd sams-product-os
 
 ### 3. Run Setup
 
-```bash
-./setup.sh
+Open Claude Code in the repo folder and run:
+
+```
+/setup-sams-product-os
 ```
 
-Creates your workspace, sets up knowledge base directories, seeds starter files, and optionally installs QMD and plugins.
+Using another agent? Point it at `.claude/skills/setup-sams-product-os/SKILL.md` and ask it to follow the steps. The skill checks what already exists, asks a few questions (role, focus, quarterly goals, a few company terms), shows you the plan, then creates your workspace, seeds starter files, and optionally installs QMD and plugins. Re-run it any time; it only fills gaps.
 
 ### 4. Start Using It
 
@@ -86,8 +88,7 @@ sams-product-os/
 ├── tools/          # API integrations and custom tooling
 ├── .claude/skills/ # Slash commands and agent capabilities
 ├── GOALS.md        # Quarterly goals and ownership areas
-├── AGENTS.md       # Agent instructions
-└── setup.sh        # Interactive setup
+└── AGENTS.md       # Agent instructions
 ```
 
 ---
@@ -103,7 +104,7 @@ Files you create once and update as things change. The AI reads these to underst
 | Folder | What to put there |
 |--------|-------------------|
 | `about-me/` | Role, background, working style, strengths |
-| `company-context/` | Mission, products, team, org structure |
+| `company-context/` | Mission, products, team, org structure, `glossary.md` (codenames, acronyms, internal terms) |
 | `product-strategy/` | Vision, strategic pillars, roadmap, OKRs |
 | `processes/` | How your team works, sprint cadence, decision-making |
 | `references/` | Competitive research, articles, open requests |
@@ -115,6 +116,24 @@ Files you create once and update as things change. The AI reads these to underst
 AI reads files in priority order: `about-me/` → `product-strategy/` → `company-context/` → task-relevant folders.
 
 Reference files explicitly with `@knowledge/product-strategy/current-strategy.md`.
+
+#### Already have notes? Backfill your glossary
+
+If you've been using the OS for a while, your notes already contain your company's vocabulary. Paste this into Claude Code:
+
+```
+Build my glossary from what's already in this workspace. Search knowledge/,
+projects/, meetings/, and tasks/ for product names, codenames, acronyms,
+team names, customer segments, and metric names. For each term, draft the
+meaning from how it's used and note the file you found it in. From meeting
+transcripts, collect misspellings or mishearings of the same term for the
+"Also heard as" column. Skip people's names. Show me the full table before
+writing anything to knowledge/company-context/glossary.md (create it from
+templates/glossary-template.md if it doesn't exist), and mark any meaning
+you're unsure of with (?) so I can fix it.
+```
+
+Review the table, fix the (?) rows, then approve. From then on, `wrap-up` proposes new terms as they come up.
 
 ### Domain Learning (maintained by your agent)
 
@@ -134,6 +153,8 @@ See `knowledge/INDEX.md` for a directory of what's in your knowledge folder.
 - `GOALS.md`, `VOICE-GUIDE.md`
 - Content in `tasks/`, `knowledge/`, `projects/`, `meetings/`, `thinking/`, `_temp/`
 - Note: `AGENTS.md` inside any folder is always tracked
+
+**Back up your data yourself.** Git doesn't save anything in the gitignored list, so a lost laptop takes it with it.
 
 ---
 
@@ -281,7 +302,7 @@ This is the base project with core skills built in. Install additional skills fr
 - Reflect on past week, plan next week, log to archive
 - Plans next week by giving every backlog item a verdict (promote, keep, or kill), recommends the
   top 3–5 aligned to your goals, confirms with you, then updates `## Active` in `tasks/TASKS.md`
-- Drafts the Friday stakeholder update by delegating to `write-comms` (installed by `setup.sh`);
+- Drafts the Friday stakeholder update by delegating to `write-comms` (installed by `/setup-sams-product-os`);
   the approved message is saved to `knowledge/references/stakeholder-updates/YYYY-MM-DD.md` and
   embedded in the review file at `thinking/weekly-reviews/weekly-review-YYYY-MM-DD.md`
 - `/weekly-review quick`: condensed version

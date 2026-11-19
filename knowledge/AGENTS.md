@@ -58,6 +58,16 @@ For cross-domain rules, reference shared rules: `→ See knowledge/domains/share
 
 Never wait for a System Review to update the index. Update at the moment of creation. Never recreate INDEX.md from scratch — always edit in place.
 
+## Glossary
+
+`knowledge/company-context/glossary.md` holds company terms: product names, codenames, acronyms, team names, customer segments, internal metric names. Created by setup from `templates/glossary-template.md`.
+
+**Before guessing what a term means**, check the glossary. If it's not there, ask.
+
+**Cleaning transcripts and notes:** use the "Also heard as" column to correct garbled terms. This covers terms only. Never use it to attribute speech to a person.
+
+**Adding terms:** wrap-up proposes new terms; the user approves. Keep full metric definitions in `product-analytics/` and link them from the "Defined in" column.
+
 ## Opportunities
 
 `knowledge/opportunities/` holds one file per opportunity — things you've observed and want to monitor or explore. This includes groomed feature requests, patterns spotted in research, and market observations.

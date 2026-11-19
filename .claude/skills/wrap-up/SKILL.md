@@ -40,6 +40,7 @@ Did this session surface new confirmed facts or rules not already in `knowledge.
 - **New fact** → append under `## What we know (facts)` with `*(added YYYY-MM-DD)*` tag if time-sensitive
 - **New confirmed rule** → append under `## Rules (apply by default)` with Confirmed by + Apply when
 - **Cross-domain rule?** → Check if it belongs in `knowledge/domains/shared.md` instead
+- **New term defined?** (a codename, acronym, or internal name the user explained, or a garbled spelling they corrected) → Propose a row for `knowledge/company-context/glossary.md`: "Add to glossary: [term] = [meaning]? Approve?" Add only on approval. If the term exists and the user corrected a mishearing, propose adding it to "Also heard as".
 
 ---
 
