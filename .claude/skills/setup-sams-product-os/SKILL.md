@@ -2,7 +2,7 @@
 name: setup-sams-product-os
 description: Sets up or repairs the Sams Product OS workspace. Creates the knowledge folders, seeds starter files from templates, writes GOALS.md from a short interview, optionally installs QMD search and the recommended plugins, then verifies. Safe to re-run; it only fills gaps. Invoked via /setup-sams-product-os.
 disable-model-invocation: true
-allowed-tools: Read, Write, Edit, Bash, Glob, Grep
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(qmd:*), Bash(claude plugin:*), Bash(command -v:*), Bash(mkdir -p:*)
 ---
 
 ## Your Task
