@@ -72,35 +72,6 @@ Friday's `/weekly-review` reads your backlog + goals, recommends top 3–5 prior
 
 > **Start here, build as you go.** `GOALS.md` and `tasks/TASKS.md` are the core — fill those in first. Add a few files to `knowledge/` about your role, company, and strategy; the agent gets meaningfully smarter with even basic context, and you can add more over time. Voice training and plugins are optional — add them when you feel the friction of not having them.
 
-### 5. Updating to a New Release
-
-```bash
-git pull
-```
-
-Then, in Claude Code, run setup again:
-
-```
-/setup-sams-product-os
-```
-
-Your data is gitignored, so pulling never touches it. Setup sees what's already there and only adds what the new release brings: new folders, new starter files (like `knowledge/company-context/glossary.md`), new plugins. It skips questions you've already answered and never overwrites an existing file.
-
-**Backfilling the glossary from context you already have.** If you've been using the OS for a while, your notes already contain your company's vocabulary. After setup creates `glossary.md`, paste this into Claude Code:
-
-```
-Build my glossary from what's already in this workspace. Search knowledge/,
-projects/, meetings/, and tasks/ for product names, codenames, acronyms,
-team names, customer segments, and metric names. For each term, draft the
-meaning from how it's used and note the file you found it in. From meeting
-transcripts, collect misspellings or mishearings of the same term for the
-"Also heard as" column. Skip people's names. Show me the full table before
-writing anything to knowledge/company-context/glossary.md, and mark any
-meaning you're unsure of with (?) so I can fix it.
-```
-
-Review the table, fix the (?) rows, then approve. From then on, `wrap-up` proposes new terms as they come up.
-
 ---
 
 ## Directory Structure
@@ -145,6 +116,24 @@ Files you create once and update as things change. The AI reads these to underst
 AI reads files in priority order: `about-me/` → `product-strategy/` → `company-context/` → task-relevant folders.
 
 Reference files explicitly with `@knowledge/product-strategy/current-strategy.md`.
+
+#### Already have notes? Backfill your glossary
+
+If you've been using the OS for a while, your notes already contain your company's vocabulary. Paste this into Claude Code:
+
+```
+Build my glossary from what's already in this workspace. Search knowledge/,
+projects/, meetings/, and tasks/ for product names, codenames, acronyms,
+team names, customer segments, and metric names. For each term, draft the
+meaning from how it's used and note the file you found it in. From meeting
+transcripts, collect misspellings or mishearings of the same term for the
+"Also heard as" column. Skip people's names. Show me the full table before
+writing anything to knowledge/company-context/glossary.md (create it from
+templates/glossary-template.md if it doesn't exist), and mark any meaning
+you're unsure of with (?) so I can fix it.
+```
+
+Review the table, fix the (?) rows, then approve. From then on, `wrap-up` proposes new terms as they come up.
 
 ### Domain Learning (maintained by your agent)
 
