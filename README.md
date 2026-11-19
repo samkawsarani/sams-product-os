@@ -154,7 +154,7 @@ See `knowledge/INDEX.md` for a directory of what's in your knowledge folder.
 - Content in `tasks/`, `knowledge/`, `projects/`, `meetings/`, `thinking/`, `_temp/`
 - Note: `AGENTS.md` inside any folder is always tracked
 
-**Back up your data yourself.** Git doesn't save anything in the gitignored list, so a lost laptop takes it with it. Use Time Machine or whatever backup you already run.
+**Back up your data yourself.** Git doesn't save anything in the gitignored list, so a lost laptop takes it with it.
 
 ---
 
