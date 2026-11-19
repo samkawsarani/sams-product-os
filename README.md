@@ -86,10 +86,20 @@ Then, in Claude Code, run setup again:
 
 Your data is gitignored, so pulling never touches it. Setup sees what's already there and only adds what the new release brings: new folders, new starter files (like `knowledge/company-context/glossary.md`), new plugins. It skips questions you've already answered and never overwrites an existing file.
 
-**Filling the glossary after an update.** Setup asks for 3 to 5 company terms when it creates the file. Say skip if you'd rather add them later. After that, you can:
-- edit the table directly, one row per term
-- tell the agent "add Nimbus to the glossary, it's our new billing service, transcripts hear it as nimble us"
-- let `wrap-up` propose terms as they come up in your work, for you to approve
+**Backfilling the glossary from context you already have.** If you've been using the OS for a while, your notes already contain your company's vocabulary. After setup creates `glossary.md`, paste this into Claude Code:
+
+```
+Build my glossary from what's already in this workspace. Search knowledge/,
+projects/, meetings/, and tasks/ for product names, codenames, acronyms,
+team names, customer segments, and metric names. For each term, draft the
+meaning from how it's used and note the file you found it in. From meeting
+transcripts, collect misspellings or mishearings of the same term for the
+"Also heard as" column. Skip people's names. Show me the full table before
+writing anything to knowledge/company-context/glossary.md, and mark any
+meaning you're unsure of with (?) so I can fix it.
+```
+
+Review the table, fix the (?) rows, then approve. From then on, `wrap-up` proposes new terms as they come up.
 
 ---
 
