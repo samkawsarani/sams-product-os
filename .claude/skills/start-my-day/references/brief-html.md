@@ -5,8 +5,8 @@ fragment of `<section>` elements; `scripts/build-brief.py` wraps it in the page 
 The page is the skill's only output, so the fragment must be complete every run.
 
 ```bash
-.claude/skills/daily-brief/scripts/build-brief.py --content /tmp/brief-content.html
-# or:  cat fragment | .claude/skills/daily-brief/scripts/build-brief.py
+.claude/skills/start-my-day/scripts/build-brief.py --content /tmp/brief-content.html
+# or:  cat fragment | .claude/skills/start-my-day/scripts/build-brief.py
 ```
 
 The output path takes no argument: the script writes

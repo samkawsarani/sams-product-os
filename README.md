@@ -216,8 +216,7 @@ Tasks live in two files.
 ### Managing Tasks
 
 **Daily:**
-- `/start-my-day` — morning briefing in the terminal: calendar, focus-time check, inbox/Slack triage, meeting prep, active tasks
-- `/daily-brief` — the same morning read as a dated HTML page (`thinking/daily-briefs/`), runs automatically weekdays at 8:30am (macOS)
+- `/start-my-day` — morning briefing as a dated HTML page (`thinking/daily-briefs/`): calendar, focus-time check, email and messaging triage, meeting prep, initiative movement, comms owed, active tasks
 - "What am I working on?" — agent reads `## Active` in `tasks/TASKS.md`
 - "Show my backlog" — agent reads `tasks/TASKS.md`
 - Brain dump into `tasks/TASKS.md`
@@ -268,25 +267,19 @@ This is the base project with core skills built in. Install additional skills fr
 ### Built-in Skills
 
 **Start My Day (`/start-my-day`):**
-- Morning briefing in the terminal — calendar, focus-time check, inbox/Slack triage, meeting prep,
-  active task priorities
-- Tags untagged tasks in `tasks/TASKS.md` with `#block` / `#meeting` / `#quick` (append-only, never
-  rewrites your text) and flags block debt: more `#block` items than focus blocks on the calendar
-- `/start-my-day week`: week overview with focus-hour totals
-- Aliases: "morning pulse", "daily pulse", "what's my day look like"
-
-**Daily Brief (`/daily-brief`):**
 - Writes a dated briefing page to `thinking/daily-briefs/daily-brief-YYYY-MM-DD.html`, plus a
   generated `thinking/daily-briefs/index.html` (sidebar of dates + iframe, newest by default).
   Both are gitignored; briefs are pruned after 30 days. Keep `index.html` open in a tab and reload it.
-- Sections: calendar agenda + focus-time protection, email and Slack triage, meeting prep, Linear
+- Sections: calendar agenda + focus-time protection, email and messaging triage, meeting prep,
   initiative movement, follow-ups and comms owed, active task priorities
+- Tags untagged tasks in `tasks/TASKS.md` with `#block` / `#meeting` / `#quick` (append-only, never
+  rewrites your text) and flags block debt: more `#block` items than focus blocks on the calendar
 - Proposes calendar fixes but never moves an event. Its only writes are task effort tags in
   `tasks/TASKS.md` and archiving meeting-invite receipts that need no answer (`BRIEFING_NO_MUTATE=1`
   makes it read-only)
 - Runs on demand. To run it every weekday morning, use your agent's own scheduler or loop, and
   pre-approve the tools listed in `knowledge/company-context/tools/INDEX.md`.
-- Aliases: "daily brief", "write my brief", "regenerate my brief"
+- Aliases: "start my day", "morning pulse", "what's my day look like", "daily brief", "write my brief"
 
 **End My Day (`/end-my-day`):**
 - End-of-day review — rest-of-week focus protection, tomorrow preview, action items from meeting

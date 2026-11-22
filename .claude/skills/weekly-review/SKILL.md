@@ -142,7 +142,7 @@ happens, so the scoring is explicit rather than intuitive.
    enough to read in full, so nothing is carried by default and nothing rots by being skipped.
    Present all of it, not a filtered slice, and record the verdict for each. "Keep" is a real
    answer, but it has to be said out loud rather than happening through silence.
-4. Sweep anything left untagged by the morning briefing (`start-my-day` / `daily-brief`): ask the user for `#block` / `#meeting` /
+4. Sweep anything left untagged by the morning briefing (`start-my-day`): ask the user for `#block` / `#meeting` /
    `#quick` in one pass, then write the tags back.
 5. Score every backlog item on three things:
    - **Goal alignment** — does it map to a current goal in `GOALS.md`? This is the strongest signal

@@ -82,8 +82,8 @@ If there are no notes: note it and suggest syncing/exporting meeting notes befor
 3. Present as a numbered list with the source meeting noted for each item
 4. Ask "Add all to TASKS.md, pick numbers, or skip?"
 5. On approval: append approved items to the `## Backlog` section of `tasks/TASKS.md` as plain
-   `- [ ] ` checkboxes. Do not add effort tags or dates: the morning briefing (`start-my-day` or
-   `daily-brief`) classifies them the next morning.
+   `- [ ] ` checkboxes. Do not add effort tags or dates: the morning briefing (`start-my-day`)
+   classifies them the next morning.
 
 ---
 

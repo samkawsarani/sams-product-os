@@ -52,7 +52,7 @@ import os
 import re
 import sys
 
-# <repo>/.claude/skills/daily-brief/scripts/briefing-window.py -> <repo>
+# <repo>/.claude/skills/start-my-day/scripts/briefing-window.py -> <repo>
 _DEFAULT_REPO = os.path.abspath(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), *[os.pardir] * 4))
 REPO = os.environ.get("BRIEFING_REPO", _DEFAULT_REPO)

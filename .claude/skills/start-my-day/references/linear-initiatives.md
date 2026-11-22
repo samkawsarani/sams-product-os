@@ -10,7 +10,7 @@ Nothing in this step or in `comms-owed.md` writes to Linear.
 ## Window
 
 ```bash
-.claude/skills/daily-brief/scripts/briefing-window.py
+.claude/skills/start-my-day/scripts/briefing-window.py
 ```
 
 Returns the window as JSON. **Do not compute dates yourself.**

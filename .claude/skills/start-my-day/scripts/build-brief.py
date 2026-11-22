@@ -36,7 +36,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 TEMPLATE = os.path.join(HERE, "brief-template.html")
 INDEX_TEMPLATE = os.path.join(HERE, "index-template.html")
-# <repo>/.claude/skills/daily-brief/scripts/build-brief.py -> <repo>
+# <repo>/.claude/skills/start-my-day/scripts/build-brief.py -> <repo>
 REPO = os.environ.get(
     "BRIEFING_REPO",
     os.path.abspath(os.path.join(HERE, *[os.pardir] * 4)))
