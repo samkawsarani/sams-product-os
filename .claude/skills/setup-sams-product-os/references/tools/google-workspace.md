@@ -1,11 +1,29 @@
 # Email + calendar: Google Workspace
 
 Template. Setup copies this to `knowledge/company-context/tools/email-calendar.md`, removes this
-paragraph, fills every `<...>` blank, and sets **Status**. Never ship the copy with a blank left in.
+paragraph and the `## Setup` section, fills every `<...>` blank, and sets **Status**. Never ship
+the copy with a blank left in.
+
+## Setup
+
+- **Requires**:
+  - `gws` (required): `command -v gws`
+  - `jq` (optional): `command -v jq`. Without it the agent writes the plain event list itself,
+    which costs more tokens. Say so; do not install it.
+- **Ready check**: `gws calendar calendarList list --params '{"maxResults":1}'`. Exit code 2 means
+  not logged in; any other non-zero exit, quote the error.
+- **Version**: `gws --version`
+- **Skills to offer**: missing any of `gws-shared`, `gws-gmail`, `gws-gmail-triage`,
+  `gws-gmail-read`, `gws-calendar`, `gws-calendar-agenda` (check your skills list):
+  `npx skills add https://github.com/googleworkspace/cli --skill gws-shared gws-gmail gws-gmail-triage gws-gmail-read gws-calendar gws-calendar-agenda --global --agent <your agent id> --yes`
+- **User does**: install gws, create a Google Cloud project, and run `gws auth login`. Say: "gws
+  needs a Google Cloud project and `gws auth login`, which you set up yourself. I'll record Google
+  as not ready until then." Never install gws or start the login.
 
 **Status**: <ready | not ready (gws not installed) | not ready (gws not logged in) | not ready (gws skills missing)>
 **Access**: command-line tool `gws` (Google Workspace CLI), version <output of `gws --version`>
 **Skills**: `gws-shared`, `gws-gmail`, `gws-gmail-triage`, `gws-gmail-read`, `gws-calendar`, `gws-calendar-agenda`
+**Optional**: `jq` <installed | missing>
 *Last updated: <YYYY-MM-DD>*
 
 gws is pre-1.0 and its commands can change between versions. If a command below fails on a newer

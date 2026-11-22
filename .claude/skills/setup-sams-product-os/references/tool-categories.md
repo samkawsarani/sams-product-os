@@ -164,3 +164,18 @@ detected MCP server and the user's answers.
 
 To support a new tool with gotchas, add `tools/<tool>.md` answering its category's needs, and
 add its detection row above.
+
+**Every template is self-contained.** Setup knows nothing about any tool; everything it needs is
+in the template's `## Setup` section, which setup reads and does **not** copy into the user's
+file:
+
+```markdown
+## Setup
+
+- **Requires**: commands or servers that must exist, each with its check (`command -v x`), and
+  whether it is required or optional
+- **Ready check**: one read-only call that proves access, and how to read a failure
+- **Version**: command whose output fills the version blank, if any
+- **Skills to offer**: `npx skills add ...` command for skills the tool needs, if any
+- **User does**: steps setup never performs (accounts, cloud projects, logins), and what to say
+```

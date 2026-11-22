@@ -2,7 +2,7 @@
 name: setup-sams-product-os
 description: Sets up or repairs the Sams Product OS workspace. Creates the knowledge folders, seeds starter files from templates, writes GOALS.md from a short interview, records which work tools the user has (email, calendar, messaging, tracking, meeting notes, metrics, CRM, call recordings, docs) and how the agent reaches each, optionally installs QMD search and the recommended skills, then verifies. Safe to re-run; it only fills gaps. Invoked via /setup-sams-product-os.
 disable-model-invocation: true
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(qmd:*), Bash(npx skills:*), Bash(command -v:*), Bash(mkdir -p:*), Bash(gws --version), Bash(gws calendar calendarList list:*)
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(qmd:*), Bash(npx skills:*), Bash(command -v:*), Bash(mkdir -p:*)
 ---
 
 ## Your Task
@@ -35,7 +35,7 @@ Gather the current state. Run checks in parallel where you can.
 **Work tools.** Read `references/tool-categories.md`, then:
 - List the MCP servers and tools available to you in this session. Match each against the **Detection** table. Names alone are enough; you do not need to load a tool's full definition.
 - Run `command -v` for each command in the **Command-line tools** table.
-- If `gws` exists: `gws --version`, then `gws calendar calendarList list --params '{"maxResults":1}'` as the logged-in check (exit code 2 means not logged in). Check your skills list for the six gws skills named in `references/tools/google-workspace.md`.
+- For each detected tool that has a template (see **Templates** in `references/tool-categories.md`), run the checks in the template's **Setup** section: its requirements, its ready check, and whether its skills are in your skills list. Run nothing for a template the scan did not detect.
 - Note whether `meetings/` holds any notes.
 - If `knowledge/company-context/tools/INDEX.md` exists, read it. A category already listed there counts as answered.
 
@@ -72,13 +72,13 @@ One question per message. Give an example with each. Skip a question when Step 1
 2. **Focus.** "What's your main professional focus this quarter?" (e.g. launching a new product, hitting activation OKRs). Skip if `about-me.md` has a filled `**This Quarter's Focus**:`.
 3. **Goals.** "What are your 2 to 4 goals this quarter? A line each is fine." Skip if `GOALS.md` exists and is not a raw template. For each goal, ask nothing more: fill what you can and leave the rest blank for the user.
 4. **Glossary (optional).** "Any codenames, acronyms, or internal terms you use daily? Give me 3 to 5 with a short meaning, or say skip." Skip if `glossary.md` already has rows.
-5. **Work tools.** One category per message, in the order of the categories table in `references/tool-categories.md`. Skip a category already in `INDEX.md` unless its status is `not ready`; for those, only re-run the Google check below or the Step 5 verify call.
+5. **Work tools.** One category per message, in the order of the categories table in `references/tool-categories.md`. Skip a category already in `INDEX.md` unless its status is `not ready`; for those, only re-run the template's **Setup** checks or the Step 5 verify call.
    - **Detected:** "Found Linear (MCP server `linear-server`) for work tracking. Correct?" A yes moves on.
    - **Not detected:** "Where do you track initiatives and projects? Linear, Jira, Asana, something else (describe it), or skip." Use the category's common answers.
    - **Something else:** ask how the agent reaches it (an MCP server, a command-line tool, a folder, or not at all), then one question: "How do you use it for <the category's needs>?" Keep the answer as written.
    - For every confirmed tool, ask only for **Scope** blanks the tool needs and the scan did not answer (Slack channels that matter, a Jira project key). Skip if the user says skip.
    - **Meeting notes:** also ask where finished notes land (e.g. synced into `meetings/`).
-   - **Google Workspace picked:** report `gws` status from Step 1. If it is missing or not logged in, say: "gws needs a Google Cloud project and `gws auth login`, which you set up yourself. I'll record Google as not ready until then." If any of the six gws skills are missing, ask: "Install the gws skills the briefings use?" Default yes.
+   - **Picked a tool with a template:** read the template's **Setup** section and run its checks if Step 1 did not. Report each requirement as met or missing. For anything under **User does** that is not done, say what it is and that the user sets it up themselves, and record the tool as not ready until then. If the template lists **Skills to offer** and any are missing, ask: "Install the skills <tool> needs?" Default yes.
 6. **QMD.** Only if npm exists and qmd or its collection is missing: "Install QMD semantic search? It speeds up context lookup. The agent falls back to Grep without it." Default yes. If yes, also ask: "Generate embeddings now? Takes a few minutes on a large knowledge base." Default no.
 7. **Skills.** Only if `write-doc` or `write-comms` is missing or unknown: "Install `write-doc` and `write-comms` from Sams Product Plugins? `weekly-review` uses `write-comms` for the Friday update." Default yes.
 8. **Cleanup.** Only if `.gitkeep` files were found under data folders: "Remove the `.gitkeep` placeholders? They're only there so git keeps empty folders." Default yes.
@@ -113,7 +113,7 @@ Do the work in this order. Report each item as done, skipped, or failed. A failu
    - `glossary.md`: one table row per term. Leave the placeholder row only if no terms were given.
    - Never invent content the user didn't give.
 4. **Work tools.** `mkdir -p knowledge/company-context/tools`. For each answered category:
-   - **Template exists** (see **Templates** in `references/tool-categories.md`): copy it to `knowledge/company-context/tools/<category file>`, remove the template paragraph, fill every `<...>` blank from Step 1 and Step 2, and set **Status**. A blank you cannot fill becomes `ask the user` with the question, never a guess.
+   - **Template exists** (see **Templates** in `references/tool-categories.md`): copy it to `knowledge/company-context/tools/<category file>`, remove the template paragraph and the `## Setup` section, fill every `<...>` blank from Step 1 and Step 2, and set **Status**. A blank you cannot fill becomes `ask the user` with the question, never a guess.
    - **No template:** write the file in the **User file shape**. One `###` heading per need for the category. For an MCP tool, name the server and the tool that meets each need when the name makes it plain; otherwise write what the user said. A need nobody answered is `not supported`.
    - **Skipped:** write nothing.
    - Never overwrite an existing category file. The one change allowed is its **Status** line, set from this run's checks, so a re-run can flip `not ready` to `ready`. Report anything else about it as skipped.
@@ -128,12 +128,12 @@ Do the work in this order. Report each item as done, skipped, or failed. A failu
 
      | Category | Tool | Access | Status | File |
      |----------|------|--------|--------|------|
-     | Email + calendar | Google Workspace | `gws` | ready | `email-calendar.md` |
+     | Email + calendar | <tool> | <MCP server, command, or folder> | ready | `email-calendar.md` |
      | CRM | none | | skipped | |
      ```
 
      If `INDEX.md` exists, add missing rows and update rows for files written this run. Leave other rows alone.
-5. **gws skills** (if approved): `npx skills add https://github.com/googleworkspace/cli --skill gws-shared gws-gmail gws-gmail-triage gws-gmail-read gws-calendar gws-calendar-agenda --global --agent <your agent id> --yes`. Then set the Google file's **Status** from the result.
+5. **Tool skills** (if approved): run each template's **Skills to offer** command, with `--global --agent <your agent id> --yes`. Then set that tool file's **Status** from the result.
 6. **QMD** (if approved):
    - `npm install -g @tobilu/qmd` if qmd is missing
    - `qmd skill install --global --yes`
@@ -151,7 +151,7 @@ Re-run the Step 1 checks and print a pass/fail table:
 - every expected folder
 - every seed file
 - `.claude/skills/` present
-- every category file listed in `INDEX.md`, plus one cheap read-only call per ready tool: for an MCP tool, the smallest list call it offers (one item); for Google, the `gws calendar calendarList list` check. A failed call sets that file's **Status** to `not ready (<error>)` and updates `INDEX.md`
+- every category file listed in `INDEX.md`, plus one cheap read-only call per ready tool: the template's **Ready check** when it has one, otherwise the smallest list call the MCP tool offers (one item). A failed call sets that file's **Status** to `not ready (<error>)` and updates `INDEX.md`
 - each installed skill appears in your skills list (it may need a new session to show up; say so rather than failing it)
 
 For any failure, give the one command or action that fixes it.
@@ -163,7 +163,7 @@ For any failure, give the one command or action that fixes it.
 Keep it short:
 1. Fill in `knowledge/about-me/about-me.md` and `knowledge/company-context/company-overview.md` (15 to 20 minutes, biggest payoff).
 2. Brain dump into `tasks/TASKS.md`.
-3. Any tool marked not ready: finish its setup (for Google, `gws auth login`), then re-run `/setup-sams-product-os` to flip it to ready. Edit files in `knowledge/company-context/tools/` directly any time.
+3. Any tool marked not ready: finish the steps its status names, then re-run `/setup-sams-product-os` to flip it to ready. Edit files in `knowledge/company-context/tools/` directly any time.
 4. Run `/start-my-day` each morning and `/weekly-review` on Friday to promote backlog items into `## Active`.
 5. Add writing samples to `knowledge/voice-samples/` when you want drafts in your voice.
 6. **Back up your data.** Everything personal (`knowledge/`, `tasks/`, `projects/`, `meetings/`, `thinking/`, `GOALS.md`, `VOICE-GUIDE.md`) is gitignored, so git does not save it. Use Time Machine, or whatever backup you already run.

@@ -1,7 +1,16 @@
 # Work tracking: Linear
 
 Template. Setup copies this to `knowledge/company-context/tools/work-tracking.md`, removes this
-paragraph, fills every `<...>` blank, and sets **Status**. Never ship the copy with a blank left in.
+paragraph and the `## Setup` section, fills every `<...>` blank, and sets **Status**. Never ship
+the copy with a blank left in.
+
+## Setup
+
+- **Requires**: a Linear MCP server (required), found in the scan by name.
+- **Ready check**: `get_user(query: "me")` through that server. A failure means the server is not
+  connected or not authorized; quote the error.
+- **User does**: connect the Linear MCP server and authorize it in their agent. Say what is
+  missing and record Linear as not ready until then.
 
 **Status**: <ready | not ready (<reason>)>
 **Access**: MCP server `<server name as the agent sees it, e.g. linear-server>`
