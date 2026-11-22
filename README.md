@@ -45,7 +45,7 @@ Open Claude Code in the repo folder and run:
 /setup-sams-product-os
 ```
 
-Using another agent? Point it at `.claude/skills/setup-sams-product-os/SKILL.md` and ask it to follow the steps. The skill checks what already exists, asks a few questions (role, focus, quarterly goals, a few company terms), shows you the plan, then creates your workspace, seeds starter files, and optionally installs QMD and plugins. Re-run it any time; it only fills gaps.
+Using another agent? Point it at `.claude/skills/setup-sams-product-os/SKILL.md` and ask it to follow the steps. The skill checks what already exists, asks a few questions (role, focus, quarterly goals, a few company terms, and which work tools you use), shows you the plan, then creates your workspace, seeds starter files, records your tools in `knowledge/company-context/tools/`, and optionally installs QMD and skills. Re-run it any time; it only fills gaps.
 
 ### 4. Start Using It
 
@@ -104,7 +104,7 @@ Files you create once and update as things change. The AI reads these to underst
 | Folder | What to put there |
 |--------|-------------------|
 | `about-me/` | Role, background, working style, strengths |
-| `company-context/` | Mission, products, team, org structure, `glossary.md` (codenames, acronyms, internal terms) |
+| `company-context/` | Mission, products, team, org structure, `glossary.md` (codenames, acronyms, internal terms), `tools/` (your work tools and how the agent reaches them, written by setup) |
 | `product-strategy/` | Vision, strategic pillars, roadmap, OKRs |
 | `processes/` | How your team works, sprint cadence, decision-making |
 | `references/` | Competitive research, articles, open requests |

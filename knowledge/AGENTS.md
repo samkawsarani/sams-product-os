@@ -68,6 +68,12 @@ Never wait for a System Review to update the index. Update at the moment of crea
 
 **Adding terms:** wrap-up proposes new terms; the user approves. Keep full metric definitions in `product-analytics/` and link them from the "Defined in" column.
 
+## Tools
+
+`knowledge/company-context/tools/` records which work tools the user has and how the agent reaches each one. `INDEX.md` lists one row per category with status; each category file (`email-calendar.md`, `messaging.md`, `work-tracking.md`, and so on) says how to meet that category's needs with the user's tool. Written by setup from `.claude/skills/setup-sams-product-os/references/tool-categories.md`.
+
+**Before using a work tool**, read its category file and follow its Needs and Rules. A status of `not ready` means report the gap, never improvise a different tool. Edit these files when a tool changes, or re-run setup.
+
 ## Opportunities
 
 `knowledge/opportunities/` holds one file per opportunity — things you've observed and want to monitor or explore. This includes groomed feature requests, patterns spotted in research, and market observations.
