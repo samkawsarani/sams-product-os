@@ -63,6 +63,8 @@ gets one file with a section per tool.
 **Work tracking**
 - `initiatives`: top-level initiatives with owner, status, and their projects
 - `moved-since`: projects and issues updated since a time, with status changes and completions
+- `status-updates`: written status updates on initiatives and projects since a time (health or
+  target-date changes), and the newest one per initiative
 - `awaiting-my-reply`: comments or mentions addressed to the user that they have not answered
 
 **Meeting notes**
@@ -134,6 +136,7 @@ detected MCP server and the user's answers.
 | Template | Tool |
 |----------|------|
 | `tools/google-workspace.md` | Google Workspace via the `gws` command-line tool |
+| `tools/linear.md` | Linear via its MCP server (data model and field gotchas) |
 
 To support a new tool with gotchas, add `tools/<tool>.md` answering its category's needs, and
 add its detection row above.
