@@ -4,8 +4,7 @@ What moved on the core initiatives since the last briefing. **Only work that bel
 initiative.** A project with an empty `initiatives` array is out of scope, no matter how active.
 
 Use the Linear MCP tools (`mcp__linear-server__*` with the server name from
-`.mcp.json.example`; match whatever your `.mcp.json` calls it). `scripts/run.sh` pre-allows that
-prefix for the headless run, so a renamed server needs `BRIEFING_ALLOWED_TOOLS` updated too.
+`.mcp.json.example`; match whatever your `.mcp.json` calls it).
 Nothing in this step or in `comms-owed.md` writes to Linear.
 
 ## Window

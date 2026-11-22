@@ -284,11 +284,8 @@ This is the base project with core skills built in. Install additional skills fr
 - Proposes calendar fixes but never moves an event. Its only writes are task effort tags in
   `tasks/TASKS.md` and archiving meeting-invite receipts that need no answer (`BRIEFING_NO_MUTATE=1`
   makes it read-only)
-- Runs weekdays at 8:30am via launchd (macOS, needs `python3`, `gws`, and the `claude` CLI). Install
-  with `.claude/skills/daily-brief/scripts/run.sh --install` (`--uninstall` to remove). A manual run
-  any day still works. Logs go to `~/Library/Logs/com.<user>.daily-brief/`.
-- Headless runs cannot answer permission prompts, so `run.sh` pre-allows `mcp__linear-server` and
-  `mcp__slack` by default. Renamed your MCP servers? Set `BRIEFING_ALLOWED_TOOLS`.
+- Runs on demand. To run it every weekday morning, use your agent's own scheduler or loop, and
+  pre-approve the tools listed in `knowledge/company-context/tools/INDEX.md`.
 - Aliases: "daily brief", "write my brief", "regenerate my brief"
 
 **End My Day (`/end-my-day`):**

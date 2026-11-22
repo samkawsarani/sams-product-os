@@ -1,7 +1,7 @@
 ---
 name: daily-brief
 model: sonnet
-description: Writes the dated morning briefing as an HTML page, combining calendar agenda, focus-time protection check, email and Slack triage with an inbox hygiene pass, meeting prep, Linear initiative movement, comms owed, and active task priorities. Scheduled headless on weekdays via launchd; also runs on demand. Invoked via /daily-brief or "daily brief", "write my brief", "regenerate my brief". For the lighter terminal briefing or the week overview, use start-my-day instead.
+description: Writes the dated morning briefing as an HTML page, combining calendar agenda, focus-time protection check, email and Slack triage with an inbox hygiene pass, meeting prep, Linear initiative movement, comms owed, and active task priorities. Runs on demand or from your agent's own scheduler. Invoked via /daily-brief or "daily brief", "write my brief", "regenerate my brief". For the lighter terminal briefing or the week overview, use start-my-day instead.
 ---
 
 # Daily Brief
@@ -28,8 +28,6 @@ week overview. This one is the scheduled page. They cover the same ground; pick 
 
 ## Requirements
 
-- **macOS only** for scheduling: `run.sh` installs a launchd agent. The skill itself runs anywhere
-  a manual `/daily-brief` does.
 - `python3` (standard library only) for the scripts.
 - The `gws` CLI, authenticated, for Calendar and Gmail.
 - Optional: a Slack MCP and a Linear MCP. A source that is not connected emits its section as
@@ -41,29 +39,11 @@ Today's date: $TODAY
 
 ## Scheduling
 
-The 8:30am run is a `claude -p` invocation of this skill, wrapped by `scripts/run.sh` so the
-headless session gets a login PATH, the repo as its working directory, pre-approved tools, and
-a log:
-
-```bash
-.claude/skills/daily-brief/scripts/run.sh              # run it now
-.claude/skills/daily-brief/scripts/run.sh --install    # schedule it, 8:30am Mon-Fri
-.claude/skills/daily-brief/scripts/run.sh --uninstall
-```
-
-**Weekdays only.** The plist carries five `StartCalendarInterval` entries, one per weekday, so
-nothing fires on a Saturday or Sunday. A manual weekend run still works and behaves identically.
-Change `HOUR` and `MINUTE` at the top of `run.sh` to move it, then re-run `--install`.
-
-`--install` generates its launchd plist from the script's own location, so a clone in another
-directory installs correctly and no path is duplicated. It is idempotent. Do not check a plist
-into the repo. Logs go to `~/Library/Logs/com.<user>.daily-brief/`, kept 14 days.
-
-A headless run cannot answer a permission prompt, so every tool the gather needs is pre-allowed
-in `run.sh`. The default grants `mcp__linear-server` and `mcp__slack` (the server names in
-`.mcp.json.example`) plus the built-in file and shell tools. If your MCP servers are named
-differently, set `BRIEFING_ALLOWED_TOOLS` to the full space-separated list. If a section comes back
-`<unavailable>` at 8:30am but works by hand, that list is where to look first.
+To run it every weekday morning, use your agent's own scheduler or loop (a scheduled task, a
+cron-style trigger, a recurring loop). An unattended run cannot answer a permission prompt, so
+pre-approve the MCP servers listed as ready in `knowledge/company-context/tools/INDEX.md` plus the
+file and shell tools. If a section comes back `<unavailable>` on a scheduled run but works by hand,
+that approval list is where to look first.
 
 The calendar goes stale over the day; that is accepted. This is a morning briefing, not a live
 dashboard. For the afternoon view, run the skill again.
@@ -397,8 +377,7 @@ section:
 2. Add the section to the order table in `references/brief-html.md`, between `inbox` and `today`.
 3. Label its window in the subtitle (`yesterday`, `7-day`, `since Fri 8:30am`), and badge anything
    urgent in place.
-4. Add its MCP server prefix to the tool list in `run.sh` (or `BRIEFING_ALLOWED_TOOLS`), or the
-   8:30am run cannot call it.
+4. Pre-approve its MCP server in your scheduler, or a scheduled run cannot call it.
 5. For a week-opening extra, branch on `first_run_of_week` and take dates from `last_week`, never
    from the weekday.
 
