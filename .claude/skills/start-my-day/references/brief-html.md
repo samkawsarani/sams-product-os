@@ -65,7 +65,7 @@ time: every section is written in the same run, and the header already carries t
 |---|----|---------|------|-------|
 | 1 | `calendar` | Calendar | 📅 | Meetings + Focus |
 | 2 | `meeting-prep` | Meeting Prep | 📋 | |
-| 3 | `inbox` | Inbox | 📥 | Email + Slack |
+| 3 | `inbox` | Inbox | 📥 | Email + Messaging |
 | 4 | `initiatives` | Initiatives | 🚀 | |
 | 5 | `today` | Today | 🗺️ | |
 | 6 | `up-next` | Up Next | ▶️ | |
@@ -78,7 +78,7 @@ time: every section is written in the same run, and the header already carries t
   and since that table lists meetings only, the focus block itself is not in it. Side by side
   you can see the meeting and the conflict it causes at once. `calendar-focus.py --html` emits
   the whole thing.
-- `inbox` is **Email + Slack**. One question, "who needs a reply", asked of two places. You
+- `inbox` is **Email + Messaging**. One question, "who needs a reply", asked of two places. You
   write that split yourself with `<div class="split">` (see Available markup).
 
 Both stack to one column under 760px and in print.
@@ -125,12 +125,12 @@ Only these. The template styles nothing else.
 | `<p>` | a line of prose |
 | `<ul><li>` / `<ol><li>` | list items; `<ol>` for the plan and priorities |
 | `<div class="note">` | a dimmed sub-line under a bullet (detail, context) |
-| `<blockquote>` | a verbatim quote from a message, or a `diffMarkdown` line from Linear |
+| `<blockquote>` | a verbatim quote from a message, or a pre-written status-update diff from the tracker |
 | `<div class="split"><div>…</div><div>…</div></div>` | two halves of one question inside one card, 50/50, divided by a rule. Each half opens with a `<p class="lbl">` naming it. Stacks under 760px |
 | `<div class="scroll"><table>` | **always** wrap a table; header row is a plain `<tr><th>`, no `<thead>`/`<tbody>`. Cells wrap their text, so a long cell makes a taller row, not a scrollbar. The first column stays on one line (a name, a time range), and `<span class="nw">` keeps anything else from breaking |
 | `<code>` | file paths, identifiers, field names |
 | `<strong>` / `<em>` | emphasis; `<em>` for "you're optional" |
-| `<a href>` | **link every Linear item by name** (see below); add `target="_blank" rel="noreferrer"` yourself, the template does not |
+| `<a href>` | **link every tracker item by name** (see below); add `target="_blank" rel="noreferrer"` yourself, the template does not |
 | `<tr data-s="570" data-e="585">` | meeting rows only, minutes from midnight; the page dims past rows and marks the next one against the reader's clock. `calendar-focus.py` emits these |
 
 ## Linking out
@@ -140,18 +140,17 @@ never a bare URL and never a trailing "(link)".
 
 | What | Link to | Source of the URL |
 |------|---------|-------------------|
-| An initiative in `initiatives` or `you-owe` | its Linear page | `url` field on `list_initiatives` |
-| A project | its Linear page | `url` field on `list_projects` |
-| A named issue | its Linear page | `url` field on `list_issues` |
+| An initiative in `initiatives` or `you-owe` | its tracker page | the URL `initiatives` returned |
+| A project | its tracker page | the URL `moved-since` returned |
+| A named issue | its tracker page | the URL `moved-since` returned |
 | A meeting note in `you-owe` | the note file | its repo-relative path under `meetings/` |
 
 ```html
-<li><a href="https://linear.app/acme/initiative/checkout-redesign-1a2b3c" target="_blank" rel="noreferrer">Checkout Redesign</a> <span class="b good">onTrack</span></li>
+<li><a href="https://tracker.example.com/initiative/checkout-redesign" target="_blank" rel="noreferrer">Checkout Redesign</a> <span class="b good">onTrack</span></li>
 ```
 
-`url` is a valid field on `list_initiatives`, `list_projects`, and `list_issues`; request it in
-the `fields` array or it does not come back. Never hand-build a Linear URL from a name or a
-slug: take the `url` the API returned.
+Never hand-build a tracker URL from a name or a slug: take the URL the tool returned. The category
+file says how to make sure it comes back.
 
 ## Urgency badges
 

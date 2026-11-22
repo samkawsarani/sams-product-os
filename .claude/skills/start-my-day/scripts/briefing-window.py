@@ -42,7 +42,7 @@ a week-over-week query is never assembled from date math done by hand.
 The repo root is derived from this file's own location, so a clone anywhere
 works; BRIEFING_REPO overrides it.
 
-Prefer `since_iso` wherever the API takes an absolute timestamp (Linear list_* do).
+Prefer `since_iso` wherever the API takes an absolute timestamp (most tracker list calls do).
 `iso_duration` rounds UP to whole days, so it over-covers rather than missing items.
 """
 import datetime as dt

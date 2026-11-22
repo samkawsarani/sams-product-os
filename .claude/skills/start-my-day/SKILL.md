@@ -1,7 +1,7 @@
 ---
 name: start-my-day
 model: sonnet
-description: Writes the dated morning briefing as an HTML page, combining calendar agenda, focus-time protection check, email and Slack triage with an inbox hygiene pass, meeting prep, Linear initiative movement, comms owed, and active task priorities. Runs on demand or from your agent's own scheduler. Invoked via /start-my-day or "start my day", "morning pulse", "what's my day look like", "daily brief", "write my brief", "regenerate my brief".
+description: Writes the dated morning briefing as an HTML page, combining calendar agenda, focus-time protection check, email and messaging triage with an inbox hygiene pass, meeting prep, initiative movement, comms owed, and active task priorities. Runs on demand or from your agent's own scheduler. Invoked via /start-my-day or "start my day", "morning pulse", "what's my day look like", "daily brief", "write my brief", "regenerate my brief".
 ---
 
 # Start My Day
@@ -26,9 +26,32 @@ anything, and hygiene never trashes or deletes. `BRIEFING_NO_MUTATE=1` makes hyg
 ## Requirements
 
 - `python3` (standard library only) for the scripts.
-- The `gws` CLI, authenticated, for Calendar and Gmail.
-- Optional: a Slack MCP and a Linear MCP. A source that is not connected emits its section as
-  unavailable, quoting the error; the brief still writes.
+- `knowledge/company-context/tools/`, written by `/setup-sams-product-os`. Every source is
+  optional: a category that is not set up emits its section as not set up; the brief still writes.
+
+## Tools
+
+This skill never names a tool. Each step asks for a **need** by name (`events-in-range`,
+`unread-to-me`, `moved-since`); the user's category file says how to meet it and adds the tool's
+own rules, which apply on top of the rules here.
+
+**First, read `knowledge/company-context/tools/INDEX.md`.** If it does not exist, stop before
+gathering anything and print one line: `No tool setup yet. Run /setup-sams-product-os first.`
+Write no brief.
+
+Then read the category files the steps use:
+
+| Step | Category file |
+|------|---------------|
+| 1-2 Calendar, 3 Email, hygiene | `email-calendar.md` |
+| 4 Messaging | `messaging.md` |
+| 7 Initiatives, 8 tracker sources | `work-tracking.md` |
+| 8 meeting commitments | `meeting-notes.md` (falls back to `meetings/`) |
+
+A category that is missing, skipped, or `not ready` emits its section with
+`<p>&lt;not set up: reason from INDEX.md&gt;</p>`, so it is never mistaken for a broken call.
+**Never fall back to a different tool.** Working hours and time zone come from the **Scope** of
+`email-calendar.md`.
 
 ## Context
 
@@ -83,8 +106,14 @@ If qmd is installed, run `qmd update && qmd embed`. If qmd is unavailable, skip 
 
 ### Steps 1–2: Calendar Agenda and Focus Check → `calendar`
 
+1. Fetch today (local midnight to midnight) with `events-in-range` and write it as the **plain
+   event list** to a temp file, the way the category file says. Prefer its one-command form, so
+   the raw calendar never enters the context.
+2. Run the script on it, with working hours and time zone from the category file's Scope:
+
 ```bash
-.claude/skills/start-my-day/scripts/calendar-focus.py --html
+.claude/skills/start-my-day/scripts/calendar-focus.py --html --events /tmp/brief-events.json \
+  --workday 09:00-17:00 --tz America/New_York
 ```
 
 `--html` emits the exact `<section>` block the fragment wants. Paste it verbatim.
@@ -92,7 +121,7 @@ If qmd is installed, run `qmd update && qmd embed`. If qmd is unavailable, skip 
 text, which is there for checking the script by hand, not for the brief.)
 The script owns every calendar rule: the declined-attendee filter, all-day exclusion, optional
 markers, real-overlap detection, free blocks, back-to-back density, focus counting, and the fix
-proposals. It fetches via `gws` itself, so there is no separate calendar call to make.
+proposals. It never calls a calendar tool; it reads only the events file.
 
 Behaviour worth knowing:
 
@@ -116,40 +145,40 @@ Behaviour worth knowing:
   Run at 8:30am nothing has elapsed, so the output is the whole workday.
 - A focus block already underway counts only its remaining minutes: at 3:30pm a 3–4:30 block
   is `1h labeled`, not `1h30m`.
-- `--date YYYY-MM-DD`, `--json FILE`, and `--now HH:MM` exist for testing; `--now none` disables
-  the cutoff. A `--date` other than today applies no cutoff.
-- Workday (9am–5pm), the 2h daily focus target, and the personal-event keywords are constants at
-  the top of the script. Edit them there, not here.
+- `--date YYYY-MM-DD` and `--now HH:MM` exist for testing; `--now none` disables the cutoff. A
+  `--date` other than today applies no cutoff.
+- The workday comes from `--workday` (default 09:00-17:00). The 2h daily focus target and the
+  personal-event keywords are constants at the top of the script. Edit them there, not here.
 
 The script proposes fixes but never writes to the calendar, and neither does a run. The
 proposals go into the page as proposals. The user approves them by asking, in a normal session.
 
-### Steps 3-4: Gmail and Slack Triage → `inbox`
+### Steps 3-4: Email and Messaging Triage → `inbox`
 
 Both channels answer one question, "who needs a reply", so they share one section: an `Email`
-column and a `Slack` column, side by side. See `references/brief-html.md` for the `split` markup.
+column and a `Messaging` column, side by side. See `references/brief-html.md` for the `split` markup.
 
 #### Email
 
 **Hygiene runs first.** Meeting-invite receipts with nothing to answer get cleared before the
 triage query, so the column never shows what was just swept. This is the only mailbox write in the
-gather. Follow `references/inbox-hygiene.md` for the selection query, the `batchModify` calls,
-the safety envelope, and the audit line that closes the column. Run it before step 1 below, and
+gather. Follow `references/inbox-hygiene.md` for the classes, the safety envelope, and the audit
+line that closes the column; the category file has the `invite-receipts` and `bulk-archive`
+mechanics. Run it before step 1 below, and
 never let a hygiene failure stop the triage.
 
 0. **Addressed to the user only.** Mail that reached them through a group alias or distribution
    list (`product@`, `eng-all@`, `everyone@`, any team alias) is broadcast, not a request, and is
    noise in the brief. Only surface mail where the user is in `To:` or `Cc:` by their own address.
-   Enforce it in the query with `(to:me OR cc:me)` - a list alias delivers to the alias, so `to:me`
-   does not match it, which is exactly the cut we want. Do **not** use `deliveredto:` and do not
-   widen this to `is:unread` alone.
+   Fetch with `unread-to-me` (since `since_iso` from the window), which enforces exactly that cut.
+   Never widen it to all unread mail.
    The one exception: a thread the user is already on (they have replied in it) stays even if
    list-addressed.
 1. Surface unread email needing a reply, time-sensitive items, emails from key people, action
    items, meeting threads.
 2. Ignore newsletters, automated notifications, FYI-only, read-only updates.
-3. **Exclude tool notifications** (Linear, Figma, GitHub, Notion, Slack digests, etc.) **unless
-   the user is directly tagged** - then surface it.
+3. **Exclude tool notifications** (issue trackers, design tools, code hosts, docs tools, chat
+   digests) **unless the user is directly tagged** - then surface it.
 4. **Kept meeting invites are calendar changes, not mail.** Hygiene archives the invite receipts
    and keeps the ones that need an answer - a proposed new time, an update or cancellation on a
    future event. Render those as their own line in the column, not as inbox items. See the
@@ -160,25 +189,27 @@ never let a hygiene failure stop the triage.
 7. **Close the column with the hygiene audit line**, always, even when every count was zero.
 
 **Always fill the Email column**, even when nothing needs a reply. An omitted column cannot be
-told apart from a broken Gmail call, and "nothing needs you" is worth knowing. When clear, one
+told apart from a broken email call, and "nothing needs you" is worth knowing. When clear, one
 line naming what was looked at: `2 unread addressed to you, neither needs a reply (a digest,
-a Linear notification).` Say "addressed to you" so a quiet column is not mistaken for a broken
+a tracker notification).` Say "addressed to you" so a quiet column is not mistaken for a broken
 call: list traffic was filtered out by design, not missed. The hygiene audit line then says what
 was swept, so a quiet column and a cleared one are also told apart.
 
-#### Slack
+#### Messaging
+
+Fetch with `mentions-and-dms` and `threads-awaiting-me` since `since_iso`.
 
 0. **Directed at the user only.** Channel chatter the user merely has access to is noise.
-   Something qualifies on exactly three grounds: (a) a DM or group DM, (b) an explicit `@` mention
+   Something qualifies on exactly three grounds: (a) a DM or group DM, (b) an explicit mention
    of the user (or a group they are in, like `@product`, where the message asks for something),
    (c) a thread the user has already posted in and someone replied after them. Everything else in
-   a channel is skipped, however interesting — including channel-wide `@here`/`@channel`
-   broadcasts that name no action for them.
+   a channel is skipped, however interesting — including channel-wide broadcasts
+   that name no action for them.
 1. Within those three, surface unanswered DMs, mentions not yet replied to, and thread replies
    awaiting them.
 2. Needs-response only — not just reading. Cap at 5.
 
-**Always fill the Slack column**, for the same reason. When clear, name the scope so the filter is
+**Always fill the Messaging column**, for the same reason. When clear, name the scope so the filter is
 visible: `DMs, mentions, and your own threads clear across 6 channels.`
 
 The whole `inbox` section is therefore always present: two columns, each carrying either what
@@ -261,35 +292,29 @@ step that `TASKS.md` does not carry. Badge an age past 14 days with `<span class
    - Any items in the **Waiting On** table that look overdue (based on the "Since" date vs. today)
 3. Read `GOALS.md` for goal alignment context
 
-### Step 7: Linear Initiative Movement → `initiatives`
+### Step 7: Initiative Movement → `initiatives`
 
-What moved on the core initiatives since the last briefing. **Only work that belongs to a Linear
-initiative** — a project with an empty `initiatives` array is out of scope regardless of activity.
-Skip the section silently if no Linear MCP is connected and none is configured; if one is
-configured and the call fails, say so.
+What moved on the core initiatives since the last briefing. **Only work that belongs to an
+initiative**: a project in no initiative is out of scope regardless of activity. Omit the section
+if the tracker has no initiatives; if work tracking is not set up, say so.
 
-Follow `references/linear-initiatives.md` for the window, the scope tiers, the queries, and the
-roll-up rules.
+Follow `references/initiatives.md` for the window, the scope tiers, and the roll-up rules, and
+`work-tracking.md` for the `initiatives`, `moved-since`, and `status-updates` mechanics.
 
 Key points:
 
-- Initiatives the user owns and has not Completed get full detail; other owners' Active
+- Initiatives the user owns and has not completed get full detail; other owners' active
   initiatives collapse to one line each and only when something moved.
-- Issue movement can be large, so query `state="completed"` and `state="started"` separately and
-  **paginate both**.
-- `health` is not a valid field on `list_projects`. Requesting it errors.
-- **Request `url`** on `list_initiatives`, `list_projects`, and `list_issues`, and link every
-  named initiative, project, and issue on its name. It comes back only when asked for.
-- `diffMarkdown` on status updates is pre-written exec-language movement. Quote it, don't
-  paraphrase.
-- Use `since_iso` from the window for Linear filters; `iso_duration` rounds up to whole days and
-  over-covers rather than missing items.
+- **Paginate until exhausted.** A truncated page is never the full record.
+- Link every named initiative, project, and issue on its name, using the URL the tool returned.
+- A pre-written status-update diff is exec-language movement. Quote it, don't paraphrase.
+- Pass `since_iso` from the window; `iso_duration` rounds up to whole days and over-covers.
 
 ### Step 8: Follow-Ups and Comms Owed → `you-owe`
 
 What the user owes other people, which is not the same as what needs a reply today. Four sources
 merged into one ranked list: status-update debt on initiatives they own, commitments recorded in
-`meetings/` notes inside the window, Linear threads awaiting their reply, and `Waiting On`
+meeting notes inside the window, tracker threads awaiting their reply, and `Waiting On`
 inverted.
 
 Follow `references/comms-owed.md` for the sources, the overdue thresholds, and the ranking.
