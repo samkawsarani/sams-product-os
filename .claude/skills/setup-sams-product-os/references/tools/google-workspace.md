@@ -36,6 +36,18 @@ which the declined filter needs.
 - **Cancelled:** `status == "cancelled"`; the organizer is `organizer.email`.
 - **All-day:** `start.date` is set instead of `start.dateTime`.
 
+**Write the plain event list** in one pipeline, so the raw payload never enters the context.
+`sed` drops the keyring line; `jq` does the conversion:
+
+```bash
+gws calendar events list --params '{"calendarId":"<calendar id>","timeMin":"<start>","timeMax":"<end>","singleEvents":true,"orderBy":"startTime"}' \
+  | sed -n '/^{/,$p' \
+  | jq '{events: [.items[] | {title: (.summary // "(no title)"), start: (.start.dateTime // .start.date), end: (.end.dateTime // .end.date), all_day: (.start.date != null), declined: (([.attendees[]? | select(.self) | .responseStatus] | first) == "declined"), optional: (([.attendees[]? | select(.self) | .optional] | first) // false), focus: (.eventType == "focusTime"), cancelled: (.status == "cancelled"), organizer: (.organizer.email // "")}]}' \
+  > "<events file>"
+```
+
+If `jq` is missing, fetch without the pipe and write the same shape yourself.
+
 For a quick read-only agenda with no filtering, `gws calendar +agenda --today` is fine.
 
 ### create-event
@@ -83,6 +95,31 @@ gws gmail users messages batchModify --params '{"userId":"me"}' --json '{"ids":[
 An empty `messages` array means nothing matched: skip the call, never send an empty `ids` list.
 `UNREAD` and `INBOX` are system labels and need no lookup.
 
+### invite-receipts
+
+Assumes a Gmail filter that labels invites `<invite label, e.g. Meeting Invites>`. With no such
+label, select on `from:calendar-notification@google.com` instead and say so in the audit line.
+
+```bash
+gws gmail users messages list --params '{"userId":"me","q":"label:\"<invite label>\" (is:unread OR in:inbox)","maxResults":100}' --format json
+```
+
+Google Calendar writes these subjects, so the prefix is stable:
+
+| Subject begins | Verdict |
+|----------------|---------|
+| `Proposed new time:` | **keep**: someone is asking the user to move |
+| `Updated invitation:` / `Updated invitation with note:` | **keep** if the event is today or later |
+| `Canceled invitation:` / `Cancelled invitation:` | **keep** if the event is today or later |
+| `Invitation with note:` | **keep** if the event is today or later |
+| `Accepted:` / `Declined:` / `Tentative:` | archive + read: an RSVP to their own meeting |
+| `Invitation:` | archive + read: already on the calendar |
+| anything above, event date in the past | archive + read |
+
+The event date is in the subject (`… @ Thu Sep 10, 2026 2pm - 3pm (EDT) …`). When it will not
+parse, **keep**. Unknown prefixes (`Appointment booked:`, `Tentatively Accepted:`, `Fwd: ...`) are
+left alone. Archive the set with `bulk-archive`, removing both `UNREAD` and `INBOX`.
+
 ## Rules
 
 - **Never write to the calendar** without explicit approval of that specific change.
@@ -95,5 +132,6 @@ An empty `messages` array means nothing matched: skip the call, never send an em
 
 - **Account**: <email address of the Google account gws is logged in to>
 - **Calendar ID**: <`primary` unless the user named another>
+- **Invite label**: <Gmail label that holds meeting invites, or "none">
 - **Time zone**: <IANA name, e.g. America/New_York>
 - **Working hours**: <e.g. 9:00 to 17:00>

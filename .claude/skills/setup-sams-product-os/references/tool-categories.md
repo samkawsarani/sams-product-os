@@ -50,11 +50,35 @@ gets one file with a section per tool.
 
 **Email + calendar**
 - `events-in-range`: events between two times, with the user's own response status, the
-  optional flag, focus-time type, cancellations, and all-day events marked
+  optional flag, focus-time type, cancellations, and all-day events marked. Must also say how
+  to write the result as the **plain event list** below, which `start-my-day`'s calendar script
+  reads
 - `create-event`: create or move an event. Only ever after explicit user approval
 - `unread-to-me`: unread mail where the user is in To or Cc by their own address, since a time
 - `read-thread`: full content of one thread
 - `bulk-archive`: mark read and archive many messages in one call
+- `invite-receipts` (optional): select meeting-invite emails, and how to tell an RSVP or a plain
+  invitation (no answer needed) from a proposed new time, update, or cancellation (keep). Write
+  `not supported` if the tool has no reliable way; inbox hygiene is then skipped
+
+**Plain event list.** One JSON file, so the calendar script never needs to know the tool:
+
+```json
+{"events": [
+  {"title": "Roadmap sync",
+   "start": "2026-11-23T10:00:00-05:00", "end": "2026-11-23T10:30:00-05:00",
+   "all_day": false, "declined": false, "optional": false, "focus": false,
+   "cancelled": false, "organizer": "someone@example.com"}
+]}
+```
+
+`start`/`end` are ISO datetimes, or `YYYY-MM-DD` when `all_day` is true. `declined` and
+`optional` are about the user's own attendance. `focus` is the calendar's own focus-time type
+(titles like "Deep work" are detected by the script). Prefer a command that writes the file
+directly, so the raw calendar never enters the agent's context.
+
+**Links.** Any need that returns named items (initiatives, projects, issues, threads, docs) also
+returns each item's URL when the tool has one. The category file says how to get it.
 
 **Messaging**
 - `mentions-and-dms`: direct and group messages, and explicit mentions of the user, since a time
