@@ -1,7 +1,7 @@
 ---
 name: start-my-day
 model: sonnet
-description: Generates a morning briefing combining calendar agenda, focus-time protection check, email and Slack triage, meeting prep, and active task priorities. Invoked via /start-my-day or "morning pulse", "daily pulse", "start my day", "what's my day look like". Supports week overview variation.
+description: Generates a morning briefing combining calendar agenda, focus-time protection check, email and messaging triage, meeting prep, and active task priorities. Invoked via /start-my-day or "morning pulse", "daily pulse", "start my day", "what's my day look like". Supports week overview variation.
 argument-hint: '[optional: "week"]'
 ---
 
@@ -15,6 +15,18 @@ If `$ARGUMENTS` == "week" → use Week Overview variation.
 This is the terminal briefing. For a dated HTML page that runs on a weekday schedule, use the
 `daily-brief` skill instead.
 
+## Tools
+
+This skill never names a tool. Read `knowledge/company-context/tools/INDEX.md`, then the category
+file for each step: `email-calendar.md` (Steps 1-3), `messaging.md` (Step 4). Each step below asks
+for a **need** by name (e.g. `events-in-range`); the category file says how to meet it and lists
+the tool's own rules, which apply on top of the rules here.
+
+- Category missing, skipped, or `not ready`: skip that step and say so in one line with the
+  reason from `INDEX.md`. Never fall back to a different tool.
+- Working hours and time zone come from the **Scope** of `email-calendar.md`. Use 9:00 to 17:00
+  only if it gives none, and say so.
+
 ---
 
 ## Default: Full Morning Briefing
@@ -25,14 +37,14 @@ If qmd is installed, run `qmd update && qmd embed` to ensure semantic search ref
 
 ### Step 1: Calendar Agenda
 
-1. Fetch today's events. Use `gws calendar events list --params '{"calendarId":"primary","timeMin":"<start>","timeMax":"<end>","singleEvents":true,"orderBy":"startTime"}'` so the response includes `attendees[].responseStatus` — the `+agenda` helper does NOT expose it. Prefix-strip any keyring line before parsing JSON.
-2. **Exclude meetings you declined.** Drop any event where your own attendee entry (`attendees[]` with `self: true`) has `responseStatus == "declined"`. Excluded declined meetings must NOT appear in the table and must NOT count toward conflicts, density, or focus math (Step 2). Note them only as a one-line aside if useful (e.g. "Hid 2 declined meetings").
+1. Fetch today's events with `events-in-range` (start to end of today, local time). It must return the user's own response status, the optional flag, focus-time type, and cancellations.
+2. **Exclude meetings you declined.** Drop any event the user declined. Excluded declined meetings must NOT appear in the table and must NOT count toward conflicts, density, or focus math (Step 2). Note them only as a one-line aside if useful (e.g. "Hid 2 declined meetings").
 3. Filter out **multi-day all-day events**. Single-day all-day events can be shown as context above the table.
 4. Present as a **table** with columns: Time, Event
    - For events where you are marked as **optional**, append `*(you're optional)*` to the event name in italics
 5. After the table, add a single **"A few things to note:"** section with bullets covering:
    - Any **cancelled** meetings (include who cancelled and their reason/proposed new time if available). Declined-by-you meetings are already excluded per step 2.
-   - **Free blocks** — gaps of 30+ minutes between meetings within 9am–5pm (mention duration)
+   - **Free blocks** — gaps of 30+ minutes between meetings within working hours (mention duration)
    - **Density observations** — if there's a packed stretch of back-to-back meetings, call it out (e.g. "Your morning is fairly packed back-to-back from 9:30 to 11:30")
    - Any **scheduling conflicts** (overlapping events)
    - Only include bullets that are relevant — don't pad with filler
@@ -41,8 +53,8 @@ If qmd is installed, run `qmd update && qmd embed` to ensure semantic search ref
 
 **Rules:**
 
-- **Detection:** event has `eventType == focusTime` OR title contains "focus" or "deep work" (case-insensitive)
-- **Counting:** labeled focus blocks + open gaps ≥60min within 9am–5pm, excluding lunch and personal events (school, OOO, personal appointments)
+- **Detection:** event is the calendar's focus-time type OR title contains "focus" or "deep work" (case-insensitive)
+- **Counting:** labeled focus blocks + open gaps ≥60min within working hours, excluding lunch and personal events (school, OOO, personal appointments)
 - **Daily target:** 2–3h minimum
 - **Action model:** flag + propose batch — never write to calendar without explicit approval
 - **Conflict-fix order:** (1) propose moving your focus block to the next open same-day ≥60min slot; (2) if no open slot exists, flag the conflicting meeting and note if you are optional on it
@@ -52,37 +64,41 @@ If qmd is installed, run `qmd update && qmd embed` to ensure semantic search ref
 3. If at risk (projected <2h) or a conflict exists:
    - Generate proposed fixes as a numbered batch
    - Show `FOCUS` section with summary + proposals
-   - Ask "Approve all, pick numbers, or skip?" — wait before any calendar write
+   - Ask "Approve all, pick numbers, or skip?" — wait before any calendar write. Approved changes go through `create-event`.
 4. If today looks protected (≥2h secured), note it briefly in the `FOCUS` section and move on
 
-### Step 3: Gmail Triage
+### Step 3: Email Triage
+
+Fetch with `unread-to-me` since the start of yesterday; open a thread with `read-thread` only when
+the preview is not enough to judge it.
 
 0. **Addressed to the user only.** Mail that reached them through a group alias or distribution list
-   (`product@`, `eng-all@`, `everyone@`, any team alias) is broadcast, not a request. Enforce it in
-   the query with `(to:me OR cc:me)`: a list alias delivers to the alias, so `to:me` does not match
-   it. Do not use `deliveredto:` and do not widen this to `is:unread` alone. Exception: a thread the
-   user has already replied in stays even if list-addressed.
+   (`product@`, `eng-all@`, `everyone@`, any team alias) is broadcast, not a request. `unread-to-me`
+   already filters to the user's own address in To or Cc; never widen it to all unread. Exception: a
+   thread the user has already replied in stays even if list-addressed.
 1. Surface unread email needing a reply, time-sensitive items, emails from key people, action items, meeting threads.
 2. Ignore newsletters, automated notifications, FYI-only, read-only updates.
-3. **Exclude tool notifications** (Linear, Figma, GitHub, Notion, Slack digests, etc.) **unless you are directly tagged** — then surface it.
+3. **Exclude tool notifications** (issue trackers, design tools, code hosts, docs tools, chat digests) **unless you are directly tagged** — then surface it.
 4. **For emails with metrics/data**, extract key numbers inline rather than just listing the subject.
 5. Cap at 5 most actionable if >10 unread.
 
 If nothing needs a reply, say so in one line naming what was looked at (`2 unread addressed to you,
 neither needs a reply`) rather than omitting `INBOX`. A missing section cannot be told apart from a
-broken Gmail call.
+broken email call.
 
-### Step 4: Slack Triage
+### Step 4: Messaging Triage
+
+Fetch with `mentions-and-dms` and `threads-awaiting-me` since the start of yesterday.
 
 0. **Directed at the user only.** Something qualifies on exactly three grounds: (a) a DM or group DM,
-   (b) an explicit `@` mention of the user (or a group they are in, where the message asks for
+   (b) an explicit mention of the user (or a group they are in, where the message asks for
    something), (c) a thread the user has already posted in and someone replied after them. Channel
-   chatter and `@here`/`@channel` broadcasts that name no action for them are skipped.
+   chatter and channel-wide broadcasts that name no action for them are skipped.
 1. Within those three, surface unanswered DMs, mentions not yet replied to, and thread replies awaiting them.
 2. Needs-response only — not just reading. Cap at 5.
 
 If clear, say so in one line naming the scope (`DMs, mentions, and your own threads clear`) rather
-than omitting `SLACK`.
+than omitting `MESSAGING`.
 
 ### Step 5: Meeting Prep
 
@@ -133,7 +149,7 @@ appear on a meeting today or this week is `#meeting`, not `#block`.
 
 ### Step 7: Synthesize
 
-Combine calendar + focus status + inbox + slack + tasks into a unified briefing.
+Combine calendar + focus status + inbox + messaging + tasks into a unified briefing.
 
 **Omit any section that would be empty — don't show headers or placeholder text for empty sections.**
 
@@ -153,7 +169,7 @@ After the briefing, show the ready-to-start prompt block from `references/output
 
 **When to use:** User passes "week" argument
 
-1. Fetch the next 7 days of calendar events using available calendar tools.
+1. Fetch the next 7 days with `events-in-range`, and drop declined events.
 2. Filter out multi-day all-day events.
 3. Summarize per-day: meeting count, total meeting time, focus hours
 4. Compute weekly projected focus total — flag if <15h
@@ -166,6 +182,6 @@ See `references/output-format.md` for the Week Overview output structure.
 ## Best Practices
 
 - If user seems stuck choosing, make a recommendation
-- Each data source is optional — skip unavailable sources and note what was skipped
+- Each data source is optional — skip unavailable sources and note what was skipped, with the reason from `INDEX.md` when the category is not set up
 - Say a source is unavailable only after a call actually failed, and quote the error. Never infer
   that a tool is ungranted or a server is down without having tried

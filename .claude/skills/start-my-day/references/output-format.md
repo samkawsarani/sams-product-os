@@ -31,7 +31,7 @@ INBOX
 - [Sender] — [Subject] — [Action needed]
 - [Sender] — [Subject] — [Key metrics: e.g. "DAU +12% WoW, revenue $X, churn 2.1%"] — [Action if any]
 
-SLACK
+MESSAGING
 - [Channel/DM] — [Summary] — [Action needed]
 
 MEETING PREP
@@ -63,7 +63,7 @@ Ready to start?
 - Say "start [task name]" to move it to In Progress in TASKS.md
 - Say "prep [meeting name]" for a deep-dive meeting prep
 - Say "triage inbox" to go deeper on email
-- Say "clear slack" to walk through Slack items one by one
+- Say "clear messages" to walk through messaging items one by one
 - Say "/end-my-day" at the end of the day
 ```
 
