@@ -66,12 +66,12 @@ Report the findings as a short table: item, status (present / missing / raw temp
 
 ## Step 2: Ask
 
-One question per message. Give an example with each. Skip a question when Step 1 already answers it.
+One question per message. Give an example with each, using the example written in the question. Never invent an example from the user's files or answers: it reads as a fact about their company. Skip a question when Step 1 already answers it.
 
 1. **Role.** "What's your current role?" (e.g. Senior PM, Founder, VP Product). Skip if `about-me.md` has a filled `**Current Role**:`.
 2. **Focus.** "What's your main professional focus this quarter?" (e.g. launching a new product, hitting activation OKRs). Skip if `about-me.md` has a filled `**This Quarter's Focus**:`.
 3. **Goals.** "What are your 2 to 4 goals this quarter? A line each is fine." Skip if `GOALS.md` exists and is not a raw template. For each goal, ask nothing more: fill what you can and leave the rest blank for the user.
-4. **Glossary (optional).** "Any codenames, acronyms, or internal terms you use daily? Give me 3 to 5 with a short meaning, or say skip." Skip if `glossary.md` already has rows.
+4. **Glossary (optional).** "Any codenames, acronyms, or internal terms you use daily? Give me 3 to 5 with a short meaning, or say skip." (e.g. "NRR: net revenue retention", "Atlas: the internal codename for the new billing platform"). Skip if `glossary.md` already has rows.
 5. **Work tools.** One category per message, in the order of the categories table in `references/tool-categories.md`. Skip a category already in `INDEX.md` unless its status is `not ready`; for those, only re-run the template's **Setup** checks or the Step 5 verify call.
    - **Detected:** "Found Linear (MCP server `linear-server`) for work tracking. Correct?" A yes moves on.
    - **Not detected:** "Where do you track initiatives and projects? Linear, Jira, Asana, something else (describe it), or skip." Use the category's common answers.
