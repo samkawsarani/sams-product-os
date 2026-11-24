@@ -77,7 +77,7 @@ the Monday of the period plus 4 days.
 2. For each goal, match completed and in-progress work from Step 1 to assess progress
 3. Flag goals with no activity this week
 
-**Absence of task activity is NOT evidence a goal is at risk.** Much of the user's goal progress is driven by other people and lives in meetings, Slack, and Linear — never in TASKS.md. For any goal with no logged task activity, mark it **Status unknown — need your read** and ask, rather than assigning At Risk or Behind. Only call a goal at risk when you have positive evidence of a stall (a missed date, a blocker, a dependency with no owner). Before asking, check `meetings/` for the week and, if the goal maps to a Linear project, its recent status updates.
+**Absence of task activity is NOT evidence a goal is at risk.** Much of the user's goal progress is driven by other people and lives in meetings, messaging, and the work tracker — never in TASKS.md. For any goal with no logged task activity, mark it **Status unknown — need your read** and ask, rather than assigning At Risk or Behind. Only call a goal at risk when you have positive evidence of a stall (a missed date, a blocker, a dependency with no owner). Before asking, check `meetings/` for the week and, if the goal maps to a project in the work tracker, its recent status updates (`moved-since` in `knowledge/company-context/tools/work-tracking.md`; skip if that category is not set up).
 
 After the user gives the real status, write it back to `GOALS.md`: update the success criteria checkboxes and add or refresh a `**Status (YYYY-MM-DD):**` line on that goal. Don't leave the correction only in the review output.
 
@@ -121,7 +121,7 @@ After the user gives the real status, write it back to `GOALS.md`: update the su
 - Skip section if nothing is blocked or stalled
 
 **An open item in TASKS.md is not evidence the item is still open.** The same rule Step 2 applies to
-goals applies here: the written record lags the user. Something they closed in a Slack thread, a GTM channel
+goals applies here: the written record lags the user. Something they closed in a chat thread, a team channel
 or a hallway conversation stays checked-open in TASKS.md and unmentioned in the meeting notes, because
 closing it took them thirty seconds and nobody wrote it down. Before carrying a blocker into Step 4's
 picks or naming it in Step 6's update, say what you are treating as still open and let them knock items
@@ -142,14 +142,15 @@ happens, so the scoring is explicit rather than intuitive.
    enough to read in full, so nothing is carried by default and nothing rots by being skipped.
    Present all of it, not a filtered slice, and record the verdict for each. "Keep" is a real
    answer, but it has to be said out loud rather than happening through silence.
-4. Sweep anything left untagged by the morning briefing (`start-my-day` / `daily-brief`): ask the user for `#block` / `#meeting` /
+4. Sweep anything left untagged by the morning briefing (`start-my-day`): ask the user for `#block` / `#meeting` /
    `#quick` in one pass, then write the tags back.
 5. Score every backlog item on three things:
    - **Goal alignment** — does it map to a current goal in `GOALS.md`? This is the strongest signal
    - **Urgency** — a deadline, a blocker on someone else, a stakeholder waiting
    - **Known blockers** — waiting on somebody else? Deprioritize; it is not a focus item
    - **Effort tag** — a week already full of meetings cannot absorb three `#block` items. Check the
-     count of `#block` picks against the focus blocks actually on next week's calendar and say so
+     count of `#block` picks against the focus blocks actually on next week's calendar (`events-in-range` in
+     `knowledge/company-context/tools/email-calendar.md`) and say so
      when they do not fit
 6. Recommend the **top 3 to 5**, carryover included. Not everything, and not a ranked dump of the
    whole backlog

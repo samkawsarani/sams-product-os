@@ -36,6 +36,7 @@ Triggers: any time context-gathering, document lookup, or knowledge retrieval is
 
 | Path | Contents |
 |------|----------|
+| `knowledge/company-context/tools/` | Which work tools you use (email, calendar, messaging, tracking, meeting notes, metrics, CRM, call recordings, docs) and how to reach each. Read `INDEX.md` there, then the category file, before using a work tool. Written by `/setup-sams-product-os` |
 | `knowledge/` | Reference context (about you, company, strategy, people, decisions, opportunities). Agent-learned domain context lives in `knowledge/domains/`. See `knowledge/INDEX.md` and `knowledge/AGENTS.md` |
 | `projects/` | Committed discrete work — one file per project with objective, research, and outputs. See `projects/AGENTS.md` |
 | `meetings/` | Meeting transcripts and notes |

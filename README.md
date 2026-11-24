@@ -45,7 +45,7 @@ Open Claude Code in the repo folder and run:
 /setup-sams-product-os
 ```
 
-Using another agent? Point it at `.claude/skills/setup-sams-product-os/SKILL.md` and ask it to follow the steps. The skill checks what already exists, asks a few questions (role, focus, quarterly goals, a few company terms), shows you the plan, then creates your workspace, seeds starter files, and optionally installs QMD and plugins. Re-run it any time; it only fills gaps.
+Using another agent? Point it at `.claude/skills/setup-sams-product-os/SKILL.md` and ask it to follow the steps. The skill checks what already exists, asks a few questions (role, focus, quarterly goals, a few company terms, and which work tools you use), shows you the plan, then creates your workspace, seeds starter files, records your tools in `knowledge/company-context/tools/`, and optionally installs QMD and skills. Re-run it any time; it only fills gaps.
 
 ### 4. Start Using It
 
@@ -104,7 +104,7 @@ Files you create once and update as things change. The AI reads these to underst
 | Folder | What to put there |
 |--------|-------------------|
 | `about-me/` | Role, background, working style, strengths |
-| `company-context/` | Mission, products, team, org structure, `glossary.md` (codenames, acronyms, internal terms) |
+| `company-context/` | Mission, products, team, org structure, `glossary.md` (codenames, acronyms, internal terms), `tools/` (your work tools and how the agent reaches them, written by setup) |
 | `product-strategy/` | Vision, strategic pillars, roadmap, OKRs |
 | `processes/` | How your team works, sprint cadence, decision-making |
 | `references/` | Competitive research, articles, open requests |
@@ -216,8 +216,7 @@ Tasks live in two files.
 ### Managing Tasks
 
 **Daily:**
-- `/start-my-day` — morning briefing in the terminal: calendar, focus-time check, inbox/Slack triage, meeting prep, active tasks
-- `/daily-brief` — the same morning read as a dated HTML page (`thinking/daily-briefs/`), runs automatically weekdays at 8:30am (macOS)
+- `/start-my-day` — morning briefing as a dated HTML page (`thinking/daily-briefs/`): calendar, focus-time check, email and messaging triage, meeting prep, initiative movement, comms owed, active tasks
 - "What am I working on?" — agent reads `## Active` in `tasks/TASKS.md`
 - "Show my backlog" — agent reads `tasks/TASKS.md`
 - Brain dump into `tasks/TASKS.md`
@@ -268,28 +267,19 @@ This is the base project with core skills built in. Install additional skills fr
 ### Built-in Skills
 
 **Start My Day (`/start-my-day`):**
-- Morning briefing in the terminal — calendar, focus-time check, inbox/Slack triage, meeting prep,
-  active task priorities
-- Tags untagged tasks in `tasks/TASKS.md` with `#block` / `#meeting` / `#quick` (append-only, never
-  rewrites your text) and flags block debt: more `#block` items than focus blocks on the calendar
-- `/start-my-day week`: week overview with focus-hour totals
-- Aliases: "morning pulse", "daily pulse", "what's my day look like"
-
-**Daily Brief (`/daily-brief`):**
 - Writes a dated briefing page to `thinking/daily-briefs/daily-brief-YYYY-MM-DD.html`, plus a
   generated `thinking/daily-briefs/index.html` (sidebar of dates + iframe, newest by default).
   Both are gitignored; briefs are pruned after 30 days. Keep `index.html` open in a tab and reload it.
-- Sections: calendar agenda + focus-time protection, email and Slack triage, meeting prep, Linear
+- Sections: calendar agenda + focus-time protection, email and messaging triage, meeting prep,
   initiative movement, follow-ups and comms owed, active task priorities
+- Tags untagged tasks in `tasks/TASKS.md` with `#block` / `#meeting` / `#quick` (append-only, never
+  rewrites your text) and flags block debt: more `#block` items than focus blocks on the calendar
 - Proposes calendar fixes but never moves an event. Its only writes are task effort tags in
   `tasks/TASKS.md` and archiving meeting-invite receipts that need no answer (`BRIEFING_NO_MUTATE=1`
   makes it read-only)
-- Runs weekdays at 8:30am via launchd (macOS, needs `python3`, `gws`, and the `claude` CLI). Install
-  with `.claude/skills/daily-brief/scripts/run.sh --install` (`--uninstall` to remove). A manual run
-  any day still works. Logs go to `~/Library/Logs/com.<user>.daily-brief/`.
-- Headless runs cannot answer permission prompts, so `run.sh` pre-allows `mcp__linear-server` and
-  `mcp__slack` by default. Renamed your MCP servers? Set `BRIEFING_ALLOWED_TOOLS`.
-- Aliases: "daily brief", "write my brief", "regenerate my brief"
+- Runs on demand. To run it every weekday morning, use your agent's own scheduler or loop, and
+  pre-approve the tools listed in `knowledge/company-context/tools/INDEX.md`.
+- Aliases: "start my day", "morning pulse", "what's my day look like", "daily brief", "write my brief"
 
 **End My Day (`/end-my-day`):**
 - End-of-day review — rest-of-week focus protection, tomorrow preview, action items from meeting

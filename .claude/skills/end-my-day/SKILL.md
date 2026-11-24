@@ -8,16 +8,27 @@ description: End-of-day skill. Checks rest-of-week focus-time protection, previe
 
 Today's date: $TODAY
 
+## Tools
+
+This skill never names a tool. Read `knowledge/company-context/tools/INDEX.md`, then
+`email-calendar.md` (Steps 1-2) and `meeting-notes.md` (Steps 3-4). Steps ask for a **need** by
+name; the category file says how to meet it and adds the tool's own rules.
+
+- Category missing, skipped, or `not ready`: skip that step and say so in one line with the
+  reason. Never fall back to a different tool.
+- Working hours come from the **Scope** of `email-calendar.md`. Use 9:00 to 17:00 only if it
+  gives none, and say so.
+
 ---
 
 ## Step 1: Rest-of-Week Focus Protection
 
-Fetch calendar for remaining weekdays this week (tomorrow through Friday).
+Fetch the remaining weekdays this week (tomorrow through Friday) with `events-in-range`, and drop declined events.
 
 **Rules:**
 
-- **Detection:** event has `eventType == focusTime` OR title contains "focus" or "deep work" (case-insensitive)
-- **Counting:** labeled focus blocks + open gaps ≥60min within 9am–5pm, excluding lunch and personal events (school, OOO, personal appointments)
+- **Detection:** event is the calendar's focus-time type OR title contains "focus" or "deep work" (case-insensitive)
+- **Counting:** labeled focus blocks + open gaps ≥60min within working hours, excluding lunch and personal events (school, OOO, personal appointments)
 - **Targets:** daily floor 2–3h · weekly target 15–20h (flag if projected <15h; aim proposals to reach ~17h)
 - **Action model:** flag + propose batch — never write to calendar without explicit approval
 - **Conflict-fix order:** (1) propose moving your focus block to the next open same-day ≥60min slot; (2) if no open slot, flag the conflicting meeting and note if you are optional on it
@@ -30,7 +41,7 @@ Fetch calendar for remaining weekdays this week (tomorrow through Friday).
    - Create new focus blocks in open ≥60min slots to fill gaps toward ~17h
    - Flag meetings that conflict with focus blocks (note if you are optional)
 5. Present focus summary table + proposals
-6. Ask "Approve all, pick numbers, or skip?" — wait before any calendar writes
+6. Ask "Approve all, pick numbers, or skip?" — wait before any calendar writes. Approved changes go through `create-event`.
 
 If focus looks healthy (all remaining days ≥2h, week projected ≥15h), note it briefly and skip proposals.
 
@@ -40,7 +51,7 @@ If focus looks healthy (all remaining days ≥2h, week projected ≥15h), note i
 
 ## Step 2: Tomorrow Preview
 
-Fetch tomorrow's calendar.
+Fetch tomorrow with `events-in-range`.
 
 1. Filter out multi-day all-day events. Single-day all-day events shown as context above table.
 2. Present as a **table** with columns: Time, Event
@@ -57,9 +68,10 @@ Fetch tomorrow's calendar.
 
 ## Step 3: Action Items from Today's Meetings
 
-Read all `.md` files in `meetings/$TODAY/`.
+Get today's notes with `notes-in-range` from `meeting-notes.md`. If that category is not set up,
+read all `.md` files in `meetings/$TODAY/`.
 
-If the folder is empty or missing: note it and suggest syncing/exporting meeting notes before proceeding. Continue with other steps.
+If there are no notes: note it and suggest syncing/exporting meeting notes before proceeding. Continue with other steps.
 
 1. For each meeting note, extract explicit action items:
    - Commitments you made ("I'll send...", "I'll follow up on...", "by [date]...")
@@ -70,8 +82,8 @@ If the folder is empty or missing: note it and suggest syncing/exporting meeting
 3. Present as a numbered list with the source meeting noted for each item
 4. Ask "Add all to TASKS.md, pick numbers, or skip?"
 5. On approval: append approved items to the `## Backlog` section of `tasks/TASKS.md` as plain
-   `- [ ] ` checkboxes. Do not add effort tags or dates: the morning briefing (`start-my-day` or
-   `daily-brief`) classifies them the next morning.
+   `- [ ] ` checkboxes. Do not add effort tags or dates: the morning briefing (`start-my-day`)
+   classifies them the next morning.
 
 ---
 

@@ -1,27 +1,43 @@
 #!/usr/bin/env python3
 """Build the CALENDAR and FOCUS sections. Pure interval arithmetic, no model needed.
 
-Fetches today's primary-calendar events via the `gws` CLI and emits both sections
-to stdout. All the fiddly rules -- declined-filter, all-day handling, gap math,
-density, conflicts, focus counting, fix proposals -- live here so they cannot
-drift between mornings.
+Reads one day's events as a plain event list and emits both sections to stdout.
+It never calls a calendar tool: the agent fetches with `events-in-range` from
+knowledge/company-context/tools/email-calendar.md and writes the list to a file.
+All the fiddly rules -- declined-filter, all-day handling, gap math, density,
+conflicts, focus counting, fix proposals -- live here so they cannot drift
+between mornings or between calendar tools.
 
-    calendar-focus.py [--html] [--date YYYY-MM-DD] [--json FILE]
-                      [--tz-hours N] [--now HH:MM | --now none]
+    calendar-focus.py --events FILE [--html] [--date YYYY-MM-DD]
+                      [--workday HH:MM-HH:MM] [--tz IANA]
+                      [--now HH:MM | --now none]
 
 --html emits the two `<section>` blocks the brief wants (see
-references/brief-html.md); the default is plain text for the terminal.
+references/brief-html.md); the default is plain text for checking by hand.
 
---json reads a saved `gws calendar events list` payload instead of calling gws,
-for checking a change without waiting on the real calendar.
+Plain event list (one object per event, all keys required):
 
-Rules encoded (from SKILL.md steps 1 and 2):
-  * drop events where the self-attendee responseStatus == "declined"
+    {"events": [
+      {"title": "Roadmap sync",
+       "start": "2026-11-23T10:00:00-05:00",   # ISO datetime, or YYYY-MM-DD if all_day
+       "end":   "2026-11-23T10:30:00-05:00",
+       "all_day": false,
+       "declined": false,     # the user's own response is "declined"
+       "optional": false,     # the user is an optional attendee
+       "focus": false,        # the calendar's own focus-time type
+       "cancelled": false,
+       "organizer": "someone@example.com"}
+    ]}
+
+Times are read in --tz when given, otherwise as written.
+
+Rules encoded:
+  * drop events the user declined
   * the CALENDAR table lists meetings only: no focus blocks, no personal items,
     no all-day markers. They stay busy for gap and density math
   * drop all-day events entirely ("Home", "OOO"): they are markers, not meetings
-  * workday is 09:00-17:00 local
-  * focus = eventType "focusTime", or title containing "focus" / "deep work"
+  * workday from --workday, default 09:00-17:00
+  * focus = the calendar's focus type, or title containing "focus" / "deep work"
   * countable focus = labeled blocks + open gaps >= 60min in the workday,
     excluding lunch and personal events
   * daily target 2h minimum
@@ -33,8 +49,12 @@ import datetime as dt
 import html
 import json
 import re
-import subprocess
 import sys
+
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:  # python < 3.9
+    ZoneInfo = None
 
 WORK_START, WORK_END = 9 * 60, 17 * 60
 FOCUS_TARGET_MIN = 120
@@ -76,59 +96,44 @@ def resolve_now(raw, date):
     return local.hour * 60 + local.minute
 
 
-def fetch(date, tz_hours):
-    """Call gws for the given local date. Strips the keyring prefix line."""
-    start = dt.datetime.fromisoformat(date + "T00:00:00")
-    off = dt.timedelta(hours=tz_hours)
-    params = {
-        "calendarId": "primary",
-        "timeMin": (start - off).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "timeMax": (start - off + dt.timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "singleEvents": True,
-        "orderBy": "startTime",
-    }
-    out = subprocess.run(
-        ["gws", "calendar", "events", "list", "--params", json.dumps(params)],
-        capture_output=True, text=True, timeout=90)
-    if out.returncode != 0:
-        raise RuntimeError((out.stderr or out.stdout).strip()[:300])
-    body = out.stdout[out.stdout.index("{"):]  # drop "Using keyring backend: ..."
-    return json.loads(body)
+def _clock(value, tz):
+    t = dt.datetime.fromisoformat(value.replace("Z", "+00:00"))
+    if tz is not None and t.tzinfo is not None:
+        t = t.astimezone(tz)
+    return t
 
 
-def parse(payload, date):
+def parse(payload, date, tz=None):
     """-> (timed events, all-day context lines, cancelled notes, declined count)"""
     timed, allday, cancelled, declined = [], [], [], 0
 
-    for ev in payload.get("items", []):
-        title = ev.get("summary") or "(no title)"
-        me = next((a for a in ev.get("attendees") or [] if a.get("self")), None)
+    for ev in payload.get("events", []):
+        title = ev.get("title") or "(no title)"
 
-        if me and me.get("responseStatus") == "declined":
+        if ev.get("declined"):
             declined += 1
             continue
 
-        if ev.get("status") == "cancelled":
-            who = (ev.get("organizer") or {}).get("email", "someone")
+        if ev.get("cancelled"):
+            who = ev.get("organizer") or "someone"
             cancelled.append("{} was cancelled (by {})".format(title, who))
             continue
 
-        start, end = ev.get("start") or {}, ev.get("end") or {}
-        if "date" in start:  # all-day
-            if start.get("date") == date and _one_day(start, end):
+        if ev.get("all_day"):
+            if ev.get("start") == date and _one_day(ev.get("start"), ev.get("end")):
                 allday.append(title)
             continue
 
-        if "dateTime" not in start or "dateTime" not in end:
+        if not ev.get("start") or not ev.get("end"):
             continue
-        s = dt.datetime.fromisoformat(start["dateTime"])
-        e = dt.datetime.fromisoformat(end["dateTime"])
+        s = _clock(ev["start"], tz)
+        e = _clock(ev["end"], tz)
         timed.append({
             "title": title,
             "s": s.hour * 60 + s.minute,
             "e": e.hour * 60 + e.minute,
-            "optional": bool(me and me.get("optional")),
-            "focus": ev.get("eventType") == "focusTime" or bool(FOCUS_RE.search(title)),
+            "optional": bool(ev.get("optional")),
+            "focus": bool(ev.get("focus")) or bool(FOCUS_RE.search(title)),
             "skip": bool(SKIP_RE.search(title)),
         })
 
@@ -138,15 +143,17 @@ def parse(payload, date):
 
 def _one_day(start, end):
     try:
-        s = dt.date.fromisoformat(start["date"])
-        e = dt.date.fromisoformat(end.get("date", start["date"]))
+        s = dt.date.fromisoformat(start[:10])
+        e = dt.date.fromisoformat((end or start)[:10])
         return (e - s).days <= 1
-    except ValueError:
+    except (TypeError, ValueError):
         return False
 
 
-def free_gaps(busy, lo=WORK_START, hi=WORK_END):
+def free_gaps(busy, lo=None, hi=None):
     """Open intervals inside [lo, hi) not covered by `busy`, merged."""
+    lo = WORK_START if lo is None else lo
+    hi = WORK_END if hi is None else hi
     merged = []
     for b in sorted(busy, key=lambda x: x["s"]):
         if merged and b["s"] <= merged[-1][1]:
@@ -411,32 +418,49 @@ def unavailable(reason, as_html):
         ("Focus", ["<p>&lt;unavailable&gt;</p>"])))
 
 
+def _workday(raw):
+    a, _, b = raw.partition("-")
+    to_min = lambda t: int(t.split(":")[0]) * 60 + int((t.split(":") + ["0"])[1])
+    lo, hi = to_min(a), to_min(b)
+    if not 0 <= lo < hi <= 24 * 60:
+        raise ValueError("--workday must look like 09:00-17:00")
+    return lo, hi
+
+
 def main():
+    global WORK_START, WORK_END
     ap = argparse.ArgumentParser()
+    ap.add_argument("--events", required=True,
+                    help="plain event list (see the docstring); written by the agent")
     ap.add_argument("--date", default=dt.date.today().isoformat())
-    ap.add_argument("--json", help="read a saved gws payload instead of calling gws")
     ap.add_argument("--html", action="store_true",
-                    help="emit the two <section> blocks for the daily brief "
+                    help="emit the two <section> blocks for the brief "
                          "instead of plain text")
-    ap.add_argument("--tz-hours", type=int, default=None,
-                    help="local UTC offset; default is this machine's")
+    ap.add_argument("--workday", default="09:00-17:00",
+                    help="working hours as HH:MM-HH:MM, from the email-calendar Scope")
+    ap.add_argument("--tz", default=None,
+                    help="IANA time zone to read event times in, e.g. America/New_York")
     ap.add_argument("--now", default=None,
                     help='cutoff as HH:MM, or "none" for the whole day; '
                          "default is the current local time")
     a = ap.parse_args()
 
-    if a.tz_hours is None:
-        off = dt.datetime.now().astimezone().utcoffset() or dt.timedelta()
-        a.tz_hours = int(off.total_seconds() // 3600)
-
     try:
-        payload = json.load(open(a.json)) if a.json else fetch(a.date, a.tz_hours)
+        WORK_START, WORK_END = _workday(a.workday)
+        tz = None
+        if a.tz:
+            if ZoneInfo is None:
+                raise RuntimeError("--tz needs python 3.9+")
+            tz = ZoneInfo(a.tz)
+        payload = json.load(open(a.events))
+        if not isinstance(payload.get("events"), list):
+            raise ValueError("events file has no \"events\" list")
     except Exception as exc:                      # noqa: BLE001 - degrade, never abort
         print(unavailable(str(exc), a.html))
         return 1
 
     now = resolve_now(a.now, a.date)
-    timed, allday, cancelled, declined = parse(payload, a.date)
+    timed, allday, cancelled, declined = parse(payload, a.date, tz)
     cal = calendar_data(timed, allday, cancelled, declined, now)
     foc = focus_data(timed, now)
     print(render_html(cal, foc) if a.html else render_text(cal, foc))

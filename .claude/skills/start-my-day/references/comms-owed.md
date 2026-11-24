@@ -1,26 +1,26 @@
 # Follow-Ups and Comms Owed
 
-What the user owes other people. Distinct from `inbox` (Email and Slack), which surfaces what needs a reply
+What the user owes other people. Distinct from `inbox` (Email and Messaging), which surfaces what needs a reply
 right now. This section is about **commitments and cadence debt** that nothing else in the OS
 catches, and that quietly rot.
 
 Four sources. Merge into one ranked list, deduplicated.
 
-Use the same Linear MCP tools as `linear-initiatives.md`. Nothing in this step writes to Linear.
+Tracker sources use the needs in `knowledge/company-context/tools/work-tracking.md`, as
+`initiatives.md` does. Nothing in this step writes to the tracker. If work tracking is not set up,
+skip Sources 1 and 3 and say so in one line.
 
 ---
 
 ## Source 1: Status-update debt on initiatives the user owns
 
-Fully checkable from Linear, no inference.
+Fully checkable from the tracker, no inference. Skip this source if `status-updates` is
+`not supported`.
 
-1. Resolve the viewer's own Linear id once with `get_user(query: "me")`, then from the Step 7
-   `list_initiatives` call keep initiatives where `owner.id` is that id and
-   `status != "Completed"`.
-2. For each, get the newest status update:
-   `get_status_updates(type = "initiative", initiative = "<name or id>", limit = 1, orderBy = "createdAt")`
-   Or take it from a single unfiltered `get_status_updates(type="initiative", limit=50)` call and
-   group by initiative, which is cheaper.
+1. From the Step 7 `initiatives` result, keep initiatives the user owns (matched by id) that are
+   not completed.
+2. For each, get the newest status update with `status-updates` (the category file says the
+   cheapest way to get the newest one per initiative).
 3. Compute `days_since_last_update`. **Never posted at all is the strongest signal, not a blank.**
    Report it as "no status update ever posted", never as 0 days or as an empty field.
 
@@ -34,7 +34,7 @@ Fully checkable from Linear, no inference.
 
 Rank by: never-posted first, then days overdue relative to its own threshold, then target proximity.
 
-Link every initiative on its name, using the `url` already fetched in Step 7. This section is
+Link every initiative on its name, using the URL already fetched in Step 7. This section is
 the one the user acts on directly, so the click has to be there.
 
 On the first run, note the current per-initiative update dates and the workspace's apparent
@@ -48,7 +48,8 @@ knows the 3P format.
 
 ## Source 2: Commitments in recent meeting notes
 
-Read the notes under `meetings/` dated inside the window (`since_iso` from `briefing-window.py`;
+Get the notes inside the window with `notes-in-range` from
+`knowledge/company-context/tools/meeting-notes.md`, or read the notes under `meetings/` dated inside the window if that category is not set up (`since_iso` from `briefing-window.py`;
 on a Monday that reaches back to Friday). Notes only: open a transcript only when the notes are
 thin, and then read it, do not skim for names.
 
@@ -77,22 +78,17 @@ If `meetings/` has nothing inside the window, skip the source silently.
 
 ---
 
-## Source 3: Linear threads awaiting the user's reply
+## Source 3: Tracker threads awaiting the user's reply
 
-Gmail and Slack triage never see Linear.
+Email and messaging triage never see tracker comments.
 
-```
-list_issues(assignee = "me", updatedAt = "<window>", limit = 100,
-            fields = ["title","status","statusType","project","priority","url","updatedAt"])
-```
-
-Then for issues that moved, `list_comments(issueId = ...)` and keep threads where the **last**
-comment is from someone else and mentions the user or asks a direct question.
+`awaiting-my-reply` with `since_iso`: threads on the user's issues where the **last** comment is
+from someone else and mentions the user or asks a direct question.
 
 Guardrails:
 
 - A missing assignee, cycle, or due date means the field is unset. Never report it as status.
-- Cap at 5. Linear is not the morning's main channel.
+- Cap at 5. The tracker is not the morning's main channel.
 - Skip issues where the last comment is the user's own.
 
 ---
@@ -121,7 +117,7 @@ One merged, ranked list. Ranking:
 1. Overdue exec comms on at-risk initiatives (highest: visible, and rots fastest)
 2. Meeting commitments with a stated date
 3. Never-posted status updates on Active initiatives with a target inside 90 days
-4. Linear threads awaiting reply
+4. Tracker threads awaiting reply
 5. Everything else
 
 Each line names **who is owed**, **what**, and **how overdue**. Cap at 7 lines total, and close

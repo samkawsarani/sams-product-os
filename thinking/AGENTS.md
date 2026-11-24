@@ -11,7 +11,7 @@ no git history to recover a pruned brief or review from. That is intended.
 
 | Path | Written by | Format | Retention |
 |------|-----------|--------|-----------|
-| `daily-briefs/daily-brief-YYYY-MM-DD.html` | `daily-brief`, one per run | HTML | 30 days |
+| `daily-briefs/daily-brief-YYYY-MM-DD.html` | `start-my-day`, one per run | HTML | 30 days |
 | `daily-briefs/index.html` | `build-brief.py`, rewritten every run | HTML | current |
 | `weekly-reviews/weekly-review-YYYY-MM-DD.md` | `weekly-review`, one per week | Markdown | 365 days |
 
